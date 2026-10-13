@@ -35,7 +35,7 @@ docker compose -f observability/local-stack/compose.yaml --profile traffic up -d
 
 Then open http://localhost:3000. The lab signs you in automatically as an administrator.
 
-1. **Open a dashboard.** Go to Dashboards, then the Guidebook folder, then **Web app: service overview**. The top row answers "is it healthy?" at a glance: request rate, error ratio, p95 latency, and targets up. The traffic generator fails 2% of requests and slows 4%, so the error ratio is red.
+1. **Open a dashboard.** Go to Dashboards, then the Groundwork folder, then **Web app: service overview**. The top row answers "is it healthy?" at a glance: request rate, error ratio, p95 latency, and targets up. The traffic generator fails 2% of requests and slows 4%, so the error ratio is red.
 2. **Change the time range** with the picker at the top right (try "Last 15 minutes"), or drag across any graph to zoom in. Every panel follows. Press the back arrow in your browser to undo a zoom.
 3. **Read a panel.** Hover over **Responses per second, by status** to see values at that moment. Click a series in the legend to show only that series; Ctrl or Cmd plus click adds more.
 4. **Look at the query behind a panel.** Open a panel's menu (top right corner of the panel, or press `e` while hovering) and choose Edit. The query editor shows the PromQL; the right side holds the display options. Close without saving.

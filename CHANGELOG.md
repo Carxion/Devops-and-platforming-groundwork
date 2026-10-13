@@ -4,6 +4,7 @@ Content corrections and notable changes to the guide. Dates are when the change 
 
 ## Unreleased
 
+- Renamed the project to DevOps and Platforming Groundwork. The checklist itself is unchanged.
 - Added copy-ready templates in `templates/` (stakeholder map, first-conversation questions, findings register, ADR, weekly status).
 - Added a phase-ordered checklist view and a tracker-importable CSV in `checklists/`, generated from the README.
 - Added contribution guidelines, issue and pull request templates, and CI for Markdown lint, spelling, links, and generated-file freshness.

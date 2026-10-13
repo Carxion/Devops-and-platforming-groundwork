@@ -2,7 +2,7 @@
   "uid": "web-app-slo",
   "title": "Web app: SLOs",
   "description": "Error budgets and burn rates for the web-app SLOs (99.9% availability, 99% of requests under 250 ms, over 30 days). Built on the recording rules in observability/prometheus/rules/web-app-slo.yaml.",
-  "tags": ["web-app", "slo", "guidebook"],
+  "tags": ["web-app", "slo", "groundwork"],
   "timezone": "utc",
   "editable": false,
   "graphTooltip": 1,

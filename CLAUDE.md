@@ -4,7 +4,7 @@ Guidance for AI assistants working in this repository.
 
 ## What this is
 
-A public, CC BY 4.0 onboarding checklist for tech leads joining cloud / CI/CD / IaC / DevSecOps programs, with an emphasis on enterprise and regulated environments. It is mostly documentation, plus Terraform reference stacks in `terraform/`.
+DevOps and Platforming Groundwork: a public, CC BY 4.0 onboarding checklist for tech leads joining cloud / CI/CD / IaC / DevSecOps programs (the README), plus tested reference material: Terraform stacks, Kubernetes samples, cloud CLI guides and templates, API testing, observability, Bash, and Docker.
 
 ## Layout
 

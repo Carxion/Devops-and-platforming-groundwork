@@ -2,7 +2,7 @@
   "uid": "web-app-overview",
   "title": "Web app: service overview",
   "description": "Rate, errors, and duration (RED) for the web-app sample, with its logs and traces. Health checks are excluded. Source: observability/grafana/dashboards/web-app-overview.json",
-  "tags": ["web-app", "red", "guidebook"],
+  "tags": ["web-app", "red", "groundwork"],
   "timezone": "utc",
   "editable": false,
   "graphTooltip": 1,

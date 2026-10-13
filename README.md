@@ -1,6 +1,6 @@
-# Tech Lead Program Onboarding Checklist
+# DevOps and Platforming Groundwork
 
-**Cloud, CI/CD, IaC, and DevSecOps onboarding for enterprise and regulated programs**
+**A tech lead's onboarding checklist and field guide for cloud, CI/CD, IaC, and DevSecOps programs**
 
 A checklist for engineers stepping into a technical lead role on an existing program: a platform, a delivery pipeline, and a set of stakeholders who were all there before you. It covers what to learn, who to talk to, how to evaluate the problems you inherit, and what to deliver in your first 90 days.
 

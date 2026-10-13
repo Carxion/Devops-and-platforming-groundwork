@@ -27,7 +27,7 @@ docker compose -f observability/local-stack/compose.yaml ps
 
 | Open | For |
 |---|---|
-| http://localhost:3000 | Grafana: dashboards in the Guidebook folder, and Explore |
+| http://localhost:3000 | Grafana: dashboards in the Groundwork folder, and Explore |
 | http://localhost:9090 | Prometheus: queries, targets (Status, then Targets), rules, and alerts |
 | http://localhost:9093 | Alertmanager: firing alerts, silences |
 | http://localhost:9898 | The web app itself |
