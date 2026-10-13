@@ -1,0 +1,19 @@
+project         = "example"
+environment     = "dev"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus2"
+owner           = "platform-team"
+
+# From network-hub-spoke outputs
+vnet_id                    = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-dev-network/providers/Microsoft.Network/virtualNetworks/vnet-example-dev-app"
+app_subnet_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-dev-network/providers/Microsoft.Network/virtualNetworks/vnet-example-dev-app/subnets/app-integration"
+db_subnet_id               = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-dev-network/providers/Microsoft.Network/virtualNetworks/vnet-example-dev-app/subnets/db"
+log_analytics_workspace_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-dev-network/providers/Microsoft.OperationalInsights/workspaces/log-example-dev"
+
+container_registry_url = "https://exampleregistry.azurecr.io"
+container_image        = "web@sha256:<digest>"
+acr_id                 = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-shared/providers/Microsoft.ContainerRegistry/registries/exampleregistry"
+
+postgres_admin_group_object_id = "00000000-0000-0000-0000-000000000000"
+postgres_admin_group_name      = "example-db-admins"
+postgres_sku                   = "B_Standard_B1ms" # dev only

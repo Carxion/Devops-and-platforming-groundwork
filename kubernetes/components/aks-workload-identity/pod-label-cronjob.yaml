@@ -1,0 +1,3 @@
+- op: add
+  path: /spec/jobTemplate/spec/template/metadata/labels/azure.workload.identity~1use
+  value: "true"

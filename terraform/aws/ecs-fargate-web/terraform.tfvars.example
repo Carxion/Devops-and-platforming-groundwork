@@ -1,0 +1,17 @@
+project     = "example"
+environment = "dev"
+region      = "us-east-1"
+owner       = "platform-team"
+
+# From network-vpc outputs
+vpc_id             = "vpc-0123456789abcdef0"
+public_subnet_ids  = ["subnet-0aaa", "subnet-0bbb", "subnet-0ccc"]
+private_subnet_ids = ["subnet-0ddd", "subnet-0eee", "subnet-0fff"]
+
+certificate_arn = "arn:aws:acm:us-east-1:111122223333:certificate/00000000-0000-0000-0000-000000000000"
+
+# Pin by digest. The task runs as UID 1000 with a read-only root filesystem.
+container_image = "111122223333.dkr.ecr.us-east-1.amazonaws.com/example-dev-web@sha256:<digest>"
+container_port  = 8080
+
+deletion_protection = false # non-prod only

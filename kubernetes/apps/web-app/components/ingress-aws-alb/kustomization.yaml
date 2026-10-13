@@ -1,0 +1,7 @@
+# Internet-facing ALB through the AWS Load Balancer Controller, which must be
+# installed in the cluster. Traffic goes straight to pod IPs (target-type ip).
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ingress.yaml
+  - networkpolicy.yaml

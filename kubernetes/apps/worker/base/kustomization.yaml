@@ -1,0 +1,18 @@
+# Background worker: consumes work (a queue, a stream) and serves no
+# traffic. busybox stands in for the real process.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/name: worker
+      app.kubernetes.io/part-of: sample-apps
+    includeSelectors: true
+resources:
+  - serviceaccount.yaml
+  - deployment.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+images:
+  - name: worker
+    newName: docker.io/library/busybox
+    digest: sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e # 1.38.0

@@ -1,0 +1,9 @@
+project         = "example"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+owner           = "platform-team"
+
+github_repository = "example-org/example-infra"
+apply_environment = "production"
+
+# From bootstrap-state outputs
+state_storage_account_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-tfstate/providers/Microsoft.Storage/storageAccounts/stexampletfstateabc123"

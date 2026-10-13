@@ -1,0 +1,5 @@
+# Keep the build context small and free of secrets: only what the build needs.
+*
+!go.mod
+!go.sum
+!*.go

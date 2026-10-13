@@ -1,0 +1,25 @@
+# Gives the app's pods an Entra ID identity through AKS workload identity.
+# Prerequisites (Terraform or az CLI): a user-assigned managed identity with
+# a federated credential for this service account, issued by the cluster's
+# OIDC issuer (aks-cluster output oidc_issuer_url), subject
+# system:serviceaccount:<namespace>:<service account name>.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - target:
+      kind: ServiceAccount
+    patch: |-
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: ignored # the target selects the resource
+        annotations:
+          azure.workload.identity/client-id: "00000000-0000-0000-0000-000000000000" # the managed identity's client ID
+  - target:
+      kind: Deployment
+    path: pod-label-deployment.yaml
+  - target:
+      kind: CronJob
+    path: pod-label-cronjob.yaml
+resources:
+  - networkpolicy.yaml

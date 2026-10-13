@@ -1,0 +1,42 @@
+name: Correction
+description: Something in the guide is wrong, out of date, or links to the wrong place.
+labels: [correction]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep this accurate. **Do not include any program-specific, customer, or employer information**, even de-identified.
+  - type: input
+    id: section
+    attributes:
+      label: Section
+      description: Section number and heading, or the reference key.
+      placeholder: "7.3 Software supply chain / [SLSA]"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong
+      description: Quote the current text and explain the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix
+      description: Proposed wording, if you have it.
+  - type: input
+    id: source
+    attributes:
+      label: Primary source
+      description: Link to the standard, spec, or official documentation, not a blog post summarizing it.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: This issue contains no program-specific, customer, or employer information.
+          required: true

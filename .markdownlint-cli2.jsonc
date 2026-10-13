@@ -1,0 +1,13 @@
+{
+  // Prose doc with long lines, wide reference tables, and bare URLs
+  // (GitHub autolinks them). Everything else stays at the defaults.
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": { "siblings_only": true }, // phases repeat section headings
+    "MD034": false,
+    "MD036": false, // the bold tagline under the title
+    "MD060": false
+  },
+  "ignores": ["LICENSE", "node_modules/**"]
+}

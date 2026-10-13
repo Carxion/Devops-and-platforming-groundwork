@@ -1,0 +1,10 @@
+# Namespace baseline, applied by the platform team before any app.
+# Rename "sample-apps" here and in each app overlay.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-apps
+resources:
+  - namespace.yaml
+  - network-policies.yaml
+  - resource-quota.yaml
+  - limit-range.yaml

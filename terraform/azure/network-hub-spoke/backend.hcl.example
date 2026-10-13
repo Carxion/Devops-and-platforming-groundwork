@@ -1,0 +1,7 @@
+# Copy to backend.hcl, then: terraform init -backend-config=backend.hcl
+# Values come from the azure/bootstrap-state backend_config output.
+resource_group_name  = "rg-example-tfstate"
+storage_account_name = "stexampletfstateabc123"
+container_name       = "tfstate"
+key                  = "network-hub-spoke/dev/terraform.tfstate"
+use_azuread_auth     = true

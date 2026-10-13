@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Least-privilege IAM role for one workload: an ECS task, a Lambda function, an
+  EKS pod (Pod Identity), or an EC2 instance. Grants only the specific resources
+  you name: read from one S3 prefix, consume one SQS queue, read one secret.
+  Leave a parameter empty to grant nothing for that service.
+
+Parameters:
+  WorkloadName:
+    Type: String
+    Description: Short name of the workload, used in the role name.
+    AllowedPattern: "^[a-zA-Z0-9-]{1,40}$"
+  WorkloadType:
+    Type: String
+    AllowedValues: [ecs-task, lambda, eks-pod-identity, ec2]
+    Description: The AWS service that assumes this role.
+  BucketName:
+    Type: String
+    Default: ""
+    Description: S3 bucket the workload reads from. Empty for none.
+  BucketPrefix:
+    Type: String
+    Default: ""
+    Description: Prefix inside the bucket, without a leading slash (for example "inbound/"). Empty for the whole bucket.
+  QueueArn:
+    Type: String
+    Default: ""
+    Description: SQS queue the workload consumes. Empty for none.
+  SecretArn:
+    Type: String
+    Default: ""
+    Description: Secrets Manager secret the workload reads. Empty for none.
+  KmsKeyArn:
+    Type: String
+    Default: ""
+    Description: Customer-managed KMS key protecting the above, if any.
+  PermissionsBoundaryArn:
+    Type: String
+    Default: ""
+    Description: Required if this stack is deployed by a pipeline role that carries a permissions boundary.
+
+Mappings:
+  ServicePrincipal:
+    ecs-task: { Principal: ecs-tasks.amazonaws.com }
+    lambda: { Principal: lambda.amazonaws.com }
+    eks-pod-identity: { Principal: pods.eks.amazonaws.com }
+    ec2: { Principal: ec2.amazonaws.com }
+
+Conditions:
+  IsPodIdentity: !Equals [!Ref WorkloadType, eks-pod-identity]
+  IsEcsTask: !Equals [!Ref WorkloadType, ecs-task]
+  IsEc2: !Equals [!Ref WorkloadType, ec2]
+  HasBucket: !Not [!Equals [!Ref BucketName, ""]]
+  HasQueue: !Not [!Equals [!Ref QueueArn, ""]]
+  HasSecret: !Not [!Equals [!Ref SecretArn, ""]]
+  HasKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
+  HasBoundary: !Not [!Equals [!Ref PermissionsBoundaryArn, ""]]
+  HasAnyGrant: !Or [Condition: HasBucket, Condition: HasQueue, Condition: HasSecret]
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${WorkloadName}-${WorkloadType}"
+      Description: !Sub "Workload role for ${WorkloadName} (${WorkloadType})"
+      MaxSessionDuration: 3600
+      PermissionsBoundary: !If [HasBoundary, !Ref PermissionsBoundaryArn, !Ref AWS::NoValue]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !FindInMap [ServicePrincipal, !Ref WorkloadType, Principal]
+            # Pod Identity also needs TagSession to pass the pod's session tags.
+            Action: !If
+              - IsPodIdentity
+              - [sts:AssumeRole, sts:TagSession]
+              - [sts:AssumeRole]
+            # Confused-deputy protection. ECS documents aws:SourceAccount on
+            # task role assumption; not every service sends it, and a condition
+            # on a missing key would make the role unusable, so it's ECS only.
+            Condition: !If
+              - IsEcsTask
+              - StringEquals:
+                  aws:SourceAccount: !Ref AWS::AccountId
+              - !Ref AWS::NoValue
+
+  Permissions:
+    Type: AWS::IAM::RolePolicy
+    Condition: HasAnyGrant
+    Properties:
+      RoleName: !Ref Role
+      PolicyName: workload-access
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - !If
+            - HasBucket
+            - Sid: ListPrefix
+              Effect: Allow
+              Action: s3:ListBucket
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${BucketName}"
+              Condition:
+                StringLike:
+                  s3:prefix: !Sub "${BucketPrefix}*"
+            - !Ref AWS::NoValue
+          - !If
+            - HasBucket
+            - Sid: ReadObjects
+              Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${BucketName}/${BucketPrefix}*"
+            - !Ref AWS::NoValue
+          - !If
+            - HasQueue
+            - Sid: ConsumeQueue
+              Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:ChangeMessageVisibility
+                - sqs:GetQueueAttributes
+              Resource: !Ref QueueArn
+            - !Ref AWS::NoValue
+          - !If
+            - HasSecret
+            - Sid: ReadSecret
+              Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref SecretArn
+            - !Ref AWS::NoValue
+          - !If
+            - HasKey
+            - Sid: UseKey
+              Effect: Allow
+              Action: kms:Decrypt
+              Resource: !Ref KmsKeyArn
+            - !Ref AWS::NoValue
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: IsEc2
+    Properties:
+      Roles: [!Ref Role]
+
+Outputs:
+  RoleArn:
+    Description: >-
+      ECS: the task definition's taskRoleArn. Lambda: the function's Role.
+      EKS: aws_eks_pod_identity_association.role_arn. EC2: use InstanceProfileArn.
+    Value: !GetAtt Role.Arn
+  InstanceProfileArn:
+    Condition: IsEc2
+    Value: !GetAtt InstanceProfile.Arn

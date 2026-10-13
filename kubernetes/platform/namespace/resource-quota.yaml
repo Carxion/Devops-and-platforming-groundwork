@@ -1,0 +1,14 @@
+# Caps what the namespace can consume, so one team can't starve the cluster.
+# Size it to the team's real needs; these are placeholders.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.memory: 32Gi
+    pods: "50"
+    services.loadbalancers: "0" # expose apps through ingress, not per-service load balancers
+    services.nodeports: "0"

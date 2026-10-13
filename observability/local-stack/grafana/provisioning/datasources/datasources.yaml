@@ -1,0 +1,74 @@
+# Data sources, provisioned from files so every Grafana starts identical.
+# The fixed uids are what dashboards and the links between signals refer to.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      # Jump from a latency exemplar on a graph to the trace that produced it.
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
+
+  - name: Loki
+    type: loki
+    uid: loki
+    url: http://loki:3100
+    access: proxy
+    editable: false
+    jsonData:
+      # Logs sent over OTLP carry the trace ID as structured metadata; link it to Tempo.
+      derivedFields:
+        - name: TraceID
+          matcherType: label
+          matcherRegex: trace_id
+          datasourceUid: tempo
+          url: "$${__value.raw}"
+          urlDisplayLabel: View trace
+
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    url: http://tempo:3200
+    access: proxy
+    editable: false
+    jsonData:
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      # From a span, open the logs written during it.
+      tracesToLogsV2:
+        datasourceUid: loki
+        filterByTraceID: true
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        # The span's service.name becomes the Loki stream selector service_name.
+        tags:
+          - key: service.name
+            value: service_name
+        # OTLP logs carry the trace ID as structured metadata, not in the line
+        # text, so filter on the field instead of the default text match.
+        customQuery: true
+        query: '{$${__tags}} | trace_id="$${__trace.traceId}"'
+      tracesToMetrics:
+        datasourceUid: prometheus
+      streamingEnabled:
+        search: true
+
+  - name: Alertmanager
+    type: alertmanager
+    uid: alertmanager
+    url: http://alertmanager:9093
+    access: proxy
+    editable: false
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: false

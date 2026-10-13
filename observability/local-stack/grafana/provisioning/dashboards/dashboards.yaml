@@ -1,0 +1,14 @@
+# Loads every dashboard JSON in observability/grafana/dashboards (mounted at
+# /var/lib/grafana/dashboards). Edit the JSON files, not the dashboards in the UI:
+# UI changes to provisioned dashboards can't be saved.
+apiVersion: 1
+
+providers:
+  - name: observability-guidebook
+    folder: Guidebook
+    type: file
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

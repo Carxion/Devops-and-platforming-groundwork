@@ -1,0 +1,17 @@
+# Token exchange needs HTTPS to Entra ID (login.microsoftonline.com), and the
+# app needs HTTPS to the Azure services it calls. Standard NetworkPolicy
+# can't match hostnames; narrow this with Cilium FQDN policies or Azure
+# Firewall rules if your program requires it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-azure-https-egress
+spec:
+  podSelector:
+    matchLabels:
+      azure.workload.identity/use: "true"
+  policyTypes: ["Egress"]
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443

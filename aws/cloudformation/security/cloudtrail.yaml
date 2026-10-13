@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Account-level, multi-region CloudTrail trail with log file validation,
+  KMS encryption, and a dedicated, locked-down log bucket. Covers the guide's
+  control-plane audit logging item (section 3.4). In an AWS Organization,
+  prefer one organization trail in a log archive account; use this for
+  standalone accounts.
+
+Parameters:
+  TrailName:
+    Type: String
+    Default: account-trail
+  LogRetentionDays:
+    Type: Number
+    Default: 365
+    Description: Days to keep log files. Set to your program's records requirement.
+
+Resources:
+  TrailKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: CloudTrail log encryption
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnableIamPolicies
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: kms:*
+            Resource: "*"
+          - Sid: AllowCloudTrailEncrypt
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: kms:GenerateDataKey*
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${TrailName}"
+              StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
+          - Sid: AllowCloudTrailDescribe
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: kms:DescribeKey
+            Resource: "*"
+          # Principals in this account whose IAM policies allow it can decrypt
+          # the logs; control who with s3:GetObject and kms:Decrypt grants.
+          - Sid: AllowLogDecryptionInAccount
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:Decrypt
+              - kms:ReEncryptFrom
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:CallerAccount: !Ref AWS::AccountId
+              StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
+
+  LogBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: Access logs for the audit log bucket would need yet another bucket; CloudTrail data events can cover it if required.
+    Properties:
+      BucketName: !Sub "${TrailName}-logs-${AWS::AccountId}-${AWS::Region}"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !GetAtt TrailKey.Arn
+      LifecycleConfiguration:
+        Rules:
+          - Id: retention
+            Status: Enabled
+            ExpirationInDays: !Ref LogRetentionDays
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+
+  LogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LogBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt LogBucket.Arn
+            Condition:
+              StringEquals:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${TrailName}"
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${LogBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${TrailName}"
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt LogBucket.Arn
+              - !Sub "${LogBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+          # Log files are evidence; nobody deletes them early.
+          - Sid: DenyLogDeletion
+            Effect: Deny
+            Principal: "*"
+            Action:
+              - s3:DeleteObject
+              - s3:DeleteObjectVersion
+            Resource: !Sub "${LogBucket.Arn}/AWSLogs/*"
+
+  Trail:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: LogBucketPolicy
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV2_AWS_10
+            comment: CloudWatch Logs delivery is optional; add CloudWatchLogsLogGroupArn and a role if you alert from CloudWatch.
+    Properties:
+      TrailName: !Ref TrailName
+      S3BucketName: !Ref LogBucket
+      KMSKeyId: !GetAtt TrailKey.Arn
+      IsLogging: true
+      IsMultiRegionTrail: true
+      IncludeGlobalServiceEvents: true
+      EnableLogFileValidation: true
+
+Outputs:
+  TrailArn:
+    Value: !GetAtt Trail.Arn
+  LogBucketName:
+    Value: !Ref LogBucket

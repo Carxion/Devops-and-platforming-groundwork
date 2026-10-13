@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Private S3 bucket with secure defaults: all public access blocked, ACLs
+  disabled, TLS required, versioning on, KMS encryption, old versions expired,
+  and optional server access logging. Retained if the stack is deleted.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Globally unique name. Including the account ID and region avoids collisions.
+    AllowedPattern: "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+  KmsKeyArn:
+    Type: String
+    Default: ""
+    Description: Customer-managed key (see kms-key.yaml). Empty uses the AWS-managed S3 key (SSE-KMS with aws/s3).
+  AccessLogBucketName:
+    Type: String
+    Default: ""
+    Description: Existing bucket that receives server access logs. Empty disables access logging.
+  NoncurrentVersionRetentionDays:
+    Type: Number
+    Default: 90
+    Description: How long previous object versions are kept for recovery.
+
+Conditions:
+  HasKmsKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
+  HasAccessLogs: !Not [!Equals [!Ref AccessLogBucketName, ""]]
+
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: Access logging is optional (AccessLogBucketName); CloudTrail data events are the alternative.
+    Properties:
+      BucketName: !Ref BucketName
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !If [HasKmsKey, !Ref KmsKeyArn, !Ref AWS::NoValue]
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: !Ref NoncurrentVersionRetentionDays
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+      LoggingConfiguration: !If
+        - HasAccessLogs
+        - DestinationBucketName: !Ref AccessLogBucketName
+          LogFilePrefix: !Sub "${BucketName}/"
+        - !Ref AWS::NoValue
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt Bucket.Arn
+              - !Sub "${Bucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+          - Sid: DenyOldTls
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt Bucket.Arn
+              - !Sub "${Bucket.Arn}/*"
+            Condition:
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
+
+Outputs:
+  BucketName:
+    Value: !Ref Bucket
+  BucketArn:
+    Value: !GetAtt Bucket.Arn

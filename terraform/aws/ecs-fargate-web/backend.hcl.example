@@ -1,0 +1,8 @@
+# Copy to backend.hcl, then: terraform init -backend-config=backend.hcl
+# Values come from the aws/bootstrap-state backend_config output.
+bucket       = "example-tfstate-111122223333-us-east-1"
+key          = "ecs-fargate-web/dev/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+kms_key_id   = "arn:aws:kms:us-east-1:111122223333:key/00000000-0000-0000-0000-000000000000"
+use_lockfile = true

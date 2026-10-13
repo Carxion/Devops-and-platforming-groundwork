@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Provider versions in each stack's lock file. Constraints stay "~> X.Y";
+  # review the provider changelog before merging.
+  - package-ecosystem: terraform
+    directories: ["/terraform/aws/*", "/terraform/azure/*"]
+    schedule:
+      interval: monthly
+    groups:
+      terraform-providers:
+        patterns: ["*"]
+
+  # Base images in the example Dockerfiles (pinned by tag and digest).
+  - package-ecosystem: docker
+    directories: ["/docker/examples/items-api", "/docker/examples/go-hello"]
+    schedule:
+      interval: monthly
+    groups:
+      base-images:
+        patterns: ["*"]

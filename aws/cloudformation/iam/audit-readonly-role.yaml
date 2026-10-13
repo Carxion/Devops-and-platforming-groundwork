@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Read-only role for auditors and the security team, assumable from a trusted
+  security or tooling account. Grants the AWS-managed SecurityAudit and
+  ViewOnlyAccess policies: configuration and metadata, not data. Deploy it in
+  every account (for example with a StackSet) so reviews and assessments don't
+  need standing access to workload accounts.
+
+Parameters:
+  TrustedAccountId:
+    Type: String
+    AllowedPattern: "^[0-9]{12}$"
+    Description: Account whose principals may assume this role (your security or audit account).
+  TrustedPrincipalPattern:
+    Type: String
+    Default: "*"
+    Description: >-
+      Optional narrowing within the trusted account, matched against aws:PrincipalArn,
+      for example "arn:aws:iam::111122223333:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_SecurityAudit_*".
+  ExternalId:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Required only when a third party (an assessor's tool) assumes the role.
+
+Conditions:
+  HasExternalId: !Not [!Equals [!Ref ExternalId, ""]]
+
+Resources:
+  AuditRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: security-audit-readonly
+      Description: Read-only audit access, assumable from the security account.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${TrustedAccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              ArnLike:
+                aws:PrincipalArn: !Ref TrustedPrincipalPattern
+              StringEquals: !If
+                - HasExternalId
+                - sts:ExternalId: !Ref ExternalId
+                - !Ref AWS::NoValue
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/SecurityAudit"
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/job-function/ViewOnlyAccess"
+
+Outputs:
+  AuditRoleArn:
+    Value: !GetAtt AuditRole.Arn

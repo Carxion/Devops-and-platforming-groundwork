@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Permissions boundary for delegated administration. Attach it to the pipeline's
+  apply role. The role can then create IAM roles and policies for workloads,
+  but only roles that carry this same boundary, so it can never create
+  something more powerful than itself. It also can't weaken the account's
+  audit and security controls.
+
+Parameters:
+  BoundaryPolicyName:
+    Type: String
+    Default: pipeline-permissions-boundary
+    Description: Name of the managed policy. Roles must reference it by this name.
+
+Resources:
+  PermissionsBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Metadata:
+      checkov:
+        skip:
+          # These checks read the Allow * statement as a grant. In a boundary
+          # it's a ceiling: the role's identity policies decide what is
+          # actually allowed, and the Deny statements below remove the
+          # dangerous parts of the ceiling.
+          - id: CKV_AWS_107
+            comment: Boundary ceiling, not a grant. Credential creation is denied by DenyLongLivedCredentials.
+          - id: CKV_AWS_108
+            comment: Boundary ceiling, not a grant. Data access is decided by each role's identity policies.
+          - id: CKV_AWS_109
+            comment: Boundary ceiling, not a grant. Permissions management requires this boundary on the target (RequireBoundary statements).
+          - id: CKV_AWS_110
+            comment: Boundary ceiling, not a grant. Escalation is blocked because every new or modified role must carry this boundary.
+          - id: CKV_AWS_111
+            comment: Boundary ceiling, not a grant. Write access is decided by each role's identity policies.
+    Properties:
+      ManagedPolicyName: !Ref BoundaryPolicyName
+      Description: Ceiling for pipeline-managed roles. Blocks privilege escalation and tampering with audit controls.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          # The ceiling: anything, subject to the denies below and to the
+          # role's own identity policies.
+          - Sid: AllowWithinBoundary
+            Effect: Allow
+            Action: "*"
+            Resource: "*"
+
+          # Any role or user created or modified must carry this boundary.
+          - Sid: RequireBoundaryOnNewPrincipals
+            Effect: Deny
+            Action:
+              - iam:CreateRole
+              - iam:CreateUser
+              - iam:PutRolePermissionsBoundary
+              - iam:PutUserPermissionsBoundary
+            Resource: "*"
+            Condition:
+              StringNotEquals:
+                iam:PermissionsBoundary: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${BoundaryPolicyName}"
+
+          # Attaching policies to roles is only allowed on bounded roles.
+          - Sid: RequireBoundaryToGrantPermissions
+            Effect: Deny
+            Action:
+              - iam:AttachRolePolicy
+              - iam:PutRolePolicy
+              - iam:DetachRolePolicy
+              - iam:DeleteRolePolicy
+            Resource: "*"
+            Condition:
+              StringNotEquals:
+                iam:PermissionsBoundary: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${BoundaryPolicyName}"
+
+          # The boundary itself can't be removed, edited, or deleted.
+          - Sid: ProtectBoundary
+            Effect: Deny
+            Action:
+              - iam:DeleteRolePermissionsBoundary
+              - iam:DeleteUserPermissionsBoundary
+              - iam:CreatePolicyVersion
+              - iam:DeletePolicy
+              - iam:DeletePolicyVersion
+              - iam:SetDefaultPolicyVersion
+            Resource:
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${BoundaryPolicyName}"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:user/*"
+
+          # No long-lived credentials.
+          - Sid: DenyLongLivedCredentials
+            Effect: Deny
+            Action:
+              - iam:CreateAccessKey
+              - iam:CreateLoginProfile
+              - iam:UpdateLoginProfile
+            Resource: "*"
+
+          # Audit and detection stay on.
+          - Sid: ProtectSecurityServices
+            Effect: Deny
+            Action:
+              - cloudtrail:StopLogging
+              - cloudtrail:DeleteTrail
+              - cloudtrail:UpdateTrail
+              - cloudtrail:PutEventSelectors
+              - config:StopConfigurationRecorder
+              - config:DeleteConfigurationRecorder
+              - config:DeleteDeliveryChannel
+              - guardduty:DeleteDetector
+              - guardduty:UpdateDetector
+              - securityhub:DisableSecurityHub
+              - access-analyzer:DeleteAnalyzer
+            Resource: "*"
+
+          # Account and organization structure is out of scope for pipelines.
+          - Sid: DenyAccountAndOrgChanges
+            Effect: Deny
+            Action:
+              - organizations:*
+              - account:*
+            Resource: "*"
+
+Outputs:
+  PermissionsBoundaryArn:
+    Description: Pass to github-oidc-roles.yaml (PermissionsBoundaryArn) and set on every role the pipeline creates.
+    Value: !Ref PermissionsBoundary

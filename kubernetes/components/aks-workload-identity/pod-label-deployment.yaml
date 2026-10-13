@@ -1,0 +1,5 @@
+# Opt the pods in to the workload identity webhook, which injects the token
+# and environment variables the Azure SDKs read.
+- op: add
+  path: /spec/template/metadata/labels/azure.workload.identity~1use
+  value: "true"

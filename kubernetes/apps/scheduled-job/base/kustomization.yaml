@@ -1,0 +1,17 @@
+# Scheduled batch job (a nightly report, a cleanup, a sync). busybox stands
+# in for the real job.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/name: scheduled-job
+      app.kubernetes.io/part-of: sample-apps
+    includeSelectors: false
+resources:
+  - serviceaccount.yaml
+  - cronjob.yaml
+  - networkpolicy.yaml
+images:
+  - name: scheduled-job
+    newName: docker.io/library/busybox
+    digest: sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e # 1.38.0

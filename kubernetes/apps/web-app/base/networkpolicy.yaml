@@ -1,0 +1,22 @@
+# Adds to the namespace default-deny. Ingress from the load balancer is
+# added by the ingress component the overlay chooses.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-app
+spec:
+  # Explicit: kustomize labels do not fill NetworkPolicy selectors, and an
+  # empty podSelector would apply this policy to every pod in the namespace.
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: web-app
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    # Other pods in the namespace (for example a frontend) may call the API.
+    - from:
+        - podSelector: {}
+      ports:
+        - port: http
+  # No egress beyond DNS (allowed namespace-wide). Add destinations here,
+  # for example a database subnet, as the app needs them.
+  egress: []

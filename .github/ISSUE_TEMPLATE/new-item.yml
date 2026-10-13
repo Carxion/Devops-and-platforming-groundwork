@@ -1,0 +1,52 @@
+name: New checklist item
+description: Suggest something a new tech lead should check, learn, or deliver.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good items describe something to *observe or learn*, not a solution to adopt. See [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md#writing-checklist-items). **Do not include any program-specific, customer, or employer information.**
+  - type: input
+    id: section
+    attributes:
+      label: Section
+      placeholder: "5. Continuous Integration"
+    validations:
+      required: true
+  - type: dropdown
+    id: timing
+    attributes:
+      label: Timing
+      options:
+        - "W1: first week"
+        - "30: by day 30"
+        - "60: by day 60"
+        - "90: by day 90"
+    validations:
+      required: true
+  - type: textarea
+    id: item
+    attributes:
+      label: Proposed item
+      placeholder: "- [ ] **30** Check whether ..."
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: What goes wrong on a program where nobody checks this?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Primary source (if the item rests on a standard)
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: This issue contains no program-specific, customer, or employer information.
+          required: true

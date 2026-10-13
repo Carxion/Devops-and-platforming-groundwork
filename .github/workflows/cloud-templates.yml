@@ -1,0 +1,84 @@
+name: cloud-templates
+
+on:
+  push:
+    branches: [main]
+    paths: ["aws/cloudformation/**", "azure/bicep/**", "observability/aws/cloudformation/**", "observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
+  pull_request:
+    paths: ["aws/cloudformation/**", "azure/bicep/**", "observability/aws/cloudformation/**", "observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloud-templates-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CFN_LINT_VERSION: 1.57.2
+  BICEP_VERSION: v0.48.1
+  BICEP_SHA256: b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e
+
+jobs:
+  cloudformation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: cfn-lint
+        run: |
+          pip install "cfn-lint==${CFN_LINT_VERSION}"
+          cfn-lint "aws/cloudformation/**/*.yaml" "observability/aws/cloudformation/**/*.yaml"
+      # Skips are Metadata.checkov.skip entries on the resource, with reasons.
+      - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
+        with:
+          directory: aws/cloudformation
+          framework: cloudformation
+          quiet: true
+          soft_fail: false
+      - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
+        with:
+          directory: observability/aws/cloudformation
+          framework: cloudformation
+          quiet: true
+          soft_fail: false
+
+  bicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Bicep (checksum verified)
+        run: |
+          curl -fsSLo bicep "https://github.com/Azure/bicep/releases/download/${BICEP_VERSION}/bicep-linux-x64"
+          echo "${BICEP_SHA256}  bicep" | sha256sum --check
+          chmod +x bicep && sudo mv bicep /usr/local/bin/bicep
+      - name: Build and lint
+        run: |
+          status=0
+          for f in $(find azure/bicep observability/azure/bicep -name "*.bicep" | sort); do
+            echo "::group::$f"
+            bicep lint "$f" || status=1
+            bicep build "$f" --stdout > /dev/null || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+      # Skips are // checkov:skip=<ID>:<reason> comments inside the resource.
+      - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
+        with:
+          directory: azure/bicep
+          framework: bicep
+          quiet: true
+          soft_fail: false
+      - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
+        with:
+          directory: observability/azure/bicep
+          framework: bicep
+          quiet: true
+          soft_fail: false

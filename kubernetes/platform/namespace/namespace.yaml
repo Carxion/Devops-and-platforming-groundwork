@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sample-apps
+  labels:
+    # Pod Security Admission: reject pods that don't meet the "restricted"
+    # profile (non-root, no privilege escalation, seccomp, dropped caps).
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

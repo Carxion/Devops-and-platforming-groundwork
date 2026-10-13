@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-apps
+resources:
+  - ../../base
+components:
+  - ../../components/ingress-aws-alb
+# Promote a release by changing the digest here, in a reviewed pull request.
+images:
+  - name: web-app
+    newName: ghcr.io/stefanprodan/podinfo
+    digest: sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da # 6.15.0

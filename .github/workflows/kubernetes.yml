@@ -1,0 +1,55 @@
+name: kubernetes
+
+on:
+  push:
+    branches: [main]
+    paths: ["kubernetes/**", ".github/workflows/kubernetes.yml"]
+  pull_request:
+    paths: ["kubernetes/**", ".github/workflows/kubernetes.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kubernetes-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  KUBERNETES_VERSION: 1.34.0
+  KUBECONFORM_VERSION: v0.8.0
+  KUBECONFORM_SHA256: 9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883
+
+jobs:
+  # Render every overlay, validate against the Kubernetes schemas, and run
+  # policy checks on exactly what would be applied. No cluster needed.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install kubeconform (checksum verified)
+        run: |
+          curl -fsSLo kubeconform.tar.gz \
+            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+          echo "${KUBECONFORM_SHA256}  kubeconform.tar.gz" | sha256sum --check
+          tar -xzf kubeconform.tar.gz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+      - name: Render overlays
+        run: |
+          mkdir -p rendered
+          for dir in $(find kubernetes -name kustomization.yaml -path "*overlays/*" -exec dirname {} \; | sort) kubernetes/platform/namespace; do
+            out="rendered/$(echo "$dir" | sed 's|kubernetes/||; s|/overlays||; s|/|_|g').yaml"
+            echo "$dir -> $out"
+            kubectl kustomize "$dir" > "$out"
+          done
+      - name: Validate schemas
+        run: kubeconform -strict -summary -kubernetes-version "${KUBERNETES_VERSION}" rendered/*.yaml
+      # Skips are checkov.io/skipN annotations on the resource, with reasons.
+      - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
+        with:
+          directory: rendered
+          framework: kubernetes
+          quiet: true
+          soft_fail: false

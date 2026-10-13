@@ -1,0 +1,33 @@
+# Deny all traffic in and out of every pod in the namespace. Each app then
+# allows exactly what it needs. Requires a CNI that enforces NetworkPolicy
+# (Cilium on AKS; the VPC CNI with enableNetworkPolicy on EKS).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+---
+# Every pod needs DNS. CoreDNS carries the k8s-app=kube-dns label on both
+# EKS and AKS.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Baseline service control policies (SCPs) for an AWS Organization: accounts
+  can't leave the organization, the root user can't act, security and audit
+  services can't be turned off, and workloads stay in approved regions. Deploy
+  in the management account (or a delegated policy administrator). SCPs never
+  grant permissions; they cap what IAM can grant. Test on a sandbox OU first.
+
+Parameters:
+  TargetIds:
+    Type: CommaDelimitedList
+    Description: OU IDs (ou-xxxx-xxxxxxxx) or account IDs to attach the policies to. Avoid the root until tested.
+  AllowedRegions:
+    Type: CommaDelimitedList
+    Default: us-east-1,us-west-2
+    Description: Regions where regional services may be used.
+  ExemptRolePattern:
+    Type: String
+    Default: "arn:*:iam::*:role/OrganizationAccountAccessRole"
+    Description: >-
+      Role that is exempt from the region and security-service rules, for break-glass and
+      platform administration. Matched with ArnLike against aws:PrincipalArn.
+
+Resources:
+  GuardrailsPolicy:
+    Type: AWS::Organizations::Policy
+    Properties:
+      Name: baseline-guardrails
+      Description: Protect the organization, root user, and security services.
+      Type: SERVICE_CONTROL_POLICY
+      TargetIds: !Ref TargetIds
+      Content:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyLeavingOrganization
+            Effect: Deny
+            Action: organizations:LeaveOrganization
+            Resource: "*"
+          - Sid: DenyRootUser
+            Effect: Deny
+            Action: "*"
+            Resource: "*"
+            Condition:
+              StringLike:
+                aws:PrincipalArn: "arn:*:iam::*:root"
+          - Sid: ProtectSecurityServices
+            Effect: Deny
+            Action:
+              - cloudtrail:StopLogging
+              - cloudtrail:DeleteTrail
+              - cloudtrail:UpdateTrail
+              - cloudtrail:PutEventSelectors
+              - config:StopConfigurationRecorder
+              - config:DeleteConfigurationRecorder
+              - config:DeleteDeliveryChannel
+              - guardduty:DeleteDetector
+              - guardduty:DisassociateFromMasterAccount
+              - guardduty:DisassociateFromAdministratorAccount
+              - guardduty:UpdateDetector
+              - securityhub:DisableSecurityHub
+              - access-analyzer:DeleteAnalyzer
+            Resource: "*"
+            Condition:
+              ArnNotLike:
+                aws:PrincipalArn: !Ref ExemptRolePattern
+          - Sid: DenyIamUserAccessKeys
+            Effect: Deny
+            Action: iam:CreateAccessKey
+            Resource: "*"
+            Condition:
+              ArnNotLike:
+                aws:PrincipalArn: !Ref ExemptRolePattern
+
+  RegionPolicy:
+    Type: AWS::Organizations::Policy
+    Properties:
+      Name: baseline-allowed-regions
+      Description: Deny regional services outside the approved regions. Global services are exempt.
+      Type: SERVICE_CONTROL_POLICY
+      TargetIds: !Ref TargetIds
+      Content:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyOutsideAllowedRegions
+            Effect: Deny
+            # Global services and calls that must work from any region.
+            NotAction:
+              - a4b:*
+              - account:*
+              - acm:*
+              - aws-marketplace:*
+              - aws-portal:*
+              - budgets:*
+              - ce:*
+              - cloudfront:*
+              - config:*
+              - cur:*
+              - directconnect:*
+              - ec2:DescribeRegions
+              - ec2:DescribeTransitGateways
+              - ec2:DescribeVpnGateways
+              - fms:*
+              - globalaccelerator:*
+              - health:*
+              - iam:*
+              - importexport:*
+              - kms:*
+              - networkmanager:*
+              - organizations:*
+              - pricing:*
+              - route53:*
+              - route53domains:*
+              - s3:GetAccountPublic*
+              - s3:ListAllMyBuckets
+              - s3:ListMultiRegionAccessPoints
+              - s3:PutAccountPublic*
+              - shield:*
+              - sso:*
+              - sts:*
+              - support:*
+              - trustedadvisor:*
+              - waf:*
+              - wafv2:*
+              - wellarchitected:*
+            Resource: "*"
+            Condition:
+              StringNotEquals:
+                aws:RequestedRegion: !Ref AllowedRegions
+              ArnNotLike:
+                aws:PrincipalArn: !Ref ExemptRolePattern
+
+Outputs:
+  GuardrailsPolicyId:
+    Value: !Ref GuardrailsPolicy
+  RegionPolicyId:
+    Value: !Ref RegionPolicy

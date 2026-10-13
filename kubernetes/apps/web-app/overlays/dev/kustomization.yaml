@@ -1,0 +1,23 @@
+# Dev: one replica, no ingress. Reach it with
+#   kubectl -n sample-apps port-forward svc/web-app 8080:80
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-apps
+resources:
+  - ../../base
+configMapGenerator:
+  - name: web-app-config
+    behavior: merge
+    literals:
+      - PODINFO_UI_MESSAGE=Hello from dev
+patches:
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: web-app
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2

@@ -1,0 +1,21 @@
+# Lets the app's pods use EKS Pod Identity. The association itself lives in
+# Terraform (aws_eks_pod_identity_association, mapping namespace + service
+# account to an IAM role); no manifest annotation is needed. This component
+# labels the pods and opens the network paths the credentials flow needs.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/sample-apps~1aws-credentials
+        value: "true"
+  - target:
+      kind: CronJob
+    patch: |-
+      - op: add
+        path: /spec/jobTemplate/spec/template/metadata/labels/sample-apps~1aws-credentials
+        value: "true"
+resources:
+  - networkpolicy.yaml

@@ -1,0 +1,18 @@
+# The ALB reaches pods directly from its ENIs in the public subnets, so
+# allow the VPC CIDR (network-vpc output vpc_cidr). Narrow to the public
+# subnet CIDRs if you want to be stricter.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-app-from-alb
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: web-app
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - port: http

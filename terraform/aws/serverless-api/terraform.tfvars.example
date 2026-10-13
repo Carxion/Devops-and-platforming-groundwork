@@ -1,0 +1,10 @@
+project     = "example"
+environment = "dev"
+region      = "us-east-1"
+owner       = "platform-team"
+
+# Leave unset only for a throwaway demo.
+jwt_issuer   = "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_EXAMPLE"
+jwt_audience = ["example-client-id"]
+
+deletion_protection = false # non-prod only

@@ -1,0 +1,44 @@
+# Tempo, single binary, local disk. Based on Tempo's own single-binary example:
+# https://github.com/grafana/tempo/tree/main/example/docker-compose/single-binary
+stream_over_http_enabled: true
+
+server:
+  http_listen_port: 3200
+  log_level: info
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "tempo:4317"
+        http:
+          endpoint: "tempo:4318"
+
+# Builds request-rate, error, and duration metrics and a service graph from
+# the spans, and writes them to Prometheus. Grafana's service map uses them.
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: ["span-metrics", "service-graphs"]
+
+usage_report:
+  reporting_enabled: false

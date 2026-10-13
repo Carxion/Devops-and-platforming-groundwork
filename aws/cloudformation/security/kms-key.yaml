@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Customer-managed KMS key with separated duties: key administrators can manage
+  the key but not use it to decrypt, and key users can encrypt and decrypt but
+  not change the key. Automatic rotation on. Retained if the stack is deleted.
+
+Parameters:
+  KeyAlias:
+    Type: String
+    Description: Alias without the "alias/" prefix, for example "app-data".
+    AllowedPattern: "^[a-zA-Z0-9/_-]{1,200}$"
+  KeyAdminRoleArns:
+    Type: CommaDelimitedList
+    Description: Roles that administer the key (rotate, tag, schedule deletion). Not able to decrypt.
+  KeyUserRoleArns:
+    Type: CommaDelimitedList
+    Description: Roles that use the key to encrypt and decrypt data.
+  ServiceViaPrincipals:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional AWS service (for example "s3.us-east-1.amazonaws.com") that key users must go through.
+      Empty allows direct use as well.
+  PendingWindowInDays:
+    Type: Number
+    Default: 30
+    MinValue: 7
+    MaxValue: 30
+    Description: Waiting period before a scheduled deletion takes effect. Longer means more time to notice a mistake.
+
+Conditions:
+  HasViaService: !Not [!Equals [!Ref ServiceViaPrincipals, ""]]
+
+Resources:
+  Key:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: !Sub "${KeyAlias} (managed by ${AWS::StackName})"
+      EnableKeyRotation: true
+      PendingWindowInDays: !Ref PendingWindowInDays
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          # Keeps the key manageable through IAM. Without it, a bad key policy
+          # can lock everyone out, including the account root.
+          - Sid: EnableIamPolicies
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: kms:*
+            Resource: "*"
+          - Sid: KeyAdministration
+            Effect: Allow
+            Principal:
+              AWS: !Ref KeyAdminRoleArns
+            Action:
+              - kms:Create*
+              - kms:Describe*
+              - kms:Enable*
+              - kms:List*
+              - kms:Put*
+              - kms:Update*
+              - kms:Revoke*
+              - kms:Disable*
+              - kms:Get*
+              - kms:Delete*
+              - kms:TagResource
+              - kms:UntagResource
+              - kms:ScheduleKeyDeletion
+              - kms:CancelKeyDeletion
+              - kms:RotateKeyOnDemand
+            Resource: "*"
+          - Sid: KeyUse
+            Effect: Allow
+            Principal:
+              AWS: !Ref KeyUserRoleArns
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: "*"
+            Condition: !If
+              - HasViaService
+              - StringEquals:
+                  kms:ViaService: !Ref ServiceViaPrincipals
+              - !Ref AWS::NoValue
+          # Lets AWS services (EBS, RDS, and others) create grants on behalf
+          # of key users, only for AWS resources.
+          - Sid: KeyUseGrantsForAwsResources
+            Effect: Allow
+            Principal:
+              AWS: !Ref KeyUserRoleArns
+            Action:
+              - kms:CreateGrant
+              - kms:ListGrants
+              - kms:RevokeGrant
+            Resource: "*"
+            Condition:
+              Bool:
+                kms:GrantIsForAWSResource: "true"
+
+  Alias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${KeyAlias}"
+      TargetKeyId: !Ref Key
+
+Outputs:
+  KeyArn:
+    Value: !GetAtt Key.Arn
+  KeyAlias:
+    Value: !Ref Alias

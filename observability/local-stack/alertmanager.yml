@@ -1,0 +1,36 @@
+# Alertmanager routes alerts by severity: "page" wakes someone up, "ticket"
+# goes to the team's queue for working hours. The receivers here do nothing,
+# so the lab never notifies anyone; alerts are visible at http://localhost:9093.
+# Replace them with real integrations (examples commented below).
+
+route:
+  receiver: default
+  group_by: [alertname, job, slo]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers: ['severity="page"']
+      receiver: on-call
+      repeat_interval: 1h
+    - matchers: ['severity="ticket"']
+      receiver: team-queue
+      repeat_interval: 24h
+
+# While a page is firing for an SLO, hold the matching ticket: same problem, one notification.
+inhibit_rules:
+  - source_matchers: ['severity="page"']
+    target_matchers: ['severity="ticket"']
+    equal: [alertname, job, slo]
+
+receivers:
+  - name: default
+  - name: on-call
+    # pagerduty_configs:
+    #   - routing_key_file: /etc/alertmanager/secrets/pagerduty-key
+    # opsgenie_configs, or webhook_configs for any other paging tool
+  - name: team-queue
+    # slack_configs:
+    #   - api_url_file: /etc/alertmanager/secrets/slack-webhook
+    #     channel: "#team-alerts"
+    # msteamsv2_configs, email_configs, or webhook_configs to open a ticket

@@ -1,0 +1,7 @@
+project         = "example"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus2"
+owner           = "platform-team"
+
+# Egress IPs of your CI runners, if they run outside Azure.
+allowed_ip_ranges = ["203.0.113.10"]

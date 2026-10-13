@@ -1,0 +1,9 @@
+# Node drains and upgrades take down at most one replica at a time.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-app
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels: {}

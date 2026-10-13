@@ -1,0 +1,6 @@
+# Spectral ruleset for the OpenAPI spec: spectral lint openapi/items-api.yaml
+extends: ["spectral:oas"]
+rules:
+  # Every operation documents what it does and who owns it.
+  operation-description: warn
+  operation-tag-defined: error

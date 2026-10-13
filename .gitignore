@@ -1,0 +1,50 @@
+# OS and editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Tooling
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.lycheecache
+
+# Local working copies of templates. Fill them in on program systems, not here.
+*.local.*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# Real values stay out of the repo; the .example files are the templates.
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.hcl
+**/.build/
+
+# API test output
+api-testing/server.log
+api-testing/newman.xml
+api-testing/zap-report.html
+api-testing/response.json
+
+# Tool caches
+.schemathesis/
+.hypothesis/
+__pycache__/
+.pytest_cache/

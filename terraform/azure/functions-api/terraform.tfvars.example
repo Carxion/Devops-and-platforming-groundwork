@@ -1,0 +1,8 @@
+project         = "example"
+environment     = "dev"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus2"
+owner           = "platform-team"
+
+# App registration callers request tokens for. Leave unset only for a throwaway demo.
+entra_client_id = "00000000-0000-0000-0000-000000000000"

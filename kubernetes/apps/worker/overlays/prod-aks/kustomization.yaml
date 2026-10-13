@@ -1,0 +1,8 @@
+# Prod on AKS, with an Entra ID identity through workload identity.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-apps
+resources:
+  - ../../base
+components:
+  - ../../../../components/aks-workload-identity

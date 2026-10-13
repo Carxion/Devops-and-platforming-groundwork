@@ -1,0 +1,28 @@
+# Stateless HTTP service (podinfo as the stand-in app). The base is
+# production-shaped; overlays change size and add ingress.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/name: web-app
+      app.kubernetes.io/part-of: sample-apps
+    includeSelectors: true
+resources:
+  - serviceaccount.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+# Non-secret config. The generated name includes a content hash, so changing
+# a value rolls the Deployment automatically.
+configMapGenerator:
+  - name: web-app-config
+    literals:
+      - PODINFO_UI_MESSAGE=Hello from the sample web app
+      - PODINFO_UI_COLOR=#34577c
+# Pin by digest. Overlays promote a new version by changing the digest.
+images:
+  - name: web-app
+    newName: ghcr.io/stefanprodan/podinfo
+    digest: sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da # 6.15.0

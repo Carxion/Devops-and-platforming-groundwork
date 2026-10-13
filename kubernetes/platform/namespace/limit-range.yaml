@@ -1,0 +1,16 @@
+# Defaults for containers that don't declare resources. Every app here
+# declares its own; this catches the ones that forget.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        memory: 256Mi
+      max:
+        memory: 4Gi

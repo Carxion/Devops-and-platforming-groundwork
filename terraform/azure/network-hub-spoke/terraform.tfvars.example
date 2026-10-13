@@ -1,0 +1,28 @@
+project         = "example"
+environment     = "dev"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus2"
+owner           = "platform-team"
+
+hub_address_space = "10.0.0.0/22"
+
+# Subnet layout matching the app-service-web and aks-cluster stacks.
+spokes = {
+  app = {
+    address_space = "10.1.0.0/22"
+    subnets = {
+      app-integration   = { address_prefix = "10.1.0.0/26", delegation = "Microsoft.Web/serverFarms" }
+      db                = { address_prefix = "10.1.0.64/26", delegation = "Microsoft.DBforPostgreSQL/flexibleServers" }
+      private-endpoints = { address_prefix = "10.1.1.0/26" }
+    }
+  }
+  aks = {
+    address_space = "10.2.0.0/20"
+    subnets = {
+      nodes = { address_prefix = "10.2.0.0/22" }
+    }
+  }
+}
+
+egress_mode    = "nat_gateway"
+enable_bastion = false

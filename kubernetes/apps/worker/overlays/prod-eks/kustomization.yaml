@@ -1,0 +1,8 @@
+# Prod on EKS, with AWS credentials through Pod Identity.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-apps
+resources:
+  - ../../base
+components:
+  - ../../../../components/eks-pod-identity

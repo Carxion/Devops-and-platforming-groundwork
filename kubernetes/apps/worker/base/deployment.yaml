@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  annotations:
+    checkov.io/skip1: CKV_K8S_15=Image is pinned by digest, so IfNotPresent always runs the same image.
+    checkov.io/skip2: CKV_K8S_11=No CPU limit by design; CPU requests guarantee a share and limits cause throttling. See kubernetes/README.md.
+    checkov.io/skip3: CKV_K8S_9=A worker serves no traffic, so there is nothing for a readiness probe to gate.
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      labels: {}
+    spec:
+      serviceAccountName: worker
+      automountServiceAccountToken: false
+      # Long enough to finish the current unit of work after SIGTERM.
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: worker
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              trap 'echo "{\"level\":\"info\",\"msg\":\"SIGTERM received, finishing current batch\"}"; exit 0' TERM
+              while true; do
+                echo '{"level":"info","msg":"processed batch"}'
+                touch /tmp/heartbeat
+                sleep 10 & wait $!
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          # No port to probe, so the worker writes a heartbeat file each loop
+          # and liveness checks it was touched in the last minute.
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "test -n \"$(find /tmp/heartbeat -mmin -1)\""]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 16Mi
