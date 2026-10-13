@@ -46,5 +46,23 @@ software/api-testing/response.json
 # Tool caches
 .schemathesis/
 .hypothesis/
-__pycache__/
 .pytest_cache/
+
+# Secrets and credentials that local work can create
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+kubeconfig
+*.kubeconfig
+
+# Backups from sed -i.bak and the scripts' backup_file
+*.bak
+*.bak.*
+
+# Scan and test output
+sbom.json
+trivy-report.*
