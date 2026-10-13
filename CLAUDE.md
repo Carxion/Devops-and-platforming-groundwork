@@ -53,6 +53,7 @@ Add new correctly spelled terms to `cspell.json`.
 - Secure defaults. A checkov finding is fixed, or skipped inline inside the resource block with a specific, true reason: `#checkov:skip=<ID>:<reason>`. Never skip on a guess about why checkov flagged something; read the check first.
 - Add a test run to `tests/plan.tftest.hcl` for any new conditional behavior.
 - Never commit real tfvars, backend.hcl, or state. They're git-ignored.
+- Lock files need checksums for every platform, not just the one that ran `init`: CI runs Linux with a plugin cache and `-lockfile=readonly`, which rejects a lock file that only has Windows or macOS hashes. After adding or upgrading a provider, run in each stack: `terraform providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64 -platform=windows_amd64`.
 
 ```sh
 cd devops/terraform/<cloud>/<stack>
