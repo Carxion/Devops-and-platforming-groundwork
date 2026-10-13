@@ -16,7 +16,7 @@ Corrections and additions are welcome. The most useful contributions fix somethi
 
 ## Writing checklist items
 
-Items follow a consistent shape so they can be parsed into the [phase view and CSV](checklists/):
+Items follow a consistent shape so they can be parsed into the [phase view and CSV](tech-lead/checklists/):
 
 ```markdown
 - [ ] **30** Imperative sentence describing one thing to check or do. Optional second sentence on why it matters.
@@ -26,12 +26,12 @@ Items follow a consistent shape so they can be parsed into the [phase view and C
 - **Start with a verb.** "Confirm…", "Inventory…", "Check whether…".
 - **Ask for observations, not solutions.** "Find out how applies happen" rather than "Move applies to a pipeline". The tech lead's job in the first 90 days is to learn before changing things.
 - **Stay vendor-neutral.** Name a specific tool only as an example ("for example Argo CD or Flux"), and use generic terms where they're clear.
-- **Cite standards by key**, like `[SLSA]`, and add or update the matching row in [References](README.md#references). Note the version current at the time of review.
+- **Cite standards by key**, like `[SLSA]`, and add or update the matching row in [References](tech-lead/README.md#references). Note the version current at the time of review.
 - **Sub-bullets** (two-space indent) are allowed for lists inside an item. They become the `Details` column in the CSV.
 
 ## Making a change
 
-1. Edit `README.md`. It is the single source of truth. Don't edit files in `checklists/` by hand.
+1. Edit `tech-lead/README.md`. It is the single source of truth. Don't edit files in `tech-lead/checklists/` by hand.
 2. Regenerate the derived checklists:
 
    ```sh
@@ -48,13 +48,13 @@ Items follow a consistent shape so they can be parsed into the [phase view and C
 
    If cspell flags a correctly spelled term (an acronym, a product, a surname), add it to `words` in [cspell.json](cspell.json).
 4. Add a line to [CHANGELOG.md](CHANGELOG.md) under **Unreleased**.
-5. If you checked the references, update the **Last reviewed** date at the top of the README.
+5. If you checked the references, update the **Last reviewed** date at the top of `tech-lead/README.md`.
 
 Note that item IDs in the generated files (`3.2-04`) are positional, so adding an item renumbers the ones after it in that subsection. Anyone tracking progress in the CSV should match on item text when they update.
 
 ## Terraform changes
 
-The stacks in [terraform/](terraform/) are reference code. Changes should keep them generic, secure by default, and passing every check. See [terraform/README.md](terraform/README.md#checks-and-tested-versions) for the commands.
+The stacks in [devops/terraform/](devops/terraform/) are reference code. Changes should keep them generic, secure by default, and passing every check. See [devops/terraform/README.md](devops/terraform/README.md#checks-and-tested-versions) for the commands.
 
 - Every variable has a description. Defaults should be safe for production; cheaper non-prod settings go in `terraform.tfvars.example` with a comment.
 - Fix checkov findings where you can. Otherwise skip them inline, inside the resource block, with the reason: `#checkov:skip=CKV_AWS_123:Why this doesn't apply here.`
@@ -63,7 +63,7 @@ The stacks in [terraform/](terraform/) are reference code. Changes should keep t
 
 ## CLI commands and cloud templates
 
-Commands in the `aws/`, `azure/`, `kubernetes/`, and `terraform/` guides are checked in CI against the real CLIs ([cli-commands.yml](.github/workflows/cli-commands.yml)). If you add or change an `aws` or `az` command, run the same check locally:
+Commands in the `devops/aws/`, `devops/azure/`, `devops/kubernetes/`, and `devops/terraform/` guides are checked in CI against the real CLIs ([cli-commands.yml](.github/workflows/cli-commands.yml)). If you add or change an `aws` or `az` command, run the same check locally:
 
 ```sh
 python -m venv .venv && .venv/bin/pip install awscli azure-cli

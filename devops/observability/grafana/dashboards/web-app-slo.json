@@ -1,0 +1,168 @@
+{
+  "uid": "web-app-slo",
+  "title": "Web app: SLOs",
+  "description": "Error budgets and burn rates for the web-app SLOs (99.9% availability, 99% of requests under 250 ms, over 30 days). Built on the recording rules in devops/observability/prometheus/rules/web-app-slo.yaml.",
+  "tags": ["web-app", "slo", "groundwork"],
+  "timezone": "utc",
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-6h", "to": "now" },
+  "links": [
+    { "title": "Service overview", "type": "link", "url": "/d/web-app-overview", "icon": "dashboard" }
+  ],
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Availability error budget left (30 days)",
+      "description": "1 - (share of requests failed in 30 days / 0.1%). Below 0% means the SLO is missed for this window.",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "job:slo_availability_error_budget:remaining30d{job=\"web-app\"}" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0 },
+              { "color": "green", "value": 0.25 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Availability burn rate (1 hour)",
+      "description": "How fast the budget is being spent: 1 = exactly on budget for 30 days; 14.4 = gone in about 2 days (pages).",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "job:slo_availability_errors:ratio_rate1h{job=\"web-app\"} / 0.001" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "x",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 14.4 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Latency burn rate (1 hour)",
+      "description": "Share of requests over 250 ms, divided by the 1% the SLO allows.",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "job:slo_latency_errors:ratio_rate1h{job=\"web-app\"} / 0.01" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "x",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 14.4 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Availability burn rate, by window",
+      "description": "The alerts compare these with 14.4 and 6 (page) and 3 and 1 (ticket). A long and a short window must both be over the line.",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "job:slo_availability_errors:ratio_rate5m{job=\"web-app\"} / 0.001", "legendFormat": "5m" },
+        { "refId": "B", "expr": "job:slo_availability_errors:ratio_rate1h{job=\"web-app\"} / 0.001", "legendFormat": "1h" },
+        { "refId": "C", "expr": "job:slo_availability_errors:ratio_rate6h{job=\"web-app\"} / 0.001", "legendFormat": "6h" },
+        { "refId": "D", "expr": "job:slo_availability_errors:ratio_rate1d{job=\"web-app\"} / 0.001", "legendFormat": "1d" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "x",
+          "custom": { "thresholdsStyle": { "mode": "dashed" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 14.4 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Latency burn rate, by window",
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "job:slo_latency_errors:ratio_rate5m{job=\"web-app\"} / 0.01", "legendFormat": "5m" },
+        { "refId": "B", "expr": "job:slo_latency_errors:ratio_rate1h{job=\"web-app\"} / 0.01", "legendFormat": "1h" },
+        { "refId": "C", "expr": "job:slo_latency_errors:ratio_rate6h{job=\"web-app\"} / 0.01", "legendFormat": "6h" },
+        { "refId": "D", "expr": "job:slo_latency_errors:ratio_rate1d{job=\"web-app\"} / 0.01", "legendFormat": "1d" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "x",
+          "custom": { "thresholdsStyle": { "mode": "dashed" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 14.4 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Firing alerts",
+      "description": "From Prometheus's ALERTS series. Alertmanager decides who is notified.",
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "ALERTS{alertstate=\"firing\"}", "format": "table", "instant": true }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": true, "__name__": true, "alertstate": true } } }
+      ]
+    }
+  ]
+}

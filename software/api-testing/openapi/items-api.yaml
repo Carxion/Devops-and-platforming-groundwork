@@ -1,0 +1,187 @@
+# Contract for the item store in devops/terraform/aws/serverless-api and
+# devops/terraform/azure/functions-api, and for local-server/items_server.py.
+# The tests in this folder (Postman, k6, Schemathesis) all run against it.
+openapi: 3.1.0
+info:
+  title: Items API
+  version: 1.0.0
+  description: |
+    A minimal key-value item store. Each item is a JSON object stored under an ID.
+    PUT creates or replaces an item, GET reads it, and DELETE removes it.
+  contact:
+    name: The team that owns the API # replace with a team name and channel
+  license:
+    name: CC BY 4.0
+    identifier: CC-BY-4.0
+servers:
+  - url: http://127.0.0.1:8080
+    description: Local reference server (software/api-testing/local-server)
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com
+    description: AWS (devops/terraform/aws/serverless-api, output api_endpoint)
+    variables:
+      apiId:
+        default: example
+      region:
+        default: us-east-1
+  - url: https://{hostname}/api
+    description: Azure (devops/terraform/azure/functions-api, output api_base_url)
+    variables:
+      hostname:
+        default: example.azurewebsites.net
+tags:
+  - name: items
+    description: Item storage
+# Authentication is optional: each stack is open unless its JWT or Entra ID setting is on.
+security:
+  - {}
+  - bearerAuth: []
+paths:
+  /items/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getItem
+      summary: Read an item
+      description: Returns the stored object, with the ID added as `id`.
+      tags: [items]
+      responses:
+        "200":
+          description: The item, with its ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+              example:
+                id: order-1001
+                status: shipped
+                quantity: 3
+        "400":
+          $ref: "#/components/responses/InvalidId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: putItem
+      summary: Create or replace an item
+      description: Stores the request body under the ID, replacing any existing item. An `id` field in the body is ignored; the path wins.
+      tags: [items]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+            example:
+              status: shipped
+              quantity: 3
+      responses:
+        "200":
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutResult"
+          links:
+            GetStoredItem:
+              operationId: getItem
+              parameters:
+                id: $response.body#/id
+            DeleteStoredItem:
+              operationId: deleteItem
+              parameters:
+                id: $response.body#/id
+        "400":
+          description: The ID is invalid, or the body isn't a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: body must be a JSON object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          description: The body is larger than 256 KiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: body too large
+    delete:
+      operationId: deleteItem
+      summary: Delete an item
+      description: Idempotent. Deleting an item that doesn't exist also returns 204.
+      tags: [items]
+      responses:
+        "204":
+          description: Deleted, or never existed.
+        "400":
+          $ref: "#/components/responses/InvalidId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: A token from the identity provider configured on the stack (AWS jwt_issuer, Azure entra_client_id).
+  parameters:
+    ItemId:
+      name: id
+      in: path
+      required: true
+      description: The item's ID.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+        pattern: "^[A-Za-z0-9._-]+$"
+      example: order-1001
+  responses:
+    InvalidId:
+      description: The ID doesn't match the allowed pattern.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: invalid id
+    NotFound:
+      description: No item has this ID.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: not found
+    Unauthorized:
+      description: Authentication is on and the request has no valid token. Returned by the platform, not by the function, so the body varies.
+  schemas:
+    ItemInput:
+      type: object
+      description: Any JSON object.
+      additionalProperties: true
+    Item:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+      additionalProperties: true
+    PutResult:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+      additionalProperties: false
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+      additionalProperties: false

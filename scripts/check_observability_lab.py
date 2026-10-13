@@ -2,7 +2,7 @@
 """Check the local observability lab end to end, against a running stack.
 
 Start it first:
-  docker compose -f observability/local-stack/compose.yaml --profile traffic up -d
+  docker compose -f devops/observability/local-stack/compose.yaml --profile traffic up -d
 
 Then this script waits until each signal arrives and fails if any doesn't:
   - every Prometheus scrape target is up, and the SLO recording rules have values

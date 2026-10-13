@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  CloudWatch alarms and a dashboard for the serverless-api stack (API Gateway
+  HTTP API, Lambda, DynamoDB). Component alarms feed two composite alarms, so
+  one incident sends one notification: "users are affected" (errors or latency)
+  and "capacity" (throttling). Notifications go to an encrypted SNS topic.
+
+Parameters:
+  ApiId:
+    Type: String
+    Description: API Gateway HTTP API ID (from the stack, or aws apigatewayv2 get-apis).
+    AllowedPattern: "^[a-z0-9]{10}$"
+  FunctionName:
+    Type: String
+    Description: Lambda function name (serverless-api output function_name).
+    AllowedPattern: "^[A-Za-z0-9_-]{1,64}$"
+  TableName:
+    Type: String
+    Description: DynamoDB table name (serverless-api output table_name).
+    AllowedPattern: "^[A-Za-z0-9_.-]{3,255}$"
+  AlarmEmail:
+    Type: String
+    Default: ""
+    Description: Optional email address subscribed to notifications. Leave empty and subscribe a paging or chat integration to the topic instead.
+  ErrorRatePercent:
+    Type: Number
+    Default: 1
+    MinValue: 0.01
+    MaxValue: 100
+    Description: Alarm when more than this percentage of API requests fail with 5xx, sustained over 3 of 5 minutes.
+  LatencyP95Ms:
+    Type: Number
+    Default: 1000
+    MinValue: 1
+    Description: Alarm when p95 API latency exceeds this many milliseconds, sustained over 3 of 5 minutes.
+
+Conditions:
+  HasEmail: !Not [!Equals [!Ref AlarmEmail, ""]]
+
+Resources:
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${FunctionName}-alarms"
+      KmsMasterKeyId: alias/aws/sns # AWS managed key, which CloudWatch alarms can publish with
+
+  AlarmTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref AlarmTopic]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudWatchAlarmsFromThisAccount
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref AlarmTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: sns:Publish
+            Resource: !Ref AlarmTopic
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  AlarmEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasEmail
+    Properties:
+      TopicArn: !Ref AlarmTopic
+      Protocol: email
+      Endpoint: !Ref AlarmEmail
+
+  # --- User impact ------------------------------------------------------------
+
+  ApiErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-api-5xx-rate"
+      AlarmDescription: !Sub "More than ${ErrorRatePercent}% of API requests are failing with 5xx errors."
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: !Ref ErrorRatePercent
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching # no traffic is not an error
+      Metrics:
+        - Id: errorRate
+          Label: 5xx error rate (%)
+          Expression: "IF(requests > 0, 100 * errors / requests, 0)"
+          ReturnData: true
+        - Id: errors
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5xx
+              Dimensions:
+                - Name: ApiId
+                  Value: !Ref ApiId
+            Period: 60
+            Stat: Sum
+        - Id: requests
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiId
+                  Value: !Ref ApiId
+            Period: 60
+            Stat: Sum
+
+  ApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-api-latency-p95"
+      AlarmDescription: !Sub "p95 API latency is above ${LatencyP95Ms} ms."
+      Namespace: AWS/ApiGateway
+      MetricName: Latency
+      Dimensions:
+        - Name: ApiId
+          Value: !Ref ApiId
+      ExtendedStatistic: p95
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      Threshold: !Ref LatencyP95Ms
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  FunctionErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-lambda-errors"
+      AlarmDescription: More than 1% of function invocations are failing (unhandled exceptions and timeouts).
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 1
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: errorRate
+          Label: Function error rate (%)
+          Expression: "IF(invocations > 0, 100 * errors / invocations, 0)"
+          ReturnData: true
+        - Id: errors
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref FunctionName
+            Period: 60
+            Stat: Sum
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Invocations
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref FunctionName
+            Period: 60
+            Stat: Sum
+
+  UserImpactAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-user-impact"
+      AlarmDescription: >-
+        Users are affected: API requests are failing or slow. Start with the
+        API Gateway access log and the function log; see
+        devops/observability/aws/README.md and software/api-testing/aws.md.
+      AlarmRule: !Sub >-
+        ALARM("${ApiErrorRateAlarm}") OR ALARM("${ApiLatencyAlarm}") OR ALARM("${FunctionErrorsAlarm}")
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  # --- Capacity -----------------------------------------------------------------
+
+  FunctionThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-lambda-throttles"
+      AlarmDescription: The function is being throttled; it has reached its reserved or account concurrency.
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref FunctionName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 2
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  TableThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-dynamodb-throttles"
+      AlarmDescription: DynamoDB is throttling reads or writes on the table.
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 2
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: throttles
+          Label: Read and write throttle events
+          Expression: "FILL(reads, 0) + FILL(writes, 0)"
+          ReturnData: true
+        - Id: reads
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/DynamoDB
+              MetricName: ReadThrottleEvents
+              Dimensions:
+                - Name: TableName
+                  Value: !Ref TableName
+            Period: 60
+            Stat: Sum
+        - Id: writes
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/DynamoDB
+              MetricName: WriteThrottleEvents
+              Dimensions:
+                - Name: TableName
+                  Value: !Ref TableName
+            Period: 60
+            Stat: Sum
+
+  CapacityAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+      AlarmName: !Sub "${FunctionName}-capacity"
+      AlarmDescription: >-
+        The function or table is throttling. Check reserved concurrency, account
+        concurrency, and the API Gateway throttle before raising limits.
+      AlarmRule: !Sub >-
+        ALARM("${FunctionThrottlesAlarm}") OR ALARM("${TableThrottlesAlarm}")
+      ActionsEnabled: true
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  # --- Dashboard ------------------------------------------------------------------
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "${FunctionName}-overview"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "alarm", "x": 0, "y": 0, "width": 24, "height": 3,
+              "properties": {
+                "title": "Alarms",
+                "alarms": ["${UserImpactAlarm.Arn}", "${CapacityAlarm.Arn}"]
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 3, "width": 12, "height": 6,
+              "properties": {
+                "title": "Requests and 5xx errors", "region": "${AWS::Region}", "view": "timeSeries", "stat": "Sum", "period": 60,
+                "metrics": [
+                  ["AWS/ApiGateway", "Count", "ApiId", "${ApiId}", { "label": "Requests" }],
+                  [".", "5xx", ".", ".", { "label": "5xx", "color": "#d62728" }],
+                  [".", "4xx", ".", ".", { "label": "4xx", "color": "#ff7f0e" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 12, "y": 3, "width": 12, "height": 6,
+              "properties": {
+                "title": "API latency (ms)", "region": "${AWS::Region}", "view": "timeSeries", "period": 60,
+                "metrics": [
+                  ["AWS/ApiGateway", "Latency", "ApiId", "${ApiId}", { "stat": "p50", "label": "p50" }],
+                  ["...", { "stat": "p95", "label": "p95" }],
+                  ["...", { "stat": "p99", "label": "p99" }],
+                  [".", "IntegrationLatency", ".", ".", { "stat": "p95", "label": "p95 in Lambda" }]
+                ],
+                "annotations": { "horizontal": [{ "label": "Alarm", "value": ${LatencyP95Ms} }] }
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 9, "width": 12, "height": 6,
+              "properties": {
+                "title": "Lambda", "region": "${AWS::Region}", "view": "timeSeries", "stat": "Sum", "period": 60,
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${FunctionName}"],
+                  [".", "Errors", ".", ".", { "color": "#d62728" }],
+                  [".", "Throttles", ".", ".", { "color": "#ff7f0e" }],
+                  [".", "ConcurrentExecutions", ".", ".", { "stat": "Maximum", "yAxis": "right" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 12, "y": 9, "width": 12, "height": 6,
+              "properties": {
+                "title": "DynamoDB", "region": "${AWS::Region}", "view": "timeSeries", "stat": "Sum", "period": 60,
+                "metrics": [
+                  ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "${TableName}"],
+                  [".", "ConsumedWriteCapacityUnits", ".", "."],
+                  [".", "ReadThrottleEvents", ".", ".", { "color": "#ff7f0e" }],
+                  [".", "WriteThrottleEvents", ".", ".", { "color": "#d62728" }]
+                ]
+              }
+            },
+            {
+              "type": "log", "x": 0, "y": 15, "width": 24, "height": 6,
+              "properties": {
+                "title": "Recent 5xx responses (API Gateway access log)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '/aws/apigateway/${FunctionName}' | fields @timestamp, routeKey, status, latency, error | filter status >= 500 | sort @timestamp desc | limit 50"
+              }
+            }
+          ]
+        }
+
+Outputs:
+  AlarmTopicArn:
+    Description: Subscribe paging, chat, or ticketing integrations to this topic.
+    Value: !Ref AlarmTopic
+  DashboardUrl:
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards/dashboard/${Dashboard}"

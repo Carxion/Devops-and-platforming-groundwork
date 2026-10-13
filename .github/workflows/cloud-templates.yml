@@ -3,9 +3,9 @@ name: cloud-templates
 on:
   push:
     branches: [main]
-    paths: ["aws/cloudformation/**", "azure/bicep/**", "observability/aws/cloudformation/**", "observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
+    paths: ["devops/aws/cloudformation/**", "devops/azure/bicep/**", "devops/observability/aws/cloudformation/**", "devops/observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
   pull_request:
-    paths: ["aws/cloudformation/**", "azure/bicep/**", "observability/aws/cloudformation/**", "observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
+    paths: ["devops/aws/cloudformation/**", "devops/azure/bicep/**", "devops/observability/aws/cloudformation/**", "devops/observability/azure/bicep/**", ".github/workflows/cloud-templates.yml"]
   workflow_dispatch:
 
 permissions:
@@ -33,17 +33,17 @@ jobs:
       - name: cfn-lint
         run: |
           pip install "cfn-lint==${CFN_LINT_VERSION}"
-          cfn-lint "aws/cloudformation/**/*.yaml" "observability/aws/cloudformation/**/*.yaml"
+          cfn-lint "devops/aws/cloudformation/**/*.yaml" "devops/observability/aws/cloudformation/**/*.yaml"
       # Skips are Metadata.checkov.skip entries on the resource, with reasons.
       - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
         with:
-          directory: aws/cloudformation
+          directory: devops/aws/cloudformation
           framework: cloudformation
           quiet: true
           soft_fail: false
       - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
         with:
-          directory: observability/aws/cloudformation
+          directory: devops/observability/aws/cloudformation
           framework: cloudformation
           quiet: true
           soft_fail: false
@@ -62,7 +62,7 @@ jobs:
       - name: Build and lint
         run: |
           status=0
-          for f in $(find azure/bicep observability/azure/bicep -name "*.bicep" | sort); do
+          for f in $(find devops/azure/bicep devops/observability/azure/bicep -name "*.bicep" | sort); do
             echo "::group::$f"
             bicep lint "$f" || status=1
             bicep build "$f" --stdout > /dev/null || status=1
@@ -72,13 +72,13 @@ jobs:
       # Skips are // checkov:skip=<ID>:<reason> comments inside the resource.
       - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
         with:
-          directory: azure/bicep
+          directory: devops/azure/bicep
           framework: bicep
           quiet: true
           soft_fail: false
       - uses: bridgecrewio/checkov-action@c13aafd679d3814a25067d10fcaf98c4f7594931 # v12.3131.0
         with:
-          directory: observability/azure/bicep
+          directory: devops/observability/azure/bicep
           framework: bicep
           quiet: true
           soft_fail: false

@@ -1,0 +1,230 @@
+{
+  "info": {
+    "name": "Items API",
+    "description": "Functional tests for the Items API (software/api-testing/openapi/items-api.yaml). Requests run in order and share an item ID, so run the whole collection: newman run items-api.postman_collection.json -e environments/local.postman_environment.json",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// One fresh ID per collection run, so runs never collide.",
+          "if (!pm.collectionVariables.get('itemId')) {",
+          "  pm.collectionVariables.set('itemId', 'newman-' + Date.now() + '-' + Math.floor(Math.random() * 1e6));",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('responds within the latency budget', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('maxResponseMs') || 2000));",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Create an item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('returns the ID from the path', function () {",
+              "  pm.expect(pm.response.json()).to.eql({ id: pm.collectionVariables.get('itemId') });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"pending\",\n  \"quantity\": 3,\n  \"tags\": [\"test\"]\n}" },
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Read the item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('content type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });",
+              "pm.test('returns what was stored, with its ID', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.eql(pm.collectionVariables.get('itemId'));",
+              "  pm.expect(body.status).to.eql('pending');",
+              "  pm.expect(body.quantity).to.eql(3);",
+              "  pm.expect(body.tags).to.eql(['test']);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Replace the item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"shipped\"\n}" },
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Read the replaced item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT replaced the whole item, not merged', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.status).to.eql('shipped');",
+              "  pm.expect(body).to.not.have.property('quantity');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Reject a body that isn't an object",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('error body', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "[1, 2, 3]" },
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Reject an invalid ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 400', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/not%20valid", "host": ["{{baseUrl}}"], "path": ["items", "not%20valid"] }
+      }
+    },
+    {
+      "name": "Delete the item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Delete again (idempotent)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is still 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    },
+    {
+      "name": "Read the deleted item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('error body', function () { pm.expect(pm.response.json()).to.eql({ error: 'not found' }); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["items", "{{itemId}}"] }
+      }
+    }
+  ],
+  "variable": [{ "key": "itemId", "value": "" }]
+}

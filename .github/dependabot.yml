@@ -11,7 +11,7 @@ updates:
   # Provider versions in each stack's lock file. Constraints stay "~> X.Y";
   # review the provider changelog before merging.
   - package-ecosystem: terraform
-    directories: ["/terraform/aws/*", "/terraform/azure/*"]
+    directories: ["/devops/terraform/aws/*", "/devops/terraform/azure/*"]
     schedule:
       interval: monthly
     groups:
@@ -20,7 +20,7 @@ updates:
 
   # Base images in the example Dockerfiles (pinned by tag and digest).
   - package-ecosystem: docker
-    directories: ["/docker/examples/items-api", "/docker/examples/go-hello"]
+    directories: ["/devops/docker/examples/items-api", "/devops/docker/examples/go-hello"]
     schedule:
       interval: monthly
     groups:

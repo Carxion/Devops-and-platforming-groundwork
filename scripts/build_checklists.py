@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate phase-ordered checklist views from README.md.
+"""Generate phase-ordered checklist views from tech-lead/README.md.
 
-README.md is the single source of truth. This script reads every checklist
+tech-lead/README.md is the single source of truth. This script reads every checklist
 item ("- [ ] **TAG** text") and writes:
 
-  checklists/by-phase.md    the same items regrouped by W1 / 30 / 60 / 90
-  checklists/checklist.csv  one row per item, for importing into a tracker
+  tech-lead/checklists/by-phase.md    the same items regrouped by W1 / 30 / 60 / 90
+  tech-lead/checklists/checklist.csv  one row per item, for importing into a tracker
 
 Usage:
   python scripts/build_checklists.py           # regenerate the files
@@ -23,8 +23,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-README = ROOT / "README.md"
-OUT_DIR = ROOT / "checklists"
+README = ROOT / "tech-lead" / "README.md"
+OUT_DIR = ROOT / "tech-lead" / "checklists"
 MD_OUT = OUT_DIR / "by-phase.md"
 CSV_OUT = OUT_DIR / "checklist.csv"
 

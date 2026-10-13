@@ -38,10 +38,10 @@ backend.hcl
 **/.build/
 
 # API test output
-api-testing/server.log
-api-testing/newman.xml
-api-testing/zap-report.html
-api-testing/response.json
+software/api-testing/server.log
+software/api-testing/newman.xml
+software/api-testing/zap-report.html
+software/api-testing/response.json
 
 # Tool caches
 .schemathesis/

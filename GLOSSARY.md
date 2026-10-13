@@ -412,16 +412,16 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 ## Delivery, teams, and governance
 
-- **ADR (architecture decision record):** A short document recording an important decision, its context, and its consequences. See the [template](templates/adr-template.md).
+- **ADR (architecture decision record):** A short document recording an important decision, its context, and its consequences. See the [template](tech-lead/templates/adr-template.md).
 - **Agile:** Delivering in small increments with frequent feedback, rather than a single big plan. Scrum and Kanban are common forms.
 - **Backlog:** The ordered list of work not yet started.
 - **Bus factor:** How many people would have to leave before a project stalls for lack of knowledge. A bus factor of one is a risk.
 - **Change advisory board (CAB):** A group that approves changes before release. Automated checks and small changes usually manage risk better than a meeting.
-- **Change failure rate:** The share of deployments that cause a failure in production. One of the DORA metrics.
+- **Change fail rate:** The share of deployments that need immediate intervention in production, such as a rollback or hotfix. One of the DORA metrics.
 - **Conway's law:** Systems tend to mirror the communication structure of the organizations that build them.
 - **Definition of done:** The team's shared checklist for when work counts as finished, such as tested, reviewed, documented, and deployed.
 - **DevOps:** A culture and set of practices that bring development and operations together, so teams build, ship, and run their own software through automation and shared responsibility.
-- **DORA metrics:** Four measures of software delivery performance from the DevOps Research and Assessment program: deployment frequency, lead time for changes, change failure rate, and time to restore service.
+- **DORA metrics:** Measures of software delivery performance from the DevOps Research and Assessment program. Throughput: change lead time, deployment frequency, and failed deployment recovery time. Instability: change fail rate and deployment rework rate. Earlier versions had four metrics, with mean time to restore. See [Planning and metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics).
 - **Epic, story, task:** Units of planned work, from large (epic) to small (task). A user story describes a need from the user's point of view.
 - **Inner source:** Using open-source practices (open repositories, contributions across teams) inside a company.
 - **ITIL:** A widely used framework of IT service management practices, covering incident, problem, and change management.

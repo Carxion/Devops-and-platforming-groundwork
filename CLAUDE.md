@@ -4,22 +4,24 @@ Guidance for AI assistants working in this repository.
 
 ## What this is
 
-DevOps and Platforming Groundwork: a public, CC BY 4.0 onboarding checklist for tech leads joining cloud / CI/CD / IaC / DevSecOps programs (the README), plus tested reference material: Terraform stacks, Kubernetes samples, cloud CLI guides and templates, API testing, observability, Bash, and Docker.
+DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audience. `tech-lead/` holds the onboarding checklist for tech leads joining cloud / CI/CD / IaC / DevSecOps programs; `devops/`, `software/`, and `manager/` hold tested reference material and guides. The root `README.md` is an index of all of it.
 
 ## Layout
 
-- `README.md`: the guide. **Single source of truth** for every checklist item.
-- `checklists/`: generated from the README by `scripts/build_checklists.py`. Never edit by hand; regenerate.
-- `templates/`: copy-ready versions of Appendix A. Keep them in sync with Appendix A when either changes.
+- `README.md`: the repository index: what's in each folder, and reading paths by role. Update it when a folder or guide is added.
+- `tech-lead/README.md`: the onboarding checklist. **Single source of truth** for every checklist item.
+- `tech-lead/checklists/`: generated from `tech-lead/README.md` by `scripts/build_checklists.py`. Never edit by hand; regenerate.
+- `tech-lead/templates/`: copy-ready versions of Appendix A. Keep them in sync with Appendix A when either changes.
 - `CHANGELOG.md`: add a line under **Unreleased** for every content change.
-- `terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `terraform/README.md`.
-- `kubernetes/`: Kustomize bases, overlays, and components for sample apps. See `kubernetes/README.md`.
+- `devops/`, `software/`, `manager/`: each has a README listing its contents. Material moves between them only when its audience changes.
+- `devops/terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `devops/terraform/README.md`.
+- `devops/kubernetes/`: Kustomize bases, overlays, and components for sample apps. See `devops/kubernetes/README.md`.
 - `.github/workflows/kubernetes.yml`: renders every overlay, then kubeconform (strict) and checkov on the rendered output.
-- `aws/`, `azure/`: CLI operations guides (`guides/`) plus CloudFormation (`aws/cloudformation/`) and Bicep (`azure/bicep/`) templates.
-- `api-testing/`: OpenAPI contract (`openapi/items-api.yaml`), reference server, Postman, k6, and Locust tests. The spec defines the serverless stacks' behavior: change the spec, both handlers, and the local server together. `.github/workflows/api-testing.yml` runs everything against the local server.
-- `observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `.github/workflows/observability.yml` runs promtool, amtool, and collector validation, then starts the lab and runs `scripts/check_observability_lab.py`.
-- `bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). `.github/workflows/bash.yml` runs ShellCheck, shfmt, Bats (`tests/*.bats`), and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
-- `docker/`: Docker 101 guides, `examples/` (Dockerfiles and a Compose file), and `scripts/`. `.github/workflows/docker.yml` runs Hadolint, builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`.
+- `devops/aws/`, `devops/azure/`: CLI operations guides (`guides/`) plus CloudFormation (`devops/aws/cloudformation/`) and Bicep (`devops/azure/bicep/`) templates.
+- `software/api-testing/`: OpenAPI contract (`openapi/items-api.yaml`), reference server, Postman, k6, and Locust tests. The spec defines the serverless stacks' behavior: change the spec, both handlers, and the local server together. `.github/workflows/api-testing.yml` runs everything against the local server.
+- `devops/observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `.github/workflows/observability.yml` runs promtool, amtool, and collector validation, then starts the lab and runs `scripts/check_observability_lab.py`.
+- `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). `.github/workflows/bash.yml` runs ShellCheck, shfmt, Bats (`tests/*.bats`), and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
+- `devops/docker/`: Docker 101 guides, `examples/` (Dockerfiles and a Compose file), and `scripts/`. `.github/workflows/docker.yml` runs Hadolint, builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`.
 - `ROADMAP.md`: coverage and planned areas; move an area to "Covered today" only when it meets the definition of done there.
 - `scripts/check_cli_commands.py`: checks every `aws`/`az` command, flag, and `--query` in Markdown against the real CLIs (run by `.github/workflows/cli-commands.yml`).
 - `.github/workflows/cloud-templates.yml`: cfn-lint and checkov for CloudFormation; bicep build, lint, and checkov for Bicep.
@@ -34,7 +36,7 @@ DevOps and Platforming Groundwork: a public, CC BY 4.0 onboarding checklist for 
 - Match the existing voice: direct, plain, short sentences, no hype, practitioner judgment framed as a default rather than a rule.
 - GitHub Actions are pinned to full commit SHAs with the version in a trailing comment. Keep it that way, since the guide itself recommends it.
 
-## After editing README.md
+## After editing tech-lead/README.md
 
 ```sh
 python scripts/build_checklists.py
@@ -53,7 +55,7 @@ Add new correctly spelled terms to `cspell.json`.
 - Never commit real tfvars, backend.hcl, or state. They're git-ignored.
 
 ```sh
-cd terraform/<cloud>/<stack>
+cd devops/terraform/<cloud>/<stack>
 terraform init -backend=false && terraform validate && terraform test
 cd ../.. && tflint --init && tflint --recursive --config "$(pwd)/.tflint.hcl" && checkov -d . --framework terraform
 ```
@@ -66,7 +68,7 @@ cd ../.. && tflint --init && tflint --recursive --config "$(pwd)/.tflint.hcl" &&
 - Verify by rendering, not by reading the base:
 
 ```sh
-kubectl kustomize kubernetes/apps/<app>/overlays/<overlay> | kubeconform -strict -kubernetes-version 1.34.0 -
+kubectl kustomize devops/kubernetes/apps/<app>/overlays/<overlay> | kubeconform -strict -kubernetes-version 1.34.0 -
 ```
 
 ## CLI commands in docs
@@ -79,7 +81,7 @@ kubectl kustomize kubernetes/apps/<app>/overlays/<overlay> | kubeconform -strict
 
 - Every script: `set -Eeuo pipefail` (or a commented reason not to), `--help` from the header comment, input validated before changes, every change through `run` so `--dry-run` is honest, `bash` (not `sh`).
 - Under `set -e`, never end a function, block, or loop body with `[[ test ]] && cmd`: a false test makes the block fail. Use `if`.
-- Lint with ShellCheck and shfmt (`-i 2 -ci`), and test: Bats for anything that runs without root, `tests/integration.sh` in containers for the rest. Add a case to `tests/regex.bats` whenever `bash/03-regex.md` gains a pattern.
+- Lint with ShellCheck and shfmt (`-i 2 -ci`), and test: Bats for anything that runs without root, `tests/integration.sh` in containers for the rest. Add a case to `tests/regex.bats` whenever `devops/bash/03-regex.md` gains a pattern.
 - Check RHEL and Ubuntu claims in containers before writing them (`docker run --rm rockylinux/rockylinux:9 ...`, `ubuntu:24.04`).
 
 ## Dockerfiles
@@ -88,8 +90,8 @@ kubectl kustomize kubernetes/apps/<app>/overlays/<overlay> | kubeconform -strict
 
 ## API tests and observability
 
-- Run the API tests against the local server before changing the spec or either handler: `python api-testing/local-server/items_server.py`, then Newman, Schemathesis (`--checks all`), and k6 as in `api-testing/README.md`.
-- Prometheus rule changes need a matching `promtool test rules` case in `observability/prometheus/tests/`. Promtool compares annotations exactly, so update expected annotations with the rule.
+- Run the API tests against the local server before changing the spec or either handler: `python software/api-testing/local-server/items_server.py`, then Newman, Schemathesis (`--checks all`), and k6 as in `software/api-testing/README.md`.
+- Prometheus rule changes need a matching `promtool test rules` case in `devops/observability/prometheus/tests/`. Promtool compares annotations exactly, so update expected annotations with the rule.
 - Dashboards refer to data sources by the fixed uids in `local-stack/grafana/provisioning/datasources/datasources.yaml`. Check every new panel query against the running lab, not by reading it.
 - Keep image versions in `local-stack/compose.yaml` and the env block of `observability.yml` in step.
 

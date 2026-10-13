@@ -1,0 +1,23 @@
+# Azure Load Testing configuration for locustfile.py.
+# Reference: https://learn.microsoft.com/azure/app-testing/load-testing/reference-test-config-yaml
+#   az load test create --load-test-resource <resource> -g <rg> --test-id items-api-load \
+#     --load-test-config-file software/api-testing/locust/azure-load-test.yaml --env LOCUST_HOST=<api_base_url>
+version: v0.1
+testId: items-api-load
+displayName: Items API load test
+description: Item lifecycle (PUT, GET, DELETE) at sustained load
+testType: Locust
+testPlan: locustfile.py
+engineInstances: 1
+properties:
+  userPropertyFile: locust.conf
+# The SLOs, as pass/fail criteria. Keep them in step with the k6 thresholds.
+failureCriteria:
+  clientMetrics:
+    - percentage(error) > 0.1
+    - p95(response_time_ms) > 500
+    - getItem: p95(response_time_ms) > 300
+# Stop early, and stop paying, if the target is clearly broken or throttling.
+autoStop:
+  errorPercentage: 20
+  timeWindow: 60

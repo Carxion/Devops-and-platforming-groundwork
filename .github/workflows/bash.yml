@@ -1,15 +1,15 @@
 name: bash
 
-# Lints every script in bash/ and docker/scripts, runs the Bats unit and
+# Lints every script in devops/bash/ and devops/docker/scripts, runs the Bats unit and
 # regex tests, then applies the full server baseline for real inside
 # throwaway containers of each supported distribution, twice (idempotency).
 
 on:
   push:
     branches: [main]
-    paths: ["bash/**", "docker/scripts/**", ".github/workflows/bash.yml"]
+    paths: ["devops/bash/**", "devops/docker/scripts/**", ".github/workflows/bash.yml"]
   pull_request:
-    paths: ["bash/**", "docker/scripts/**", ".github/workflows/bash.yml"]
+    paths: ["devops/bash/**", "devops/docker/scripts/**", ".github/workflows/bash.yml"]
   workflow_dispatch:
 
 permissions:
@@ -35,9 +35,9 @@ jobs:
         # SCRIPTDIR: resolve "source lib/common.sh" relative to each script.
         run: |
           docker run --rm -v "$PWD:/mnt" -w /mnt "$SHELLCHECK_IMAGE" -x -P SCRIPTDIR \
-            bash/scripts/*.sh bash/scripts/lib/*.sh bash/tests/integration.sh docker/scripts/*.sh
+            devops/bash/scripts/*.sh devops/bash/scripts/lib/*.sh devops/bash/tests/integration.sh devops/docker/scripts/*.sh
       - name: shfmt
-        run: docker run --rm -v "$PWD:/mnt" -w /mnt "$SHFMT_IMAGE" -d -i 2 -ci bash/scripts bash/tests/integration.sh docker/scripts
+        run: docker run --rm -v "$PWD:/mnt" -w /mnt "$SHFMT_IMAGE" -d -i 2 -ci devops/bash/scripts devops/bash/tests/integration.sh devops/docker/scripts
 
   unit:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
       - name: Install Bats
         run: sudo apt-get update -qq && sudo apt-get install -y -qq bats netcat-openbsd
       - name: Bats (as a normal user, as the scripts expect)
-        run: bats bash/tests
+        run: bats devops/bash/tests
 
   integration:
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Baseline applied twice in ${{ matrix.image }}
-        run: docker run --rm -v "$PWD/bash:/work:ro" "${{ matrix.image }}" bash /work/tests/integration.sh
+        run: docker run --rm -v "$PWD/devops/bash:/work:ro" "${{ matrix.image }}" bash /work/tests/integration.sh
 
   dry-run:
     # UBI (Red Hat's redistributable RHEL base) has a subset of RHEL's
@@ -78,5 +78,5 @@ jobs:
       - name: Dry run on UBI 9
         run: |
           ssh-keygen -q -t ed25519 -N '' -f key -C ci
-          docker run --rm -v "$PWD/bash:/work:ro" -v "$PWD/key.pub:/key.pub:ro" registry.access.redhat.com/ubi9/ubi:latest \
+          docker run --rm -v "$PWD/devops/bash:/work:ro" -v "$PWD/key.pub:/key.pub:ro" registry.access.redhat.com/ubi9/ubi:latest \
             bash /work/scripts/bootstrap-server.sh --dry-run --admin-user deploy --ssh-key-file /key.pub --allow 443/tcp --docker

@@ -1,6 +1,6 @@
 name: api-testing
 
-# Lints the Items API spec, then runs every test in api-testing/ against the
+# Lints the Items API spec, then runs every test in software/api-testing/ against the
 # local reference server: Newman (functional), Schemathesis (contract and
 # fuzz), k6 (smoke), and a short Locust run. No cloud resources are used.
 
@@ -8,15 +8,15 @@ on:
   push:
     branches: [main]
     paths:
-      - "api-testing/**"
-      - "terraform/aws/serverless-api/src/**"
-      - "terraform/azure/functions-api/src/**"
+      - "software/api-testing/**"
+      - "devops/terraform/aws/serverless-api/src/**"
+      - "devops/terraform/azure/functions-api/src/**"
       - ".github/workflows/api-testing.yml"
   pull_request:
     paths:
-      - "api-testing/**"
-      - "terraform/aws/serverless-api/src/**"
-      - "terraform/azure/functions-api/src/**"
+      - "software/api-testing/**"
+      - "devops/terraform/aws/serverless-api/src/**"
+      - "devops/terraform/azure/functions-api/src/**"
       - ".github/workflows/api-testing.yml"
   workflow_dispatch:
 
@@ -37,7 +37,7 @@ env:
 
 defaults:
   run:
-    working-directory: api-testing
+    working-directory: software/api-testing
 
 jobs:
   spec:

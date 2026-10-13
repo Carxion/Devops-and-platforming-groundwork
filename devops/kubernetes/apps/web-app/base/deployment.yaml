@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  annotations:
+    checkov.io/skip1: CKV_K8S_15=Image is pinned by digest, so IfNotPresent always runs the same image.
+    checkov.io/skip2: CKV_K8S_11=No CPU limit by design; CPU requests guarantee a share and limits cause throttling. See devops/kubernetes/README.md.
+spec:
+  # replicas is omitted: the HorizontalPodAutoscaler owns it.
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      labels: {}
+    spec:
+      serviceAccountName: web-app
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      # Spread replicas across zones first, then nodes, so one failure
+      # can't take out every replica.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: web-app
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: web-app
+      containers:
+        - name: web-app
+          image: web-app
+          imagePullPolicy: IfNotPresent
+          command: ["./podinfo"]
+          args:
+            - --port=9898
+            - --port-metrics=9797
+            - --level=info
+            - --data-path=/data
+            - --server-shutdown-timeout=10s
+          ports:
+            - name: http
+              containerPort: 9898
+            - name: metrics
+              containerPort: 9797
+          envFrom:
+            - configMapRef:
+                name: web-app-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          # Startup: allow a slow start without loosening liveness.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
+          # Liveness: restart only if the process is wedged.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          # Readiness: stop sending traffic while it can't serve.
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 5
+            failureThreshold: 2
+          lifecycle:
+            # Let endpoints and load balancers drop this pod before it stops
+            # accepting connections.
+            preStop:
+              sleep:
+                seconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+        - name: data
+          emptyDir:
+            sizeLimit: 64Mi

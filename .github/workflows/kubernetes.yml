@@ -3,9 +3,9 @@ name: kubernetes
 on:
   push:
     branches: [main]
-    paths: ["kubernetes/**", ".github/workflows/kubernetes.yml"]
+    paths: ["devops/kubernetes/**", ".github/workflows/kubernetes.yml"]
   pull_request:
-    paths: ["kubernetes/**", ".github/workflows/kubernetes.yml"]
+    paths: ["devops/kubernetes/**", ".github/workflows/kubernetes.yml"]
   workflow_dispatch:
 
 permissions:
@@ -39,8 +39,8 @@ jobs:
       - name: Render overlays
         run: |
           mkdir -p rendered
-          for dir in $(find kubernetes -name kustomization.yaml -path "*overlays/*" -exec dirname {} \; | sort) kubernetes/platform/namespace; do
-            out="rendered/$(echo "$dir" | sed 's|kubernetes/||; s|/overlays||; s|/|_|g').yaml"
+          for dir in $(find devops/kubernetes -name kustomization.yaml -path "*overlays/*" -exec dirname {} \; | sort) devops/kubernetes/platform/namespace; do
+            out="rendered/$(echo "$dir" | sed 's|devops/kubernetes/||; s|/overlays||; s|/|_|g').yaml"
             echo "$dir -> $out"
             kubectl kustomize "$dir" > "$out"
           done
