@@ -32,7 +32,7 @@ jobs:
           terraform_version: 1.16.5
           terraform_wrapper: false
       - name: Format
-        run: terraform fmt -check -recursive -diff terraform
+        run: terraform fmt -check -recursive -diff devops/terraform
       - name: Validate and test each stack
         run: |
           mkdir -p "$TF_PLUGIN_CACHE_DIR"

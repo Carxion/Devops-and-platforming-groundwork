@@ -32,10 +32,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: streetsidesoftware/cspell-action@6f3c77c1406bc930f944ba97e9801a22e42caf58 # v9.1.0
-        with:
-          files: "**/*.md"
-          incremental_files_only: false
+      # The same pinned cspell used locally (npx cspell@VERSION), so a local
+      # pass means a CI pass. The cspell-action bundled older dictionaries
+      # that disagreed with the local run.
+      - name: cspell
+        run: npx --yes "cspell@${CSPELL_VERSION}" --no-progress "**/*.md"
+        env:
+          CSPELL_VERSION: 10.3.6
 
   generated:
     runs-on: ubuntu-latest

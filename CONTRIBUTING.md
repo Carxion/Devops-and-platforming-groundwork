@@ -42,7 +42,7 @@ Items follow a consistent shape so they can be parsed into the [phase view and C
 
    ```sh
    npx markdownlint-cli2 "**/*.md"
-   npx cspell "**/*.md"
+   npx cspell@10.3.6 "**/*.md"   # the version CI pins in docs.yml
    python scripts/build_checklists.py --check
    ```
 

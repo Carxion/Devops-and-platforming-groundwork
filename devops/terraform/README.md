@@ -450,7 +450,7 @@ Every checkov exception is an inline `#checkov:skip=<ID>:<reason>` next to the r
 Run from the repository root. None of these need cloud credentials.
 
 ```sh
-terraform fmt -check -recursive terraform
+terraform fmt -check -recursive devops/terraform
 
 # per stack: validate and offline tests against mock providers
 cd devops/terraform/aws/network-vpc

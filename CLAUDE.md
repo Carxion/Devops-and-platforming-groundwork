@@ -41,7 +41,7 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 ```sh
 python scripts/build_checklists.py
 npx markdownlint-cli2 "**/*.md"
-npx cspell "**/*.md"
+npx cspell@10.3.6 "**/*.md"   # the version CI pins in docs.yml
 ```
 
 Add new correctly spelled terms to `cspell.json`.
