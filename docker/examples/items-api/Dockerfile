@@ -15,7 +15,7 @@ FROM python:3.14-slim@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6
 # Labels from the OCI image spec: where it came from, for scanners and people.
 LABEL org.opencontainers.image.title="items-api" \
       org.opencontainers.image.description="In-memory reference implementation of the Items API" \
-      org.opencontainers.image.source="https://github.com/OWNER/REPO" \
+      org.opencontainers.image.source="https://github.com/Carxion/Devops-and-platforming-groundwork" \
       org.opencontainers.image.licenses="MIT"
 
 # Python runtime settings: no .pyc files, and unbuffered output so logs reach

@@ -37,7 +37,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55d0659eceabb657f56b6782ab500a9fc7f555e3
 
 LABEL org.opencontainers.image.title="go-hello" \
-      org.opencontainers.image.source="https://github.com/OWNER/REPO"
+      org.opencontainers.image.source="https://github.com/Carxion/Devops-and-platforming-groundwork"
 
 COPY --from=build /out/go-hello /go-hello
 USER 65532:65532

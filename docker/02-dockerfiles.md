@@ -130,7 +130,7 @@ Docker and Compose use it to report `healthy` or `unhealthy`, and Compose's `dep
 ### Labels
 
 ```dockerfile
-LABEL org.opencontainers.image.source="https://github.com/OWNER/REPO" \
+LABEL org.opencontainers.image.source="https://github.com/Carxion/Devops-and-platforming-groundwork" \
       org.opencontainers.image.revision="${GIT_SHA}" \
       org.opencontainers.image.version="${VERSION}"
 ```

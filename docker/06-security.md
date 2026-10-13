@@ -49,7 +49,7 @@ trivy image --format cyclonedx --output sbom.json myapp:1.0                     
 ```sh
 cosign sign registry.example.com/app@sha256:...                       # in CI, with the job's OIDC token
 cosign verify registry.example.com/app@sha256:... \
-  --certificate-identity-regexp 'https://github.com/OWNER/REPO/.*' \
+  --certificate-identity-regexp 'https://github.com/Carxion/Devops-and-platforming-groundwork/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 

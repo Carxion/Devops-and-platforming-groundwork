@@ -45,7 +45,7 @@ tests:
             exp_annotations:
               summary: "web-app is failing requests fast enough to spend its monthly error budget within days"
               description: "2% of requests are failing with 5xx errors (SLO allows 0.1%)."
-              runbook_url: "https://github.com/OWNER/REPO/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
+              runbook_url: "https://github.com/Carxion/Devops-and-platforming-groundwork/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
           - exp_labels:
               job: web-app
               severity: ticket
@@ -53,7 +53,7 @@ tests:
             exp_annotations:
               summary: "web-app is slowly spending its error budget faster than it accrues"
               description: "2% of requests are failing with 5xx errors (SLO allows 0.1%)."
-              runbook_url: "https://github.com/OWNER/REPO/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
+              runbook_url: "https://github.com/Carxion/Devops-and-platforming-groundwork/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
       - alertname: WebAppLatencyBudgetBurn
         eval_time: 70m
         exp_alerts: []
@@ -80,7 +80,7 @@ tests:
             exp_annotations:
               summary: "web-app requests are too slow, fast enough to spend the latency budget within days"
               description: "20% of requests take longer than 250 ms (SLO allows 1%)."
-              runbook_url: "https://github.com/OWNER/REPO/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
+              runbook_url: "https://github.com/Carxion/Devops-and-platforming-groundwork/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
           - exp_labels:
               job: web-app
               severity: ticket
@@ -88,7 +88,7 @@ tests:
             exp_annotations:
               summary: "web-app requests are slowly getting too slow for the latency SLO"
               description: "20% of requests take longer than 250 ms (SLO allows 1%)."
-              runbook_url: "https://github.com/OWNER/REPO/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
+              runbook_url: "https://github.com/Carxion/Devops-and-platforming-groundwork/blob/main/kubernetes/OPERATIONS.md#troubleshooting-by-symptom"
       - alertname: WebAppAvailabilityBudgetBurn
         eval_time: 70m
         exp_alerts: []
@@ -142,4 +142,4 @@ tests:
             exp_annotations:
               summary: "Prometheus can't scrape web-app (web-app:9797)"
               description: "The scrape target has been down for 5 minutes. Check that the pods are running and ready."
-              runbook_url: "https://github.com/OWNER/REPO/blob/main/kubernetes/OPERATIONS.md#running-but-not-ready"
+              runbook_url: "https://github.com/Carxion/Devops-and-platforming-groundwork/blob/main/kubernetes/OPERATIONS.md#running-but-not-ready"
