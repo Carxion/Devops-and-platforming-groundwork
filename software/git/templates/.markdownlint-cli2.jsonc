@@ -1,0 +1,7 @@
+{
+  // A pull request template is inserted into the PR body by GitHub or GitLab,
+  // under the title they already show, so it starts with H2 sections, not an H1.
+  "config": {
+    "MD041": false
+  }
+}

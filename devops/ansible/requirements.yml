@@ -1,0 +1,8 @@
+---
+# Collections the roles use. Install with:
+#   ansible-galaxy collection install -r requirements.yml
+collections:
+  - name: ansible.posix          # authorized_key, firewalld
+    version: "2.2.2"
+  - name: community.general      # ufw, timezone, seport
+    version: "13.5.0"

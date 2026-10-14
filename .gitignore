@@ -47,6 +47,10 @@ software/api-testing/response.json
 .schemathesis/
 .hypothesis/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# ansible-lint and Molecule
+.ansible/
 
 # Secrets and credentials that local work can create
 .env
@@ -58,6 +62,9 @@ software/api-testing/response.json
 *.pfx
 kubeconfig
 *.kubeconfig
+# Ansible Vault password files
+.vault-pass*
+*.vault-pass
 
 # Backups from sed -i.bak and the scripts' backup_file
 *.bak

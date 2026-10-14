@@ -158,7 +158,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.75.
   --severity HIGH,CRITICAL --ignore-unfixed myapp:1.0                       # known vulnerabilities in the image
 ```
 
-Both run in CI for this folder. On the first scan of the items-api image, Trivy found four HIGH vulnerabilities, all in libraries bundled inside `pip`, which the app doesn't use at run time. Removing pip from the final image removed all four: **the best vulnerability fix is not shipping the component.** See [Security](06-security.md) for signing and SBOMs.
+Hadolint runs in CI on every Dockerfile in this repository; run Trivy after each build. On the first scan of the items-api image, Trivy found four HIGH vulnerabilities, all in libraries bundled inside `pip`, which the app doesn't use at run time. Removing pip from the final image removed all four: **the best vulnerability fix is not shipping the component.** See [Security](06-security.md) for signing and SBOMs.
 
 ## Checklist
 

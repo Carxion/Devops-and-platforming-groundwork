@@ -1,0 +1,70 @@
+---
+# Neither tool reboots by default. Kernel and glibc updates need a reboot to
+# take effect: see the reboot recipe in the operations guide.
+
+- name: Install unattended-upgrades (Ubuntu)
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Turn on daily package list updates and upgrades (Ubuntu)
+  ansible.builtin.copy:
+    # The two settings "dpkg-reconfigure unattended-upgrades" writes.
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Allow all updates, not only security ones (Ubuntu)
+  ansible.builtin.copy:
+    content: |
+      Unattended-Upgrade::Allowed-Origins:: "${distro_id}:${distro_codename}-updates";
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-all
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - auto_updates_all
+
+- name: Back to security updates only (Ubuntu)
+  ansible.builtin.file:
+    path: /etc/apt/apt.conf.d/52unattended-upgrades-all
+    state: absent
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - not auto_updates_all
+
+- name: Install dnf-automatic (RHEL)
+  ansible.builtin.dnf:
+    name: dnf-automatic
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Configure dnf-automatic (RHEL)
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    # Anchor on the key at the start of a line, with optional spaces around "=",
+    # and replace the whole line.
+    regexp: '^\s*{{ item.key }}\s*='
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - { key: upgrade_type, value: "{{ 'default' if auto_updates_all else 'security' }}" }
+    - { key: apply_updates, value: "yes" }
+  loop_control:
+    label: "{{ item.key }}"
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Start the dnf-automatic timer (RHEL)
+  ansible.builtin.systemd_service:
+    name: dnf-automatic.timer
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - auto_updates_manage_services

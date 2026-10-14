@@ -1,0 +1,26 @@
+---
+# Example inventory: two groups of servers, by role, plus an environment group.
+# Addresses are from the documentation range (203.0.113.0/24); replace them.
+#
+#   ansible-inventory --graph          # see the groups
+#   ansible-inventory --host web-01    # see every variable a host ends up with
+#   ansible all -m ansible.builtin.ping
+all:
+  children:
+    web:
+      hosts:
+        web-01:
+          ansible_host: 203.0.113.10
+        web-02:
+          ansible_host: 203.0.113.11
+    workers:
+      hosts:
+        worker-01:
+          ansible_host: 203.0.113.20
+    production:
+      children:
+        web:
+        workers:
+  vars:
+    # The account Ansible logs in as. It needs sudo; become: true in the playbook uses it.
+    ansible_user: deploy

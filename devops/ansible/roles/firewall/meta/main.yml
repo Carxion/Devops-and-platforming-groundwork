@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: firewall
+  author: DevOps and Platforming Groundwork
+  description: Default-deny inbound firewall with firewalld (RHEL) or ufw (Ubuntu), SSH always allowed
+  license: CC-BY-4.0
+  min_ansible_version: "2.18"
+  platforms:
+    - name: EL
+      versions: ["9"]
+    - name: Ubuntu
+      versions: [jammy, noble]
+dependencies: []

@@ -4,7 +4,7 @@ A worked example of testing an HTTP API at every layer, from the contract down t
 
 It supports [section 5](../../tech-lead/README.md#5-continuous-integration) and [section 6](../../tech-lead/README.md#6-continuous-delivery-and-deployment) of the guide: which tests run, where in the pipeline, and what blocks a release.
 
-> **Status.** CI lints the spec and runs the Postman, Schemathesis, k6 smoke, and short Locust tests against the local server on every change. Running them against a deployed stack is documented in the [AWS](aws.md) and [Azure](azure.md) guides but isn't run by this project.
+> **Status.** The spec lints clean, and the Postman, Schemathesis, k6 smoke, and short Locust tests pass against the local server. CI doesn't run them; the [quick start](#quick-start-local) runs them all locally. Running them against a deployed stack is documented in the [AWS](aws.md) and [Azure](azure.md) guides but isn't run by this project.
 
 | Path | What it is |
 |---|---|
@@ -134,7 +134,7 @@ docker run --rm --network host -v "$(pwd):/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:s
 
 ## In the pipeline
 
-This repository's [api-testing workflow](../../.github/workflows/api-testing.yml) lints the spec, starts the local server, and runs Newman, Schemathesis, the k6 smoke test, and a short Locust run on every change to this folder or to either stack's function code.
+The [quick start](#quick-start-local) runs the whole suite locally: lint the spec, start the local server, then Newman, Schemathesis, the k6 smoke test, and a short Locust run.
 
 In a delivery pipeline, the same tests split across stages:
 

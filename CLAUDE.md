@@ -14,22 +14,23 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `tech-lead/templates/`: copy-ready templates. The ones in Appendix A must stay in sync with it; the rest support the 30/60/90 deliverables and are listed in `tech-lead/templates/README.md`.
 - `tech-lead/assessing-an-inherited-system.md`: the method behind checklist sections 2 and 9. Keep its step numbers and template links in step with the checklist.
 - `manager/`: guides (`00-first-90-days.md` is a checklist in the same item format as the tech lead checklist, but not generated into views) and `templates/`.
+- `scrum-master/`, `product-owner/`: the same shape as `manager/` (a first-90-days checklist, numbered guides, `templates/`). Frameworks cite their primary source and version: the Scrum Guide (November 2020), the Kanban Guide (May 2025). Keep the "who does what" split in `scrum-master/README.md` consistent with the other role folders.
 - `CHANGELOG.md`: add a line under **Unreleased** for every content change.
 - `architect/`: considerations guides (numbered) and `templates/`. Each guide links principles to the tested code in `devops/`; keep those links pointing at real files.
-- `devops/`, `software/`, `manager/`: each has a README listing its contents. Material moves between them only when its audience changes.
+- `software/python/`, `software/go/`: 101 guides, `boilerplate/` projects (a CLI and the Items API in each), and `examples/` (the same five operational tools in each language; keep their flags, JSON output, and exit codes matching). The API implementations must pass the `software/api-testing` contract tests (run locally; see `CONTRIBUTING.md`).
+- `devops/`, `software/`, `manager/`, `scrum-master/`, `product-owner/`: each has a README listing its contents. Material moves between them only when its audience changes.
 - `devops/terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `devops/terraform/README.md`.
 - `devops/kubernetes/`: Kustomize bases, overlays, and components for sample apps. See `devops/kubernetes/README.md`.
-- `.github/workflows/kubernetes.yml`: renders every overlay, then kubeconform (strict) and checkov on the rendered output.
 - `devops/aws/`, `devops/azure/`: CLI operations guides (`guides/`) plus CloudFormation (`devops/aws/cloudformation/`) and Bicep (`devops/azure/bicep/`) templates.
-- `software/api-testing/`: OpenAPI contract (`openapi/items-api.yaml`), reference server, Postman, k6, and Locust tests. The spec defines the serverless stacks' behavior: change the spec, both handlers, and the local server together. `.github/workflows/api-testing.yml` runs everything against the local server.
-- `devops/observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `.github/workflows/observability.yml` runs promtool, amtool, and collector validation, then starts the lab and runs `scripts/check_observability_lab.py`.
-- `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). `.github/workflows/bash.yml` runs ShellCheck, shfmt, Bats (`tests/*.bats`), and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
-- `devops/docker/`: Docker 101 guides, `examples/` (Dockerfiles and a Compose file), and `scripts/`. `.github/workflows/docker.yml` runs Hadolint, builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`.
+- `software/api-testing/`: OpenAPI contract (`openapi/items-api.yaml`), reference server, Postman, k6, and Locust tests. The spec defines the serverless stacks' behavior: change the spec, both handlers, and the local server together.
+- `devops/observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `scripts/check_observability_lab.py` checks the running lab.
+- `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). Tests: Bats (`tests/*.bats`) and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
+- `devops/ansible/`: guides and a project at the folder root (`site.yml`, `roles/`, `inventory/`, `molecule/default/`). Tests: `molecule test`.
+- `software/git/`: Git 101 guides, `templates/`, `scripts/`, and `tests/recipes.sh`, which runs every recipe in the guides. Run it on Ubuntu 22.04 (Git 2.34), 24.04, and Rocky 9.
+- `devops/docker/`: Docker 101 guides, `examples/` (Dockerfiles and a Compose file), and `scripts/`. Tests: builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`.
 - `ROADMAP.md`: coverage and planned areas; move an area to "Covered today" only when it meets the definition of done there.
-- `scripts/check_cli_commands.py`: checks every `aws`/`az` command, flag, and `--query` in Markdown against the real CLIs (run by `.github/workflows/cli-commands.yml`).
-- `.github/workflows/cloud-templates.yml`: cfn-lint and checkov for CloudFormation; bicep build, lint, and checkov for Bicep.
-- `.github/workflows/docs.yml`: markdownlint, cspell, lychee link check, generated-file freshness.
-- `.github/workflows/terraform.yml`: fmt, validate, `terraform test` (mock providers, no credentials), tflint, checkov.
+- `scripts/check_cli_commands.py`: checks every `aws`/`az` command, flag, and `--query` in Markdown against the real CLIs (run locally).
+- `.github/workflows/lint.yml`: the only CI workflow, static checks only: markdownlint, cspell, lychee, checklist freshness, ShellCheck, shfmt, yamllint and ansible-lint, ruff, gofmt and golangci-lint, `terraform fmt` and tflint, Hadolint. Every test suite runs locally instead (`CONTRIBUTING.md#running-the-tests-locally`): run the ones for an area before changing it, and keep that table current when adding an area. Don't add heavy jobs (builds, containers, test suites) to CI without asking.
 
 ## Rules
 
@@ -56,7 +57,7 @@ Add new correctly spelled terms to `cspell.json`.
 - Secure defaults. A checkov finding is fixed, or skipped inline inside the resource block with a specific, true reason: `#checkov:skip=<ID>:<reason>`. Never skip on a guess about why checkov flagged something; read the check first.
 - Add a test run to `tests/plan.tftest.hcl` for any new conditional behavior.
 - Never commit real tfvars, backend.hcl, or state. They're git-ignored.
-- Lock files need checksums for every platform, not just the one that ran `init`: CI runs Linux with a plugin cache and `-lockfile=readonly`, which rejects a lock file that only has Windows or macOS hashes. After adding or upgrading a provider, run in each stack: `terraform providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64 -platform=windows_amd64`.
+- Lock files need checksums for every platform, not just the one that ran `init`: anyone validating on Linux with `-lockfile=readonly` (as a pipeline should) is rejected by a lock file that only has Windows or macOS hashes. After adding or upgrading a provider, run in each stack: `terraform providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64 -platform=windows_amd64`.
 
 ```sh
 cd devops/terraform/<cloud>/<stack>
@@ -87,6 +88,26 @@ kubectl kustomize devops/kubernetes/apps/<app>/overlays/<overlay> | kubeconform 
 - Under `set -e`, never end a function, block, or loop body with `[[ test ]] && cmd`: a false test makes the block fail. Use `if`.
 - Lint with ShellCheck and shfmt (`-i 2 -ci`), and test: Bats for anything that runs without root, `tests/integration.sh` in containers for the rest. Add a case to `tests/regex.bats` whenever `devops/bash/03-regex.md` gains a pattern.
 - Check RHEL and Ubuntu claims in containers before writing them (`docker run --rm rockylinux/rockylinux:9 ...`, `ubuntu:24.04`).
+
+## Python and Go boilerplate and examples
+
+- Python: `uv` with a committed `uv.lock`, `src/` layout, ruff (lint and format), mypy strict, pytest. Run checks in a `python:3.14-slim` container with `uv sync --frozen`.
+- Go: standard library first, `gofmt`, `go vet`, golangci-lint v2 (`.golangci.yml` per project), `go test -race`, govulncheck. Local Go may be older than `go.mod` needs; test in `golang:1.27-alpine` (add `gcc musl-dev` for `-race`).
+- Example tests must not need network access or cloud credentials: local servers, generated certificates, moto or a fake client. Exit codes: 0 fine, 1 finding, 2 usage or configuration error.
+- A change to either API implementation must keep Schemathesis (`--checks all`) and Newman passing against the built image.
+- Code blocks in the language guides must parse: Python blocks with `ast.parse`, Go blocks with `go/format.Source` (keep declarations and statements in separate blocks).
+
+## Ansible
+
+- Fully qualified module names (`ansible.builtin.copy`). Role variables start with the role name. Pin collections in `requirements.yml` and tools in `requirements.txt`.
+- Every role must pass `molecule test`, including the idempotence step: a second run reports `changed=0`. `command`/`shell` tasks need `changed_when`.
+- Service tasks are gated on `<role>_manage_services`; the Molecule inventory sets them false because containers don't run systemd.
+- Run locally in a container with the Docker socket mounted, and set `ANSIBLE_CONFIG` when the folder is world-writable (Windows mounts), or Ansible ignores `ansible.cfg`.
+
+## Git guides
+
+- Every command recipe in `software/git/*.md` needs a matching test in `tests/recipes.sh`. Use the `fails` helper for commands that must fail (a bare `! cmd` doesn't fail a test under `set -e`), and `grep -q <<<"$(cmd)"` rather than `cmd | grep -q` (SIGPIPE under pipefail).
+- Commands must work on Git 2.34 (Ubuntu 22.04); say so where a feature needs a newer version.
 
 ## Dockerfiles
 

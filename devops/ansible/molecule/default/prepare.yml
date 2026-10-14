@@ -1,0 +1,39 @@
+---
+# Make the containers look like servers that are already running sshd, which
+# every real host Ansible reaches over SSH is: host keys exist and sshd's
+# runtime directory is there.
+- name: Generate an SSH key for the test accounts
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create the key pair
+      community.crypto.openssh_keypair:
+        path: "{{ molecule_ephemeral_directory }}/deploy"
+        type: ed25519
+        comment: deploy@molecule
+
+- name: Prepare the containers
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Install the SSH server
+      ansible.builtin.package:
+        name: openssh-server
+        state: present
+        update_cache: "{{ ansible_facts['os_family'] == 'Debian' }}"
+
+    # Ubuntu's package generates host keys at install; RHEL's generates them
+    # when sshd first starts, which never happens in a container.
+    - name: Generate any missing host keys
+      ansible.builtin.command:
+        cmd: ssh-keygen -A
+        creates: /etc/ssh/ssh_host_ed25519_key
+
+    # systemd creates this when it starts sshd; sshd -t refuses without it.
+    - name: Create sshd's runtime directory
+      ansible.builtin.file:
+        path: /run/sshd
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"

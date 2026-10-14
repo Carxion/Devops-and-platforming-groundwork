@@ -1,0 +1,26 @@
+# .gitattributes: commit this at the repository root as ".gitattributes".
+# It decides line endings and diff behavior for everyone, whatever their own settings.
+
+# Detect text files, and store and check them out with LF line endings everywhere.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# Binary: never change line endings, never try to diff or merge as text.
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.gz   binary
+
+# Generated lock files: collapsed in GitHub's diff view (linguist-generated), and
+# summarized as "Binary files differ" in git diff (-diff). On a conflict, regenerate
+# them with the package manager rather than merging them by hand.
+package-lock.json  linguist-generated=true -diff
+uv.lock            linguist-generated=true -diff
+go.sum             linguist-generated=true -diff

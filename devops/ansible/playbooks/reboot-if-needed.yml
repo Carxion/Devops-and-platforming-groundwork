@@ -1,0 +1,59 @@
+---
+# Reboot hosts that need it after updates (new kernel, glibc, or systemd),
+# one at a time, waiting for each to come back healthy before the next.
+#
+#   ansible-playbook playbooks/reboot-if-needed.yml --check      # who needs a reboot
+#   ansible-playbook playbooks/reboot-if-needed.yml --limit web  # reboot the web servers that need it
+#
+# Linted and syntax-checked in CI; containers can't reboot, so it isn't run there.
+- name: Reboot hosts that need it, one at a time
+  hosts: all
+  become: true
+  serial: 1
+  max_fail_percentage: 0
+  vars:
+    # A URL that must answer before moving to the next host, e.g. http://localhost:8080/healthz.
+    reboot_if_needed_health_url: ""
+  tasks:
+    - name: Ask whether a reboot is needed (RHEL)
+      ansible.builtin.command: needs-restarting -r
+      register: reboot_if_needed_rhel
+      # Exit 1 means "reboot needed"; anything else above 1 is an error.
+      failed_when: reboot_if_needed_rhel.rc > 1
+      changed_when: false
+      check_mode: false # read-only, so safe to run in check mode too
+      when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Ask whether a reboot is needed (Ubuntu)
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_if_needed_ubuntu
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Decide
+      ansible.builtin.set_fact:
+        reboot_if_needed: >-
+          {{ (reboot_if_needed_rhel.rc | default(0)) == 1
+             or (reboot_if_needed_ubuntu.stat.exists | default(false)) }}
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: "{{ 'Reboot needed' if reboot_if_needed else 'No reboot needed' }}"
+
+    - name: Reboot and wait for SSH to come back
+      ansible.builtin.reboot:
+        msg: Rebooting for updates (Ansible)
+        reboot_timeout: 900
+      when: reboot_if_needed
+
+    - name: Wait for the service to be healthy
+      ansible.builtin.uri:
+        url: "{{ reboot_if_needed_health_url }}"
+        status_code: 200
+      register: reboot_if_needed_health
+      until: reboot_if_needed_health.status == 200
+      retries: 30
+      delay: 10
+      when:
+        - reboot_if_needed
+        - reboot_if_needed_health_url | length > 0

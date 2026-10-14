@@ -1,0 +1,28 @@
+---
+# The server baseline: the Ansible version of devops/bash/scripts/bootstrap-server.sh.
+#
+#   ansible-playbook site.yml --check --diff              # preview every change
+#   ansible-playbook site.yml --limit web-01              # one host first
+#   ansible-playbook site.yml                             # then everyone
+#   ansible-playbook site.yml --tags ssh,firewall         # only some roles
+#
+# Keep an SSH session open to a host until a new login works after the first run.
+- name: Apply the server baseline
+  hosts: all
+  become: true
+  # Change at most a quarter of the hosts at a time, and stop if any fail,
+  # so one bad change can't take down the whole fleet. Override per run with
+  # -e baseline_serial=100% (the Molecule test does, to converge in parallel).
+  serial: "{{ baseline_serial | default('25%') }}"
+  max_fail_percentage: 0
+  roles:
+    - role: base
+      tags: [base]
+    - role: admin_users
+      tags: [users]
+    - role: ssh_hardening
+      tags: [ssh]
+    - role: firewall
+      tags: [firewall]
+    - role: auto_updates
+      tags: [updates]

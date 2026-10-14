@@ -1,0 +1,17 @@
+---
+- name: Check every rule before changing anything
+  ansible.builtin.assert:
+    that:
+      - item is match('^[0-9]{1,5}(-[0-9]{1,5})?/(tcp|udp)$')
+      - item.split('/')[0].split('-') | map('int') | max <= 65535
+    fail_msg: "Invalid rule '{{ item }}' (expected PORT/tcp, PORT/udp, or START-END/tcp)"
+    quiet: true
+  loop: "{{ firewall_allow }}"
+
+- name: Configure firewalld (RHEL)
+  ansible.builtin.include_tasks: firewalld.yml
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Configure ufw (Ubuntu)
+  ansible.builtin.include_tasks: ufw.yml
+  when: ansible_facts['os_family'] == 'Debian'

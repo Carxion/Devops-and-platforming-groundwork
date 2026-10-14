@@ -1,0 +1,11 @@
+---
+# ansible-lint configuration. Run from this folder: ansible-lint
+# "production" is the strictest built-in profile: everything in the lower
+# profiles plus the rules for code meant to be shared and run unattended.
+profile: production
+exclude_paths:
+  - .ansible/
+  - .cache/
+  - .venv/
+# Collections the roles use; ansible-lint installs them if they're missing.
+offline: false

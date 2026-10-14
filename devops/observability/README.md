@@ -2,7 +2,7 @@
 
 How to see what your systems are doing: what to measure, how to collect it, how to alert on it without burning people out, and how to do it on AWS, on Azure, and with the open-source Prometheus and Grafana stack. It supports [section 8](../../tech-lead/README.md#8-observability-and-operations) of the guide, and everything here is built around the same sample workloads as the rest of the repository.
 
-> **Status.** CI checks every configuration file here: the Prometheus rules are unit-tested with promtool, the CloudFormation and Bicep templates are linted and scanned, and the local lab is started and checked end to end (metrics, traces, logs, dashboards, alerts). The cloud templates haven't been deployed by this project; deploy to a sandbox first.
+> **Status.** Every configuration file here was checked when written: the Prometheus rules are unit-tested with promtool, the CloudFormation and Bicep templates are linted and scanned, and the local lab was started and checked end to end (metrics, traces, logs, dashboards, alerts). CI doesn't run these; see [running the tests locally](../../CONTRIBUTING.md#running-the-tests-locally). The cloud templates haven't been deployed by this project; deploy to a sandbox first.
 
 | Path | What it is |
 |---|---|

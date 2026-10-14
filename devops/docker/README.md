@@ -2,7 +2,7 @@
 
 Containers package an application with everything it needs to run, so it behaves the same on a laptop, in CI, and in production. This folder goes from the first `docker run` to production-ready images and hosts: writing Dockerfiles, Compose, networking and storage, the complex commands you'll need for inspection and cleanup, security, Podman on RHEL, and troubleshooting.
 
-> **Status.** CI lints both example Dockerfiles with Hadolint, builds them, scans them with Trivy (failing on fixable HIGH or CRITICAL findings), and runs the [Compose example](examples/compose.yaml) end to end: both services start hardened, the API reports healthy, and the k6 smoke test from [api-testing](../../software/api-testing/README.md) passes against it. The scripts pass ShellCheck and shfmt.
+> **Status.** CI lints every Dockerfile with Hadolint and the scripts with ShellCheck and shfmt. Building the images, scanning them with Trivy (failing on fixable HIGH or CRITICAL findings), and running the [Compose example](examples/compose.yaml) end to end (both services start hardened, the API reports healthy, and the k6 smoke test from [api-testing](../../software/api-testing/README.md) passes) run locally with the commands below.
 
 ## Learning path
 

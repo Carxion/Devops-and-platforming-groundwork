@@ -1,0 +1,4 @@
+---
+# Apply the real playbook, so the test covers site.yml itself, not a copy of it.
+- name: Converge
+  ansible.builtin.import_playbook: ../../site.yml

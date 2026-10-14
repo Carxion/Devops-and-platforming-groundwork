@@ -1,0 +1,4 @@
+{
+  // Templates use <placeholder> text, which markdownlint reads as HTML tags.
+  "config": { "MD033": false }
+}

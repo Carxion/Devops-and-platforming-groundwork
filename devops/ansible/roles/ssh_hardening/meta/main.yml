@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: ssh_hardening
+  author: DevOps and Platforming Groundwork
+  description: Key-only SSH, no root login, and other hardening as a validated drop-in, on RHEL and Ubuntu
+  license: CC-BY-4.0
+  min_ansible_version: "2.18"
+  platforms:
+    - name: EL
+      versions: ["9"]
+    - name: Ubuntu
+      versions: [jammy, noble]
+dependencies: []

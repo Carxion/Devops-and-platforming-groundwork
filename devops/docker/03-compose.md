@@ -67,7 +67,7 @@ Plain `depends_on: [items-api]` only waits for the container to *start*, not for
 docker compose -f devops/docker/examples/compose.yaml up --build --exit-code-from smoke-test
 ```
 
-`--exit-code-from smoke-test` stops everything when that service exits and returns its exit code, so CI can run the whole stack and fail on the test's result. That's how this repository's [docker workflow](../../.github/workflows/docker.yml) checks the examples.
+`--exit-code-from smoke-test` stops everything when that service exits and returns its exit code, so CI can run the whole stack and fail on the test's result. That's how to check the examples, locally or in your own pipeline.
 
 ### Ports on loopback
 

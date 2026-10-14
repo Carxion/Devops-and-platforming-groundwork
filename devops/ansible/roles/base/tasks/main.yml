@@ -1,0 +1,63 @@
+---
+- name: Check the OS is supported
+  ansible.builtin.assert:
+    that: ansible_facts['os_family'] in ['RedHat', 'Debian']
+    fail_msg: "Supported: the RHEL family and Ubuntu, not {{ ansible_facts['distribution'] }}"
+    quiet: true
+
+- name: Check the hostname is valid
+  ansible.builtin.assert:
+    # RFC 1123: labels of letters, digits, and hyphens, not starting or ending with a hyphen.
+    that: base_hostname is match('^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$')
+    fail_msg: "Invalid hostname: {{ base_hostname }}"
+    quiet: true
+  when: base_hostname | length > 0
+
+- name: Upgrade installed packages (Ubuntu)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600 # refresh the package lists at most hourly
+    upgrade: safe # never removes packages; "dist" may
+  when:
+    - base_upgrade
+    - ansible_facts['os_family'] == 'Debian'
+
+- name: Upgrade installed packages (RHEL)
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest # noqa package-latest (upgrading everything is the point here)
+  when:
+    - base_upgrade
+    - ansible_facts['os_family'] == 'RedHat'
+
+- name: Find installed packages
+  ansible.builtin.package_facts:
+
+- name: Install base packages
+  ansible.builtin.package:
+    # RHEL 9 minimal images ship curl-minimal, which conflicts with the full
+    # curl package and already provides the curl command, so skip curl there.
+    name: >-
+      {{ (base_common_packages + base_family_packages[ansible_facts['os_family']] + base_extra_packages)
+         | difference(['curl'] if 'curl-minimal' in ansible_facts['packages'] else []) }}
+    state: present
+
+- name: Set the hostname
+  ansible.builtin.hostname:
+    name: "{{ base_hostname }}"
+  when:
+    - base_hostname | length > 0
+    - base_manage_services
+
+- name: Set the time zone
+  community.general.timezone:
+    name: "{{ base_timezone }}"
+  when: base_manage_services
+
+- name: Start and enable time sync
+  ansible.builtin.systemd_service:
+    # The chrony unit is chronyd on RHEL and chrony on Ubuntu.
+    name: "{{ 'chronyd' if ansible_facts['os_family'] == 'RedHat' else 'chrony' }}"
+    state: started
+    enabled: true
+  when: base_manage_services

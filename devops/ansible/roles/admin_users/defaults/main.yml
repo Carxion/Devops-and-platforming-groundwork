@@ -1,0 +1,14 @@
+---
+# Administrators to create. Each needs at least one SSH public key: key-only
+# login is the point.
+#
+#   admin_users_accounts:
+#     - name: deploy
+#       ssh_keys: ["ssh-ed25519 AAAA... deploy@laptop"]
+#     - name: ci-runner
+#       ssh_keys: ["ssh-ed25519 AAAA... ci"]
+#       nopasswd: true          # passwordless sudo: automation accounts only
+admin_users_accounts: []
+
+# The group the distribution's /etc/sudoers already grants sudo to.
+admin_users_group: "{{ 'wheel' if ansible_facts['os_family'] == 'RedHat' else 'sudo' }}"

@@ -1,0 +1,167 @@
+---
+# Check the results the way an auditor would: by looking at the host, not by
+# trusting Ansible's report. The same checks as devops/bash/tests/integration.sh.
+- name: Verify the baseline
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    admin_group: "{{ 'wheel' if ansible_facts['os_family'] == 'RedHat' else 'sudo' }}"
+  tasks:
+    - name: Read the deploy account and its key files
+      ansible.builtin.getent:
+        database: passwd
+        key: deploy
+
+    - name: Read the deploy account's groups
+      ansible.builtin.command: id -nG deploy
+      register: deploy_groups
+      changed_when: false
+
+    - name: Stat the SSH files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /home/deploy/.ssh
+        - /home/deploy/.ssh/authorized_keys
+        - /etc/ssh/sshd_config.d/10-hardening.conf
+      register: ssh_files
+
+    - name: Read the effective sshd settings
+      ansible.builtin.command: /usr/sbin/sshd -T
+      register: sshd_effective
+      changed_when: false
+
+    - name: Check base tools, the account, and SSH
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['getent_passwd']['deploy'] is defined
+          - admin_group in deploy_groups.stdout.split()
+          - ssh_files.results[0].stat.mode == '0700'
+          - ssh_files.results[0].stat.pw_name == 'deploy'
+          - ssh_files.results[1].stat.mode == '0600'
+          - ssh_files.results[2].stat.mode == '0600'
+          - "'passwordauthentication no' in sshd_effective.stdout_lines"
+          - "'permitrootlogin no' in sshd_effective.stdout_lines"
+          - "'maxauthtries 3' in sshd_effective.stdout_lines"
+        quiet: true
+
+    - name: Check the base packages are installed
+      ansible.builtin.command: "{{ item }}"
+      loop: [jq --version, git --version, chronyd --version]
+      changed_when: false
+
+    - name: Check passwordless sudo is valid and limited to the automation account
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - visudo -cf /etc/sudoers.d/90-robot
+        - test ! -e /etc/sudoers.d/90-deploy
+      changed_when: false
+
+    - name: Check the ufw rules (Ubuntu)
+      ansible.builtin.command: ufw show added
+      register: ufw_rules
+      changed_when: false
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Check the firewalld rules (RHEL)
+      ansible.builtin.command: firewall-offline-cmd --list-all
+      register: firewalld_rules
+      changed_when: false
+      when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Check the firewall allows SSH, 443, and the range
+      ansible.builtin.assert:
+        that: >-
+          (ufw_rules.stdout is search('22/tcp') and ufw_rules.stdout is search('443/tcp')
+           and ufw_rules.stdout is search('8000:8100/tcp'))
+          if ansible_facts['os_family'] == 'Debian' else
+          (firewalld_rules.stdout is search('services:.*ssh') and firewalld_rules.stdout is search('443/tcp')
+           and firewalld_rules.stdout is search('8000-8100/tcp'))
+        quiet: true
+
+    - name: Check automatic updates (Ubuntu)
+      ansible.builtin.command: grep -q 'Unattended-Upgrade "1"' /etc/apt/apt.conf.d/20auto-upgrades
+      changed_when: false
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Check automatic updates (RHEL)
+      ansible.builtin.command: grep -qx '{{ item }}' /etc/dnf/automatic.conf
+      loop: [apply_updates = yes, upgrade_type = security]
+      changed_when: false
+      when: ansible_facts['os_family'] == 'RedHat'
+
+# The safety features: these must fail, and fail safely.
+- name: Verify the safety checks
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: A private key is rejected
+      block:
+        - name: Try to add an account with a private key
+          ansible.builtin.include_role:
+            name: admin_users
+          vars:
+            admin_users_accounts:
+              - name: eve
+                ssh_keys: ["-----BEGIN OPENSSH PRIVATE KEY-----"]
+        - name: This must not be reached
+          ansible.builtin.fail:
+            msg: admin_users accepted a private key
+      rescue:
+        - name: Check it was the role's validation that refused
+          ansible.builtin.assert:
+            that: ansible_failed_task.name is search('Check every account definition')
+            quiet: true
+        - name: Check eve wasn't created
+          ansible.builtin.command: id eve
+          register: eve
+          failed_when: eve.rc == 0
+          changed_when: false
+
+    - name: SSH hardening refuses when nobody has a key
+      block:
+        - name: Hide the authorized keys
+          ansible.builtin.shell: >-
+            for f in /home/*/.ssh/authorized_keys; do mv "$f" "$f.hidden"; done
+          changed_when: true
+        - name: Try to harden SSH
+          ansible.builtin.include_role:
+            name: ssh_hardening
+        - name: This must not be reached
+          ansible.builtin.fail:
+            msg: ssh_hardening ran with no authorized keys
+      rescue:
+        - name: Check it refused for the right reason
+          ansible.builtin.assert:
+            that: ansible_failed_task.name is search('Refuse if nobody could log in')
+            quiet: true
+      always:
+        - name: Restore the authorized keys
+          ansible.builtin.shell: >-
+            for f in /home/*/.ssh/authorized_keys.hidden; do mv "$f" "${f%.hidden}"; done
+          changed_when: true
+
+    - name: An sshd setting sshd rejects is rolled back
+      block:
+        - name: Try an invalid setting
+          ansible.builtin.include_role:
+            name: ssh_hardening
+          vars:
+            ssh_hardening_extra_settings:
+              NotARealOption: "yes"
+        - name: This must not be reached
+          ansible.builtin.fail:
+            msg: ssh_hardening accepted an invalid setting
+      rescue:
+        - name: Check the drop-in was removed and sshd still validates
+          ansible.builtin.command: "{{ item }}"
+          loop:
+            - test ! -e /etc/ssh/sshd_config.d/10-hardening.conf
+            - /usr/sbin/sshd -t
+          changed_when: false
+      always:
+        - name: Put the real drop-in back
+          ansible.builtin.include_role:
+            name: ssh_hardening

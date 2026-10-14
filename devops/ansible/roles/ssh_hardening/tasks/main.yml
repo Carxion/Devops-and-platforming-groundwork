@@ -1,0 +1,71 @@
+---
+- name: Check the port is valid
+  ansible.builtin.assert:
+    that: ssh_hardening_port | int >= 1 and ssh_hardening_port | int <= 65535
+    fail_msg: "Invalid ssh_hardening_port: {{ ssh_hardening_port }}"
+    quiet: true
+
+- name: Check sshd_config includes the drop-in folder
+  ansible.builtin.command: grep -Eq '^Include /etc/ssh/sshd_config\.d/\*\.conf' /etc/ssh/sshd_config
+  changed_when: false
+
+# Lockout protection: password login is about to be turned off, so someone
+# must be able to log in with a key.
+- name: Find accounts with authorized keys
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      getent passwd | awk -F: '$3 == 0 || $3 >= 1000 { print $6 "/.ssh/authorized_keys" }' |
+        while read -r f; do if [ -s "$f" ]; then echo "$f"; fi; done
+    executable: /bin/bash
+  register: ssh_hardening_keys
+  changed_when: false
+  when: ssh_hardening_require_key
+
+- name: Refuse if nobody could log in afterwards
+  ansible.builtin.assert:
+    that: ssh_hardening_keys.stdout_lines | length > 0
+    fail_msg: >-
+      No account has ~/.ssh/authorized_keys, so turning off passwords would lock
+      everyone out. Add a key first (the admin_users role), or set ssh_hardening_require_key: false.
+    quiet: true
+  when: ssh_hardening_require_key
+
+- name: Label the new port for sshd (SELinux)
+  community.general.seport:
+    ports: "{{ ssh_hardening_port }}"
+    proto: tcp
+    setype: ssh_port_t
+    state: present
+  when:
+    - ssh_hardening_port | int != 22
+    - ansible_facts['selinux']['status'] | default('disabled') == 'enabled'
+
+- name: Apply the SSH configuration, rolling back if sshd rejects it
+  block:
+    - name: Write the hardening drop-in
+      ansible.builtin.template:
+        src: hardening.conf.j2
+        dest: "{{ ssh_hardening_dropin }}"
+        owner: root
+        group: root
+        mode: "0600"
+      notify: Reload sshd
+
+    # The template module's "validate" would check the drop-in on its own, but
+    # what matters is the whole configuration with the drop-in included.
+    - name: Validate the full sshd configuration
+      ansible.builtin.command: /usr/sbin/sshd -t
+      changed_when: false
+
+  rescue:
+    - name: Remove the drop-in sshd rejected
+      ansible.builtin.file:
+        path: "{{ ssh_hardening_dropin }}"
+        state: absent
+
+    - name: Stop, without reloading sshd
+      ansible.builtin.fail:
+        msg: >-
+          sshd -t rejected the configuration, so {{ ssh_hardening_dropin }} was removed
+          and sshd was not reloaded: {{ ansible_failed_result.stderr | default(ansible_failed_result.msg) }}

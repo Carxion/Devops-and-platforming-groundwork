@@ -1,0 +1,24 @@
+{{ ansible_managed | comment }}
+{% if ssh_hardening_port | int != 22 %}
+Port {{ ssh_hardening_port }}
+{% endif %}
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+MaxAuthTries 3
+LoginGraceTime 30
+ClientAliveInterval 300
+ClientAliveCountMax 2
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+LogLevel VERBOSE
+{% if ssh_hardening_allow_groups %}
+AllowGroups {{ ssh_hardening_allow_groups | join(' ') }}
+{% endif %}
+{% for key, value in ssh_hardening_extra_settings.items() %}
+{{ key }} {{ value }}
+{% endfor %}

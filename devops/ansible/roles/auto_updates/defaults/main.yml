@@ -1,0 +1,4 @@
+---
+# false: security updates only. true: every update.
+auto_updates_all: false
+auto_updates_manage_services: "{{ ansible_facts['service_mgr'] == 'systemd' }}"

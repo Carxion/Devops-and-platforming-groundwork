@@ -1,0 +1,28 @@
+---
+# Set to give the host a name; empty leaves it alone.
+base_hostname: ""
+base_timezone: UTC
+# Upgrade every installed package on each run (security updates arrive between runs anyway).
+base_upgrade: true
+# Services and the hostname need systemd; containers (as in the Molecule tests) don't have it.
+base_manage_services: "{{ ansible_facts['service_mgr'] == 'systemd' }}"
+
+base_common_packages:
+  - bash-completion
+  - ca-certificates
+  - chrony
+  - curl
+  - git
+  - jq
+  - lsof
+  - openssh-server
+  - rsync
+  - sudo
+  - tar
+  - tmux
+  - unzip
+# Names that differ between the two families.
+base_family_packages:
+  RedHat: [bind-utils, dnf-utils, policycoreutils-python-utils, vim-enhanced]
+  Debian: [dnsutils, needrestart, vim]
+base_extra_packages: []

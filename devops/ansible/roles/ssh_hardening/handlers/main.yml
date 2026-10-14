@@ -1,0 +1,30 @@
+---
+# Handlers run once, at the end of the play, and only if a task notified them.
+# A reload keeps existing sessions open.
+- name: Reload sshd
+  ansible.builtin.systemd_service:
+    # The unit is sshd on RHEL and ssh on Ubuntu.
+    name: "{{ 'sshd' if ansible_facts['os_family'] == 'RedHat' else 'ssh' }}"
+    state: reloaded
+  when: ssh_hardening_manage_services
+  notify: Rerun the ssh socket generator
+
+# Ubuntu 22.10 and later start sshd through ssh.socket, and a systemd generator
+# turns Port in sshd_config into the socket's listen address. A port change
+# needs the generator to rerun and the socket to restart; a reload isn't enough.
+- name: Rerun the ssh socket generator
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when:
+    - ssh_hardening_manage_services
+    - ssh_hardening_socket_activation
+    - ssh_hardening_port | int != 22
+  notify: Restart the ssh socket
+
+- name: Restart the ssh socket
+  ansible.builtin.systemd_service:
+    name: ssh.socket
+    state: restarted
+  when:
+    - ssh_hardening_manage_services
+    - ssh_hardening_socket_activation

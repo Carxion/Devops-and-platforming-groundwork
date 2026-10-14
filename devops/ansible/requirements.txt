@@ -1,0 +1,7 @@
+# The control node's tools, pinned so every run (laptop or CI) uses the same versions.
+#   python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+ansible-core==2.21.5
+ansible-lint==26.10.1
+molecule==26.10.0
+molecule-plugins[docker]==26.10.12
+yamllint==1.38.0

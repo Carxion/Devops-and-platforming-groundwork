@@ -129,23 +129,33 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 ## Source control and collaboration
 
+- **Bisect:** A binary search through history for the commit that introduced a bug (`git bisect`), marking each tested commit good or bad, by hand or with a script.
 - **Branch:** An independent line of development in a repository.
 - **Branch protection:** Rules on a branch (usually the default one) such as required reviews, required passing checks, and no force-pushes.
+- **Cherry-pick:** Copying one commit's changes onto another branch as a new commit, typically to bring a fix to a release branch.
 - **CODEOWNERS:** A file that maps paths in a repository to the people or teams who must review changes to them.
 - **Commit:** A recorded snapshot of changes in Git, with an author, a message, and a unique hash.
 - **Conventional Commits:** A commit-message format (`feat:`, `fix:`, `chore:`) that tools can parse to generate changelogs and version numbers.
 - **Default branch:** The branch new work merges into, usually `main`.
+- **Detached HEAD:** Having a commit checked out instead of a branch. Commits made there belong to no branch until you create one.
+- **Force push:** Overwriting a remote branch's history. `--force-with-lease` refuses if someone else pushed in the meantime; protected branches should block force pushes entirely.
 - **Fork:** A personal copy of someone else's repository, used to propose changes without write access to the original.
 - **Git:** The distributed version control system used by nearly every team. GitHub, GitLab, Bitbucket, and Azure Repos host Git repositories.
 - **GitFlow:** A branching model with long-lived `develop` and `release` branches. Most teams that deploy often have moved to trunk-based development.
+- **HEAD:** Git's name for what you have checked out: usually a branch, which in turn points at its latest commit.
 - **Merge conflict:** Two changes touch the same lines, so Git can't combine them automatically and a person must choose.
 - **Monorepo:** One repository holding many projects or services. A *polyrepo* setup gives each its own repository.
 - **Pull request (PR) or merge request (MR):** A proposal to merge a branch, with review comments and automated checks. GitHub calls it a pull request and GitLab a merge request.
 - **Rebase:** Replaying your commits on top of another branch to keep history linear. Never rebase commits others have already pulled.
+- **Reflog:** Git's local record of where each branch and HEAD pointed over time. It's how "lost" commits are found after a reset, rebase, or deleted branch.
+- **Revert:** A new commit that undoes an earlier one. The safe way to undo something on a shared branch, because history is only added to.
 - **Signed commit:** A commit carrying a cryptographic signature that proves who made it.
 - **Squash merge:** Combining all of a pull request's commits into one commit on merge.
+- **Staging area (index):** Where the next commit is assembled: `git add` puts changes there and `git commit` records them.
+- **Stash:** Uncommitted changes set aside (`git stash`) so the working tree is clean, to be reapplied later.
 - **Tag:** A named pointer to a specific commit, usually marking a release (`v1.4.0`).
 - **Trunk-based development:** Everyone integrates small changes into the default branch at least daily, using short-lived branches and feature flags instead of long-lived branches.
+- **Worktree:** An extra working directory attached to the same repository (`git worktree add`), so two branches can be checked out at once.
 
 ## Continuous integration and delivery
 
@@ -174,22 +184,30 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 ## Infrastructure as code
 
+- **Ansible:** An agentless configuration management tool: it connects over SSH (or WinRM) and runs modules that each make one thing true on the host.
+- **Ansible Vault:** Ansible's built-in encryption for secrets stored in a repository. A secrets manager queried at run time is usually better for production.
 - **Bicep:** Microsoft's language for declaring Azure resources. It compiles to ARM templates.
 - **CloudFormation:** AWS's service for declaring AWS resources in YAML or JSON templates, deployed as *stacks*.
+- **Collection (Ansible):** A distributable package of Ansible modules, plugins, and roles, such as `ansible.posix` or `amazon.aws`, installed with `ansible-galaxy`.
 - **Configuration management:** Tools that set up software and settings on existing servers, such as Ansible, Chef, and Puppet.
 - **Declarative:** Describing the end state you want and letting the tool work out the steps. Most IaC is declarative; scripts are *imperative*.
 - **Drift:** Differences between what the code declares and what actually exists, usually from changes made by hand.
 - **GitOps:** See [Continuous integration and delivery](#continuous-integration-and-delivery).
 - **Golden image:** A pre-built, hardened machine or container image that teams start from.
+- **Handler (Ansible):** A task that runs only when another task reports a change, once, at the end of the play. Typically restarts or reloads a service.
 - **IaC (infrastructure as code):** Defining infrastructure in version-controlled files that a tool applies, instead of by hand in a console.
 - **Idempotent apply:** Applying the same code twice changes nothing the second time. Good IaC is idempotent.
 - **Immutable infrastructure:** Replacing servers instead of changing them in place.
+- **Inventory (Ansible):** The list of hosts Ansible manages and the groups they belong to: a file, or generated from a cloud API by an inventory plugin.
 - **Module:** A reusable, parameterized package of IaC, such as a standard network or database.
+- **Molecule:** A testing framework for Ansible roles: it creates throwaway instances, applies the role, applies it again to check idempotence, and verifies the result.
 - **OpenTofu:** An open-source fork of Terraform, maintained under the Linux Foundation.
 - **Plan and apply:** Terraform's two steps. *Plan* shows what would change; *apply* makes the changes. Review the plan before applying.
+- **Playbook:** An Ansible YAML file that maps groups of hosts to the roles and tasks they should get.
 - **Provider:** A Terraform plugin that talks to one platform's API, such as AWS, Azure, or GitHub.
 - **Pulumi:** An IaC tool that uses general-purpose languages such as TypeScript, Python, and Go.
 - **Remote state:** Terraform state stored in shared storage (such as S3 or Azure Blob Storage) with locking, so a team can work on it safely.
+- **Role (Ansible):** A reusable package of Ansible tasks, defaults, templates, and handlers with a standard folder layout.
 - **Stack:** A set of resources deployed and managed as one unit. The word is used by CloudFormation, Pulumi, and many teams' Terraform layouts.
 - **State:** Terraform's record of which real resources its code manages. It can contain secrets, so it's protected like one.
 - **State lock:** A lock that stops two runs from changing the same state at once.
@@ -420,6 +438,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 ## Delivery, teams, and governance
 
+- **Acceptance criteria:** The conditions a backlog item must meet to be accepted, written before the work starts; often in Given/When/Then form.
 - **ADR (architecture decision record):** A short document recording an important decision, its context, and its consequences. See the [template](tech-lead/templates/adr-template.md).
 - **Agile:** Delivering in small increments with frequent feedback, rather than a single big plan. Scrum and Kanban are common forms.
 - **Backlog:** The ordered list of work not yet started.
@@ -427,24 +446,39 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Change advisory board (CAB):** A group that approves changes before release. Automated checks and small changes usually manage risk better than a meeting.
 - **Change fail rate:** The share of deployments that need immediate intervention in production, such as a rollback or hotfix. One of the DORA metrics.
 - **Conway's law:** Systems tend to mirror the communication structure of the organizations that build them.
+- **Cost of delay:** What it costs to do something later instead of now: lost value, a missed deadline, or a risk left open. The basis of WSJF.
 - **Definition of done:** The team's shared checklist for when work counts as finished, such as tested, reviewed, documented, and deployed.
 - **DevOps:** A culture and set of practices that bring development and operations together, so teams build, ship, and run their own software through automation and shared responsibility.
 - **DORA metrics:** Measures of software delivery performance from the DevOps Research and Assessment program. Throughput: change lead time, deployment frequency, and failed deployment recovery time. Instability: change fail rate and deployment rework rate. Earlier versions had four metrics, with mean time to restore. See [Planning and metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics).
 - **Epic, story, task:** Units of planned work, from large (epic) to small (task). A user story describes a need from the user's point of view.
+- **Increment:** In Scrum, a usable step toward the Product Goal. Work counts as part of an increment only when it meets the Definition of Done.
 - **Inner source:** Using open-source practices (open repositories, contributions across teams) inside a company.
 - **ITIL:** A widely used framework of IT service management practices, covering incident, problem, and change management.
 - **Kanban:** Managing work as a visual flow on a board, with limits on how much is in progress at once.
 - **Lead time and cycle time:** Lead time runs from request (or commit) to production; cycle time runs from when work starts to when it's done.
+- **Monte Carlo forecast:** A forecast made by simulating future work many times from the team's past throughput, giving a date or amount with a probability ("85% likely by June 3").
+- **OKR (objectives and key results):** A goal-setting method: a qualitative objective, with a few measurable key results that show it's been met.
 - **Platform engineering:** A team building internal tools and paved paths (an *internal developer platform*) so product teams can ship without becoming infrastructure experts.
+- **Product Goal:** In Scrum, the long-term objective the Product Backlog serves. The team works toward one Product Goal at a time.
+- **Product owner:** The person accountable for maximizing a product's value: setting the Product Goal and ordering the backlog. In Scrum, one person, not a committee.
 - **RACI:** A responsibility chart marking who is Responsible, Accountable, Consulted, and Informed for each task.
+- **Retrospective:** A regular meeting where a team inspects how it worked and chooses improvements. In Scrum, the Sprint Retrospective ends each sprint.
+- **RICE:** A prioritization score from Intercom: reach × impact × confidence ÷ effort.
 - **Risk register:** A list of identified risks with their likelihood, impact, owner, and plan.
 - **Roadmap:** A plan of intended outcomes over time, usually by quarter.
 - **Scrum:** An agile framework with fixed-length sprints, defined roles (product owner, Scrum Master, developers), and regular planning, review, and retrospective meetings.
+- **Scrum master:** The person accountable for a Scrum team's effectiveness: helping it use Scrum well, coaching, and removing impediments.
 - **Sprint:** A fixed period, typically two weeks, in which a team completes a set of work.
+- **Sprint Goal:** The single objective for a sprint, which gives the team focus and lets it adapt the plan while still delivering value.
 - **Stakeholder:** Anyone who affects or is affected by the work, such as customers, users, managers, security, and operations.
 - **Team Topologies:** A model of four team types (stream-aligned, platform, enabling, complicated subsystem) and how they interact.
+- **Throughput:** The number of work items a team finishes per unit of time; the basis for flow-based forecasting.
+- **User story:** A backlog item written from the user's point of view: `As a <user>, I want <something>, so that <reason>.` A prompt for a conversation, not a specification.
 - **Value stream:** All the steps from an idea to value delivered to the customer. Mapping it shows where work waits.
+- **Velocity:** Story points a team completes per sprint. Useful only to the team itself for rough planning; misleading as a target or for comparing teams.
 - **WIP (work in progress):** Work started but not finished. Limiting it shortens lead times.
+- **Work item age:** How long an item in progress has been in progress. The earliest warning that work is stuck.
+- **WSJF (weighted shortest job first):** A prioritization method from the Scaled Agile Framework: cost of delay divided by job size, so small, urgent, valuable work goes first.
 
 ## AWS and Azure equivalents
 

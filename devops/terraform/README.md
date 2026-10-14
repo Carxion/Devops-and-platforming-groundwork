@@ -4,7 +4,7 @@ Starting points for common AWS and Azure architectures, written to the standards
 
 These are **root modules to copy and adapt**, not a module library to call. Every program's constraints are different, and code you own outright is easier to change than a dependency you don't.
 
-> **Status.** Every stack passes `terraform validate`, `terraform test` (offline plans against mock providers), tflint with the AWS and Azure rulesets, and checkov, in CI on every change. None has been applied to a real account by this project. Apply to a sandbox first, and read [Decisions you still own](#decisions-you-still-own) before production.
+> **Status.** Every stack passed `terraform validate`, `terraform test` (offline plans against mock providers), tflint with the AWS and Azure rulesets, and checkov when last checked. CI runs `terraform fmt` and tflint on every change; run the rest with the commands in [Checks and tested versions](#checks-and-tested-versions). None has been applied to a real account by this project. Apply to a sandbox first, and read [Decisions you still own](#decisions-you-still-own) before production.
 
 ## Contents
 
@@ -305,7 +305,7 @@ jobs:
 Things to know about this pipeline:
 
 - **Reviewers approve the plan on the pull request.** The apply job re-plans against the merged code. "Require branches to be up to date" keeps that plan the same as the one reviewed. If you need a byte-for-byte guarantee, upload the PR plan as an artifact and apply that file instead. Plans can contain sensitive values, though, so restrict and expire the artifact.
-- **Add your other checks to the PR**, such as `terraform test`, tflint, and checkov. This repository's [terraform.yml](../../.github/workflows/terraform.yml) is a working example.
+- **Add your other checks to the PR**, such as `terraform test`, tflint, and checkov. [Checks and tested versions](#checks-and-tested-versions) lists the commands.
 - **Multiple environments:** add a job per environment. Typically dev applies on merge without approval, then prod waits for approval in its own environment.
 - **Fork pull requests** don't get OIDC tokens, so they can't plan against your accounts. That's intended.
 

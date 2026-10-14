@@ -80,7 +80,7 @@ An architecture decision is only real if the system keeps conforming to it. **Fi
 | Containers run non-root, read-only | Policy checks on manifests and images | kubeconform and checkov on [Kubernetes](../devops/kubernetes/README.md); the [Docker audit](../devops/docker/scripts/docker-audit.sh) |
 | API contract stays compatible | Contract tests against the spec | [Schemathesis and Spectral](../software/api-testing/README.md) |
 | SLOs are met | Burn-rate alerts | [SLO rules](../devops/observability/prometheus/rules/web-app-slo.yaml) |
-| No known critical vulnerabilities ship | Image scanning gate | Trivy in the [Docker workflow](../.github/workflows/docker.yml) |
+| No known critical vulnerabilities ship | Image scanning gate | Trivy on every image build ([Docker security](../devops/docker/06-security.md)) |
 | Latency budget holds under load | Load test thresholds | [k6 thresholds](../software/api-testing/k6/load.js) |
 
 If a rule matters, automate its check. A standard that relies on reviewers remembering it erodes within months.

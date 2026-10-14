@@ -2,7 +2,7 @@
 
 YAML templates for IAM and baseline security resources, for programs that use CloudFormation, or that need these pieces before Terraform is in place. Each template is self-contained and documented inline.
 
-> **Status.** Every template passes cfn-lint and checkov in CI. None has been deployed to a real account by this project; deploy to a sandbox first.
+> **Status.** Every template passed cfn-lint and checkov when written. CI doesn't run them; run both locally before changing a template ([how](../../../CONTRIBUTING.md#running-the-tests-locally)). None has been deployed to a real account by this project; deploy to a sandbox first.
 
 | Template | What it creates | Deploy in |
 |---|---|---|

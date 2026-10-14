@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: auto_updates
+  author: DevOps and Platforming Groundwork
+  description: Automatic security updates with dnf-automatic (RHEL) or unattended-upgrades (Ubuntu)
+  license: CC-BY-4.0
+  min_ansible_version: "2.18"
+  platforms:
+    - name: EL
+      versions: ["9"]
+    - name: Ubuntu
+      versions: [jammy, noble]
+dependencies: []

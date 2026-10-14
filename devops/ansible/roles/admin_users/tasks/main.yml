@@ -1,0 +1,58 @@
+---
+- name: Check every account definition before changing anything
+  ansible.builtin.assert:
+    that:
+      - item.name is match(admin_users_name_pattern)
+      - item.ssh_keys | default([]) | length > 0
+      - item.ssh_keys | reject('match', admin_users_key_pattern) | list | length == 0
+    fail_msg: >-
+      {{ item.name | default('(no name)') }}: needs a valid user name and at least one
+      OpenSSH public key (is one of them a private key?)
+    quiet: true
+  loop: "{{ admin_users_accounts }}"
+  loop_control:
+    label: "{{ item.name | default('(no name)') }}"
+
+- name: Create the administrator accounts
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: ["{{ admin_users_group }}"]
+    append: true # keep any other groups the account already has
+    shell: /bin/bash
+    create_home: true
+  loop: "{{ admin_users_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Authorize their SSH keys
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_keys | join('\n') }}"
+    # Exactly these keys: a key removed from the list is removed from the host.
+    exclusive: true
+  loop: "{{ admin_users_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Grant passwordless sudo to automation accounts
+  ansible.builtin.copy:
+    content: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL\n"
+    dest: /etc/sudoers.d/90-{{ item.name }}
+    owner: root
+    group: root
+    mode: "0440"
+    # Check the file before installing it: a broken sudoers file locks everyone out of sudo.
+    validate: visudo -cf %s
+  loop: "{{ admin_users_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.nopasswd | default(false)
+
+- name: Remove passwordless sudo from accounts that no longer ask for it
+  ansible.builtin.file:
+    path: /etc/sudoers.d/90-{{ item.name }}
+    state: absent
+  loop: "{{ admin_users_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not (item.nopasswd | default(false))
