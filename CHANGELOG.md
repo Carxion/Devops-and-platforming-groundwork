@@ -4,6 +4,11 @@ Content corrections and notable changes to the guide. Dates are when the change 
 
 ## Unreleased
 
+- Added `architect/`: considerations for DevOps and platform architects (thinking like an architect, cloud foundations and landing zones, reliability and disaster recovery, security, delivery and IaC, observability and operations, cost, portability and multi-cloud), each linked to the tested implementations in `devops/`, with templates for architecture reviews, decision matrices, and quality attribute requirements. Added architecture terms to the glossary.
+- Added tech lead guides: a worked example taking a fictional program through all 90 days with every deliverable filled in, design reviews and RFCs, migrations and cutovers, and working with product and leadership.
+- Added manager guides: performance and promotions, structuring platform teams (platform as a product, Team Topologies), and budget, vendors, and contracts.
+- Added `tech-lead/assessing-an-inherited-system.md`: how to do the section 2 assessment (map the system, follow a change and an incident, read the commit history, interview, inspect code and configuration, score risks, present findings), and templates for the 30/60/90 deliverables: system inventory, metrics baseline, risk register with a scoring scale, RACI, findings report, roadmap, RFC, and cutover runbook.
+- Added `manager/00-first-90-days.md`, a W1/30/60/90 checklist for managers taking over a team, and `manager/templates/`: one-on-ones, career ladder, interview scorecard and question bank, onboarding plan, quarterly planning, on-call policy, incident review, and team charter.
 - Reorganized by audience: the checklist, its generated views, and the templates moved to `tech-lead/`; Terraform, Kubernetes, AWS, Azure, observability, Bash, and Docker to `devops/`; API testing to `software/`. Every link, CI workflow, and Dependabot path follows the move. The root README is now an index of the repository, with starting points by role.
 - Added `manager/`: starter guides for managing DevOps, platform, and SRE teams (running the team, hiring and onboarding, planning and metrics, on-call and team health, stakeholders and communication).
 - Fixed: the glossary described the four original DORA metrics; it now lists the five current ones. The OpenAPI spec and image labels now match the repository's CC BY 4.0 license.

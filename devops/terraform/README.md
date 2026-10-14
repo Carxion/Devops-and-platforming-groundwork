@@ -82,7 +82,7 @@ Stacks share values through **inputs**, not by reading each other's state. Copy 
 | Terraform | 1.10 or later (tested on 1.16.5) | everything | `brew install hashicorp/tap/terraform`, `winget install Hashicorp.Terraform`, or a version manager such as [tenv](https://github.com/tofuutils/tenv) |
 | AWS CLI v2 | current | AWS sign-in | `brew install awscli` or `winget install Amazon.AWSCLI` |
 | Azure CLI | current | Azure sign-in | `brew install azure-cli` or `winget install Microsoft.AzureCLI` |
-| tflint | 0.64 or later | linting | `brew install tflint`, or a binary from [releases](https://github.com/terraform-linters/tflint/releases) |
+| tflint | 0.64 or later | linting | `brew install tflint`, or a binary from [the latest release](https://github.com/terraform-linters/tflint/releases/latest) |
 | checkov | 3.x | policy checks | `pipx install checkov` or `pip install checkov` |
 | kubectl and kubelogin | current | EKS and AKS access | `az aks install-cli` installs both; for EKS, kubectl alone |
 | Azure Functions Core Tools | v4 | publishing functions-api code | `npm install -g azure-functions-core-tools@4` |

@@ -11,8 +11,11 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `README.md`: the repository index: what's in each folder, and reading paths by role. Update it when a folder or guide is added.
 - `tech-lead/README.md`: the onboarding checklist. **Single source of truth** for every checklist item.
 - `tech-lead/checklists/`: generated from `tech-lead/README.md` by `scripts/build_checklists.py`. Never edit by hand; regenerate.
-- `tech-lead/templates/`: copy-ready versions of Appendix A. Keep them in sync with Appendix A when either changes.
+- `tech-lead/templates/`: copy-ready templates. The ones in Appendix A must stay in sync with it; the rest support the 30/60/90 deliverables and are listed in `tech-lead/templates/README.md`.
+- `tech-lead/assessing-an-inherited-system.md`: the method behind checklist sections 2 and 9. Keep its step numbers and template links in step with the checklist.
+- `manager/`: guides (`00-first-90-days.md` is a checklist in the same item format as the tech lead checklist, but not generated into views) and `templates/`.
 - `CHANGELOG.md`: add a line under **Unreleased** for every content change.
+- `architect/`: considerations guides (numbered) and `templates/`. Each guide links principles to the tested code in `devops/`; keep those links pointing at real files.
 - `devops/`, `software/`, `manager/`: each has a README listing its contents. Material moves between them only when its audience changes.
 - `devops/terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `devops/terraform/README.md`.
 - `devops/kubernetes/`: Kustomize bases, overlays, and components for sample apps. See `devops/kubernetes/README.md`.

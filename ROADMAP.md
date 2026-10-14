@@ -1,6 +1,6 @@
 # Roadmap
 
-What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [devops/](devops/README.md), [software/](software/README.md), and [manager/](manager/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
+What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [architect/](architect/README.md), [devops/](devops/README.md), [software/](software/README.md), and [manager/](manager/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
 
 Proposals and priorities are discussed in issues; open one with the [new item template](.github/ISSUE_TEMPLATE/new-item.yml) to suggest an area or argue for reordering. See [what "done" means](#definition-of-done-for-a-new-area) before starting one.
 
@@ -18,7 +18,9 @@ Proposals and priorities are discussed in issues; open one with the [new item te
 | Observability: Prometheus, Grafana, OpenTelemetry, CloudWatch, Azure Monitor | [devops/observability/](devops/observability/) | promtool rule tests, config validation, the full lab started and checked end to end |
 | Bash and Linux administration (RHEL and Ubuntu) | [devops/bash/](devops/bash/) | ShellCheck, shfmt, Bats, server baseline applied in Ubuntu 22.04 and 24.04, Rocky 9, and AlmaLinux 9 containers |
 | Docker and Podman | [devops/docker/](devops/docker/) | Hadolint, builds, Trivy, Compose run with a smoke test, container audit |
-| Managing DevOps and platform teams (starter) | [manager/](manager/README.md) | Lint, spelling, links |
+| Managing DevOps and platform teams: first 90 days, eight guides, eight templates | [manager/](manager/README.md) | Lint, spelling, links |
+| Tech lead guides: assessment method, worked example, design reviews, migrations, working with leadership | [tech-lead/](tech-lead/README.md) | Lint, spelling, links |
+| Architecture considerations: eight guides and three templates | [architect/](architect/README.md) | Lint, spelling, links |
 
 ## Phase 1: next
 
@@ -34,7 +36,15 @@ The gaps a new tech lead hits first.
 
 ### For managers
 
-The [manager](manager/README.md) starter guides cover the essentials. Next: a career ladder for platform and SRE roles, interview question banks with scoring guides, a team charter template, an on-call policy template, and a quarterly planning worksheet that accounts for run, improve, and build work.
+Done: a first-90-days checklist, eight guides (including performance and promotions, structuring platform teams, and budget and vendors), and eight templates. Next: remote and distributed teams, leading through organizational change, and a manager's guide to security and compliance responsibilities (access reviews, audits, incident obligations).
+
+### For architects
+
+Done: the [architect](architect/README.md) guides and templates. Next: reference architectures (diagrams with the decisions behind them) for the stacks in `devops/terraform`, a data architecture guide (data stores, replication, analytics platforms), and an event-driven and integration architecture guide.
+
+### For tech leads
+
+Done: [Assessing an inherited system](tech-lead/assessing-an-inherited-system.md), a [worked example](tech-lead/worked-example.md), guides on design reviews, migrations, and working with product and leadership, and templates for every 30/60/90 deliverable. Next: technical strategy and writing a technical vision, mentoring and growing engineers as a tech lead, and leading incident response.
 
 ## Phase 2: after that
 

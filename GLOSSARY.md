@@ -55,24 +55,31 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 - **Aggregate:** In domain-driven design, a cluster of entities and value objects treated as one unit for changes, with one *aggregate root* that outside code goes through. Each transaction changes one aggregate.
 - **Anti-corruption layer:** A translation layer between your model and another system's, so the other system's concepts and quirks don't leak into yours. Common when integrating with legacy systems.
-- **Backpressure:** A way for an overloaded consumer to slow its producers down, instead of being overwhelmed or dropping work.
 - **Backend for frontend (BFF):** A separate backend service for each kind of client (web, mobile), shaped to what that client needs.
+- **Backpressure:** A way for an overloaded consumer to slow its producers down, instead of being overwhelmed or dropping work.
+- **Blast radius:** How much is affected when something fails or goes wrong: one request, one cell, one zone, or everything. Architects design to keep it small, with isolation such as separate accounts, cells, and progressive rollouts.
 - **Bounded context:** In domain-driven design, a boundary within which one model and its terms have one consistent meaning. "Customer" can mean different things in billing and in support; each is its own bounded context. Bounded contexts are a common guide for drawing service boundaries.
 - **Bulkhead:** Isolating resources (thread pools, connections, instances) per dependency or customer, so one overloaded part can't sink the rest.
+- **Cell-based architecture:** Splitting users or tenants across several independent copies of a system (cells), so a failure or bad deployment affects only one cell.
 - **Clean architecture and onion architecture:** Layered designs where business logic sits at the center and depends on nothing outside it; frameworks, databases, and user interfaces sit at the edges and depend inward.
 - **Context map:** A diagram of the bounded contexts in a system and how they relate, such as which one is upstream, and where translation happens.
 - **CQRS (command query responsibility segregation):** Using separate models for changing data (commands) and reading it (queries), so each can be shaped and scaled for its job. Often paired with event sourcing, but doesn't require it.
 - **DDD (domain-driven design):** An approach to software design that centers the code on a model of the business domain, built with domain experts and expressed in their language. Its *strategic* side covers bounded contexts and how they relate; its *tactical* side covers building blocks such as entities, value objects, aggregates, and domain events.
-- **Domain:** The business area the software serves, such as lending, logistics, or claims. A *subdomain* is one part of it; the *core* subdomain is where the business competes, and *supporting* and *generic* subdomains are candidates for simpler or off-the-shelf solutions.
 - **Domain event:** A record of something meaningful that happened in the domain, named in the past tense ("PaymentReceived").
+- **Domain:** The business area the software serves, such as lending, logistics, or claims. A *subdomain* is one part of it; the *core* subdomain is where the business competes, and *supporting* and *generic* subdomains are candidates for simpler or off-the-shelf solutions.
 - **DRY, KISS, YAGNI:** Don't repeat yourself; keep it simple; you aren't gonna need it. Rules of thumb against duplication, needless complexity, and building for imagined future needs.
 - **Entity and value object:** In domain-driven design, an entity has an identity that lasts through changes (a customer); a value object is defined only by its values and is immutable (an address, an amount of money).
 - **Event sourcing:** Storing every change to state as an append-only sequence of events, and deriving current state by replaying them. It gives a complete history, at the cost of more complex reads and schema changes.
+- **Fitness function:** An automated check that a system still has a property its architecture requires, such as "no public storage" or "p95 latency under 300 ms", usually run in CI. From *Building Evolutionary Architectures*.
+- **Golden path (paved road):** A supported, pre-built way to do a common task (create a service, add a database), with the platform's security, observability, and deployment decisions built in, so the right way is also the easy way.
 - **Hexagonal architecture (ports and adapters):** Business logic talks to the outside world only through interfaces (ports), with swappable implementations (adapters) for databases, queues, and APIs. This makes the logic testable without infrastructure.
 - **Layered architecture:** Organizing code into layers, such as presentation, business logic, and data access, where each layer calls only the one below it.
+- **Lock-in:** The cost of switching away from a provider, product, or technology. A trade-off for the features and speed that provider-specific services offer, not a defect in itself.
 - **Modular monolith:** One deployable application split internally into well-separated modules with clear boundaries. It offers much of the design benefit of microservices without the operational cost, and can be split later.
 - **Outbox pattern:** Writing outgoing messages to a table in the same database transaction as the data change, then publishing them from there. It prevents the data from changing without the message going out, or the reverse.
+- **Pilot light, warm standby:** Disaster recovery strategies. Pilot light keeps data replicated and core infrastructure ready but mostly off in a recovery region; warm standby runs a scaled-down full copy. Both sit between backup-and-restore and active-active in cost and recovery speed.
 - **Publish-subscribe (pub/sub):** Senders publish messages to a topic without knowing who receives them; every subscriber to the topic gets a copy.
+- **Quality attribute:** A non-functional requirement that says how well a system must do its job: availability, latency, scalability, recoverability, security, operability, cost. Most architectural decisions are driven by these.
 - **Repository pattern:** An interface that looks like a collection of domain objects and hides how they're stored.
 - **Retry with exponential backoff and jitter:** Retrying a failed call after waits that grow each time, with randomness added so many clients don't retry in lockstep.
 - **Saga:** A way to run a business process across several services without a distributed transaction: a series of local steps, each with a *compensating action* that undoes it if a later step fails. Coordinated either by a central orchestrator or by services reacting to each other's events (choreography).
@@ -81,6 +88,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **SOA (service-oriented architecture):** An earlier style of building systems from networked services, often through a shared enterprise service bus. Microservices grew out of it with smaller services and fewer shared components.
 - **SOLID:** Five object-oriented design principles: single responsibility, open-closed, Liskov substitution, interface segregation, and dependency inversion.
 - **Strangler fig pattern:** Replacing a legacy system gradually, by routing one piece of functionality at a time to a new implementation until the old system can be switched off.
+- **STRIDE:** A threat-modeling checklist: spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege.
 - **Ubiquitous language:** In domain-driven design, the shared vocabulary that developers and domain experts both use, in conversation and in the code, within a bounded context.
 
 ## APIs and integration
