@@ -1,0 +1,2 @@
+ID,Risk (if... then...),Category,Likelihood (1-5),Impact (1-5),Score (L x I),Current controls,Response (Reduce / Accept / Transfer / Avoid),Planned action,Owner,Due,Accepted by (if accepted),Review date,Status
+R-01,,,,,,,,,,,,,

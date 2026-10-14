@@ -53,6 +53,14 @@ Not every item applies to every program. Skip what doesn't fit, but skip it on p
 
 Copy these into your program's approved systems before filling them in (see ground rule 5).
 
+**Guides for the harder parts:**
+
+- [Assessing an inherited system](assessing-an-inherited-system.md): sections 2 and 9 as a working method: mapping the system, following a change and an incident through it, reading the commit history, interviewing, scoring risks, and presenting findings
+- [Worked example](worked-example.md): a fictional program taken through all 90 days, showing each deliverable filled in
+- [Design reviews and RFCs](design-reviews-and-rfcs.md): when to write a design, how to write it, and how to run a review that improves it
+- [Migrations and cutovers](migrations-and-cutovers.md): planning, safe migration patterns, data, and running the cutover
+- [Working with product and leadership](working-with-product-and-leadership.md): translating technical work into business terms, negotiating scope, presenting a roadmap, and disagreeing well
+
 **Going deeper.** Most "find out" and "evaluate" items here have hands-on material elsewhere in the repository: reference Terraform stacks, Kubernetes samples, and AWS and Azure command guides in [devops/](../devops/README.md) for sections [3](#3-cloud) to [8](#8-observability-and-operations), API testing in [software/](../software/README.md), and team practices in [manager/](../manager/README.md). The [repository index](../README.md) maps all of it, and the [glossary](../GLOSSARY.md) defines the terms.
 
 ---

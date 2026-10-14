@@ -1,0 +1,11 @@
+Metric,Service or scope,Baseline value,Unit,Date measured,Method (source and query),Can the team move it? (Yes / Partly / No: external gate),Target,Current value,Date of current value,Notes
+Change lead time,,,,,,,,,,
+Deployment frequency,,,,,,,,,,
+Failed deployment recovery time,,,,,,,,,,
+Change fail rate,,,,,,,,,,
+Deployment rework rate,,,,,,,,,,
+CI pipeline duration (median / p95),,,,,,,,,,
+Environment provisioning time,,,,,,,,,,
+Time for a new engineer to ship a first change,,,,,,,,,,
+Open vulnerabilities by severity and age,,,,,,,,,,
+Toil (hours per week),,,,,,,,,,
