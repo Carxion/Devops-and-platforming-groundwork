@@ -13,13 +13,13 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | You are | Start with | Then |
 |---|---|---|
 | **A tech lead** stepping into an existing program | The [onboarding checklist](tech-lead/README.md): what to learn, who to talk to, how to evaluate what you inherit, and what to deliver in 90 days | Its phase view and templates, and the DevOps material each section points to |
-| **A DevOps or platform engineer** | [devops/](devops/README.md): Bash and Docker 101, then Ansible, Terraform, Kubernetes, your cloud, and observability | The [complex commands](devops/bash/07-complex-commands.md) and the [observability lab](devops/observability/local-stack/README.md) |
-| **A software engineer** | [software/](software/README.md): Git 101, Python and Go 101 with boilerplate and operational tools, API contracts, and testing at every layer | Building images in [Docker 101](devops/docker/README.md), and instrumenting services in [observability](devops/observability/README.md) |
+| **A DevOps or platform engineer** | [devops/](devops/README.md): Bash 101 and [containers](software/containers/README.md), then Ansible, Terraform, Kubernetes, your cloud, and observability | The [complex commands](devops/bash/07-complex-commands.md) and the [observability lab](devops/observability/local-stack/README.md) |
+| **A software engineer** | [software/](software/README.md): Git 101, Python and Go 101 with boilerplate and operational tools, unit testing and linting, API contracts, and testing at every layer | Building and hardening images in [containers](software/containers/README.md), and instrumenting services in [observability](devops/observability/README.md) |
 | **An architect** designing cloud and platform foundations | [architect/](architect/README.md): the ten questions for any design, then quality attributes and trade-offs, foundations, reliability, security, delivery, observability, cost, and portability | The [architecture review checklist](architect/templates/architecture-review-checklist.md) and the tested implementations in [devops/](devops/README.md) |
 | **A manager** of a DevOps, platform, or SRE team | [Your first 90 days](manager/00-first-90-days.md), then the rest of [manager/](manager/README.md): one-on-ones, hiring, planning and metrics, on-call health, stakeholders, and templates | The [tech lead checklist](tech-lead/README.md) sections on stakeholders and evaluating problems |
 | **A scrum master** or agile coach for a platform team | [Your first 90 days](scrum-master/00-first-90-days.md), then the rest of [scrum-master/](scrum-master/README.md): Scrum for interrupt-driven teams, running the events, flow metrics, impediments, and templates | The [product owner](product-owner/README.md) and [manager](manager/README.md) guides, to agree who does what |
 | **A product owner** of a platform or internal tool | [Your first 90 days](product-owner/00-first-90-days.md), then the rest of [product-owner/](product-owner/README.md): the platform as a product, backlog, prioritization, roadmaps, and measuring outcomes | [Structuring platform teams](manager/07-structuring-platform-teams.md) and the [DORA metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics) |
-| **New to all of it** | The [glossary](GLOSSARY.md) | [Git basics](software/git/01-basics.md), [Bash basics](devops/bash/01-basics.md), and [Docker basics](devops/docker/01-basics.md) |
+| **New to all of it** | The [glossary](GLOSSARY.md) | [Git basics](software/git/01-basics.md), [Bash basics](devops/bash/01-basics.md), and [how containers work](software/containers/01-how-containers-work.md) |
 
 ## Everything in the repository
 
@@ -41,7 +41,6 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | Path | What it is |
 |---|---|
 | [bash/](devops/bash/README.md) | Bash 101 for RHEL and Ubuntu, regex, complex commands broken down, administration, and a tested server setup script library |
-| [docker/](devops/docker/README.md) | Docker 101, Dockerfiles, Compose, security, Podman on RHEL, troubleshooting, example images |
 | [ansible/](devops/ansible/README.md) | Ansible from ad hoc commands to tested roles: the server baseline for RHEL and Ubuntu, Vault and secrets managers, Molecule, CI in GitHub, GitLab, and Jenkins |
 | [terraform/](devops/terraform/README.md) | Reference AWS and Azure stacks with tests, setup, operations, and troubleshooting |
 | [kubernetes/](devops/kubernetes/README.md) | Hardened sample apps and a namespace baseline, with administration and troubleshooting commands |
@@ -52,9 +51,11 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 
 | Path | What it is |
 |---|---|
+| [containers/](software/containers/README.md) | How containers work (namespaces, cgroups, layers, OCI, the runtime stack), then Docker and Podman: architecture, command references, hardening guides, Compose, pods, Quadlet, Buildah and Skopeo |
 | [git/](software/git/README.md) | Git 101: setup and signing, branching, complex commands broken down, recovery, code review and repository settings, all tested |
 | [python/](software/python/README.md) | Python 101 and boilerplate: a standard-library CLI and a FastAPI service, with uv, ruff, mypy, pytest, and a container image, plus five operational tools |
 | [go/](software/go/README.md) | Go 101 and boilerplate: the same CLI and service with the standard library, golangci-lint, the race detector, govulncheck, and a distroless image, plus the same five tools |
+| [testing/](software/testing/README.md) | Unit testing: principles and test doubles, then pytest and Go's `testing` package with runnable examples (fixtures, fakes, table-driven tests, httptest, benchmarks, fuzzing) |
 | [api-testing/](software/api-testing/README.md) | OpenAPI contract, reference server, and Postman, Schemathesis, k6, and Locust tests |
 
 ### [architect/](architect/README.md)
@@ -114,7 +115,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 
 | Path | What it is |
 |---|---|
-| [GLOSSARY.md](GLOSSARY.md) | About 410 terms across software engineering, architecture, APIs, DevOps, Linux, cloud, security, observability, data, cost, and delivery, plus an AWS and Azure service equivalents table |
+| [GLOSSARY.md](GLOSSARY.md) | About 420 terms across software engineering, architecture, APIs, DevOps, Linux, cloud, security, observability, data, cost, and delivery, plus an AWS and Azure service equivalents table |
 | [ROADMAP.md](ROADMAP.md) | What's covered, and what's planned next |
 | [CHANGELOG.md](CHANGELOG.md) | Notable changes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to suggest corrections and additions |

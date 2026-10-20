@@ -58,11 +58,11 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/mnt" -w /mnt "$SHELLCHECK_IMAGE" -x -P SCRIPTDIR \
             devops/bash/scripts/*.sh devops/bash/scripts/lib/*.sh devops/bash/tests/integration.sh \
-            devops/docker/scripts/*.sh software/git/scripts/*.sh software/git/tests/recipes.sh
+            software/containers/docker/scripts/*.sh software/git/scripts/*.sh software/git/tests/recipes.sh
       - name: shfmt
         run: |
           docker run --rm -v "$PWD:/mnt" -w /mnt "$SHFMT_IMAGE" -d -i 2 -ci \
-            devops/bash/scripts devops/bash/tests/integration.sh devops/docker/scripts software/git/scripts software/git/tests
+            devops/bash/scripts devops/bash/tests/integration.sh software/containers/docker/scripts software/git/scripts software/git/tests
 
   ansible:
     runs-on: ubuntu-latest
@@ -96,10 +96,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [boilerplate/healthcheck, boilerplate/items-api, examples]
+        project:
+          - software/python/boilerplate/healthcheck
+          - software/python/boilerplate/items-api
+          - software/python/examples
+          - software/testing/python/example
     defaults:
       run:
-        working-directory: software/python/${{ matrix.project }}
+        working-directory: ${{ matrix.project }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -116,17 +120,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [boilerplate/healthcheck, boilerplate/items-api, examples]
+        project:
+          - software/go/boilerplate/healthcheck
+          - software/go/boilerplate/items-api
+          - software/go/examples
+          - software/testing/go/example
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: software/go/${{ matrix.project }}/go.mod
+          go-version-file: ${{ matrix.project }}/go.mod
           cache: false
       - name: gofmt
-        working-directory: software/go/${{ matrix.project }}
+        working-directory: ${{ matrix.project }}
         run: |
           unformatted=$(gofmt -l .)
           if [ -n "$unformatted" ]; then echo "Not formatted:"; echo "$unformatted"; exit 1; fi
@@ -134,7 +142,7 @@ jobs:
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: software/go/${{ matrix.project }}
+          working-directory: ${{ matrix.project }}
 
   terraform:
     runs-on: ubuntu-latest

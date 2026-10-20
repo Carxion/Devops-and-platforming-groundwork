@@ -1,6 +1,6 @@
 # Troubleshooting
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 ## Container exits immediately or keeps restarting
 
@@ -18,7 +18,7 @@ docker run --rm -it --entrypoint sh app-image      # start the image with a shel
 | 125 | Docker itself couldn't create the container: bad option, name in use |
 | 126 | The command isn't executable: permissions, or a script with Windows line endings (`\r`) |
 | 127 | Command not found: wrong path, or a binary for another architecture or libc |
-| 137 | Killed with SIGKILL: out of memory (`OOMKilled=true`, raise the limit or fix the leak), or it ignored SIGTERM during `docker stop` ([PID 1 and signals](02-dockerfiles.md#exec-form-and-signals)) |
+| 137 | Killed with SIGKILL: out of memory (`OOMKilled=true`, raise the limit or fix the leak), or it ignored SIGTERM during `docker stop` ([PID 1 and signals](03-dockerfiles.md#exec-form-and-signals)) |
 | 139 | Segmentation fault |
 | 143 | Stopped by SIGTERM: a normal `docker stop` |
 
@@ -38,7 +38,7 @@ curl -v http://127.0.0.1:8080/                                         # from th
 |---|---|
 | Works from inside the container, not from the host | The app listens on `127.0.0.1` inside the container. It must listen on `0.0.0.0` (the [items-api](examples/items-api/Dockerfile) passes `--host 0.0.0.0` for this reason). |
 | Works from the host, not from other machines | Published on `127.0.0.1` (intended?), the cloud security group or NSG, or the host firewall for traffic Docker doesn't manage |
-| Reachable from the internet when it shouldn't be | Published on all interfaces; Docker's rules bypass ufw and firewalld ([Networking](04-networking-and-storage.md#published-ports-and-the-host-firewall)) |
+| Reachable from the internet when it shouldn't be | Published on all interfaces; Docker's rules bypass ufw and firewalld ([Networking](05-networking-and-storage.md#published-ports-and-the-host-firewall)) |
 | One container can't reach another by name | They're on the default bridge, which has no DNS. Put both on a user-defined network (Compose does this automatically). |
 | No DNS or no internet from containers | Check `docker run --rm busybox nslookup example.com`. Corporate DNS or proxies: set `dns` and the proxy in `daemon.json`, or `--dns`. |
 | `address already in use` on start | Another process or container has the host port: `ss -tlnp \| grep :8080` |
@@ -49,7 +49,7 @@ curl -v http://127.0.0.1:8080/                                         # from th
 |---|---|
 | `docker` commands: "permission denied ... docker.sock" | You're not root or in the `docker` group. Use `sudo`, or rootless Docker or Podman. (Adding yourself to the group grants root-equivalent access.) |
 | Writing to a bind mount | The container's UID can't write the host directory: `chown` it to that UID, or use a named volume |
-| Reading a bind mount on RHEL | SELinux label: add `:Z` or `:z` ([Podman and RHEL](07-podman-and-rhel.md#selinux-and-volumes)) |
+| Reading a bind mount on RHEL | SELinux label: add `:Z` or `:z` ([SELinux labels](../podman/06-hardening.md#selinux-labels-and-volumes)) |
 | Writing anywhere, with `read_only: true` | Expected. `docker diff` on a writable copy shows which paths it writes; mount a volume or tmpfs there. |
 | Binding port 80 as non-root | Ports below 1024 need `NET_BIND_SERVICE`. Listen on 8080 inside and publish `-p 80:8080`. |
 
@@ -67,7 +67,7 @@ The usual causes: build cache on CI hosts, old images, stopped containers, and c
 
 | Symptom | Fix |
 |---|---|
-| Every build reinstalls all dependencies | Layer order: copy the dependency manifest and install before `COPY . .` ([Dockerfiles](02-dockerfiles.md#order-layers-from-least-to-most-frequently-changed)) |
+| Every build reinstalls all dependencies | Layer order: copy the dependency manifest and install before `COPY . .` ([Dockerfiles](03-dockerfiles.md#order-layers-from-least-to-most-frequently-changed)) |
 | Build is slow to start, "sending build context" is huge | Add a `.dockerignore` (allowlist), and don't build from your home directory |
 | `COPY failed: file not found` | The path is outside the build context, or excluded by `.dockerignore`. Paths are relative to the context, not the Dockerfile. |
 | Changes don't show up | A cached layer: `docker build --no-cache`, or check you're running the new tag |

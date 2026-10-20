@@ -1,6 +1,6 @@
 # Dockerfiles
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 A Dockerfile is the recipe for an image. Good ones produce images that are small, rebuild fast, run as non-root, and contain nothing an attacker could use. The two [examples](examples/) show every practice here; this page explains why each line is there.
 
@@ -29,7 +29,7 @@ A Dockerfile is the recipe for an image. Good ones produce images that are small
 FROM python:3.14-slim@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
 ```
 
-The tag is for people; the digest is what's pulled. Without the digest, `python:3.14-slim` can be a different image tomorrow, and a rebuild changes what you ship without a code change. Get a digest with `docker buildx imagetools inspect python:3.14-slim` or `docker image inspect --format '{{index .RepoDigests 0}}' python:3.14-slim`, and let Dependabot or Renovate propose updates (the repository's [dependabot.yml](../../.github/dependabot.yml) is the place to add the `docker` ecosystem).
+The tag is for people; the digest is what's pulled. Without the digest, `python:3.14-slim` can be a different image tomorrow, and a rebuild changes what you ship without a code change. Get a digest with `docker buildx imagetools inspect python:3.14-slim` or `docker image inspect --format '{{index .RepoDigests 0}}' python:3.14-slim`, and let Dependabot or Renovate propose updates (the repository's [dependabot.yml](../../../.github/dependabot.yml) is the place to add the `docker` ecosystem).
 
 **Choose a small base:** `-slim` variants of language images, `alpine` (tiny, but musl libc can surprise Python and Node native modules), Red Hat's UBI (`ubi9/ubi-minimal`) where RHEL support matters, or distroless (no shell at all) for compiled languages.
 
@@ -92,7 +92,7 @@ RUN groupadd --system --gid 10001 app \
 USER 10001:10001
 ```
 
-By default, a container's processes run as root. Container root isn't quite host root, but it's close enough that any escape is a full host compromise. A fixed, numeric UID lets Kubernetes verify `runAsNonRoot` without looking inside the image, and matches the `runAsUser: 10001` in the [Kubernetes samples](../kubernetes/README.md). Distroless images have a `nonroot` user (65532) built in.
+By default, a container's processes run as root. Container root isn't quite host root, but it's close enough that any escape is a full host compromise. A fixed, numeric UID lets Kubernetes verify `runAsNonRoot` without looking inside the image, and matches the `runAsUser: 10001` in the [Kubernetes samples](../../../devops/kubernetes/README.md). Distroless images have a `nonroot` user (65532) built in.
 
 Copy application files owned by root and read-only to the app user (`COPY --chmod=0444`, or `--chown=root:root`), so a compromised process can't rewrite its own code.
 
@@ -144,7 +144,7 @@ ARM servers (AWS Graviton, Azure Cobalt and Ampere) are cheaper per unit of work
 ```sh
 docker buildx create --use --name multiarch           # a builder that supports multiple platforms
 docker buildx build --platform linux/amd64,linux/arm64 \
-  -t registry.example.com/team/go-hello:1.0.0 --push devops/docker/examples/go-hello
+  -t registry.example.com/team/go-hello:1.0.0 --push software/containers/docker/examples/go-hello
 docker buildx imagetools inspect registry.example.com/team/go-hello:1.0.0   # one manifest list, two images
 ```
 
@@ -158,7 +158,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.75.
   --severity HIGH,CRITICAL --ignore-unfixed myapp:1.0                       # known vulnerabilities in the image
 ```
 
-Hadolint runs in CI on every Dockerfile in this repository; run Trivy after each build. On the first scan of the items-api image, Trivy found four HIGH vulnerabilities, all in libraries bundled inside `pip`, which the app doesn't use at run time. Removing pip from the final image removed all four: **the best vulnerability fix is not shipping the component.** See [Security](06-security.md) for signing and SBOMs.
+Hadolint runs in CI on every Dockerfile in this repository; run Trivy after each build. On the first scan of the items-api image, Trivy found four HIGH vulnerabilities, all in libraries bundled inside `pip`, which the app doesn't use at run time. Removing pip from the final image removed all four: **the best vulnerability fix is not shipping the component.** See [Security](08-hardening.md) for signing and SBOMs.
 
 ## Checklist
 

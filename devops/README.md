@@ -7,7 +7,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 | Folder | What it is | Start with |
 |---|---|---|
 | [bash/](bash/README.md) | Bash 101 for RHEL and Ubuntu: basics, text processing, regex, scripting, administration, complex commands broken down, and a tested script library for setting up servers | [Basics](bash/01-basics.md) |
-| [docker/](docker/README.md) | Docker 101: images, Dockerfiles, Compose, networking, security, Podman on RHEL, troubleshooting, with example images | [Basics](docker/01-basics.md) |
+| [containers](../software/containers/README.md) (in software/) | How containers work, Docker, and Podman: architecture, commands, Dockerfiles, Compose, Quadlet, and hardening guides for both engines | [How containers work](../software/containers/01-how-containers-work.md) |
 | [ansible/](ansible/README.md) | Ansible: inventory and ad hoc commands, playbooks and roles, Vault and secrets managers, Molecule testing, CI in GitHub, GitLab, and Jenkins, and fleet operations, with the server baseline as five tested roles for RHEL and Ubuntu | [Basics](ansible/01-basics.md) |
 | [terraform/](terraform/README.md) | Reference AWS and Azure stacks: state, CI identity, networking, container apps, Kubernetes, serverless. Plus setup, operations, and troubleshooting. | [README](terraform/README.md), then [OPERATIONS](terraform/OPERATIONS.md) |
 | [kubernetes/](kubernetes/README.md) | Hardened sample apps (web app, worker, scheduled job), a namespace baseline, and administration and troubleshooting commands | [README](kubernetes/README.md), then [OPERATIONS](kubernetes/OPERATIONS.md) |
@@ -17,7 +17,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 
 ## A suggested path
 
-1. **The shell and containers:** [Git](../software/git/README.md), [bash](bash/README.md), then [docker](docker/README.md). Everything else assumes them.
+1. **The shell and containers:** [Git](../software/git/README.md), [bash](bash/README.md), then [docker](../software/containers/docker/README.md). Everything else assumes them.
 2. **Servers at scale:** [ansible](ansible/README.md), applying the baseline the Bash scripts build by hand.
 3. **Your cloud:** the [AWS](aws/README.md) or [Azure](azure/README.md) setup and identity guides.
 4. **Infrastructure as code:** [terraform](terraform/README.md), deploying one stack to a sandbox.

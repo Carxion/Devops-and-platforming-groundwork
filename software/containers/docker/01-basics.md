@@ -1,6 +1,6 @@
 # Basics
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 ## The ideas
 
@@ -43,7 +43,7 @@ docker restart web
 docker rm web                  # delete it (it must be stopped, or use -f)
 ```
 
-The writable layer is deleted with the container. **Anything a container writes that must survive goes in a volume** ([Networking and storage](04-networking-and-storage.md)).
+The writable layer is deleted with the container. **Anything a container writes that must survive goes in a volume** ([Networking and storage](05-networking-and-storage.md)).
 
 ## Images
 

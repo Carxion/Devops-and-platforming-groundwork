@@ -112,7 +112,7 @@ Repeat one level deeper into the biggest directory until you find the culprit. T
 | Logs | `du -sh /var/log/*` | Fix logrotate (`/etc/logrotate.d/`), lower the log level, ship logs off the host |
 | The journal | `journalctl --disk-usage` | `journalctl --vacuum-size=500M`; set `SystemMaxUse=` in `/etc/systemd/journald.conf` |
 | Deleted files still open | `sudo lsof -nP +L1` | A process holds a deleted file open, so its space isn't freed. Restart that process (or truncate via `/proc/PID/fd/N`). |
-| Container images and volumes | `docker system df` | `docker system prune` (see [Docker 101](../docker/05-complex-commands.md#cleanup)) |
+| Container images and volumes | `docker system df` | `docker system prune` (see [Docker cleanup](../../software/containers/docker/07-complex-commands.md#cleanup)) |
 | Package cache | `du -sh /var/cache/dnf /var/cache/apt` | `dnf clean all`, `apt clean` |
 | Old kernels | `rpm -q kernel` or `dpkg -l 'linux-image-*'` | `dnf remove --oldinstallonly`; `apt autoremove --purge` |
 | Core dumps | `coredumpctl list`; `ls /var/lib/systemd/coredump` | Remove old ones; find out why the program crashes |

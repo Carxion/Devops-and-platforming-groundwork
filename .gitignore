@@ -71,5 +71,10 @@ kubeconfig
 *.bak.*
 
 # Scan and test output
+.coverage
+coverage.xml
+htmlcov/
+junit.xml
+cover.out
 sbom.json
 trivy-report.*

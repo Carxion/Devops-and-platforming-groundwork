@@ -13,6 +13,7 @@ Python is the most common language for operations tooling after the shell: autom
 | 1 | [Language essentials](01-language-essentials.md) | Read and write Python: types, collections, control flow, functions, errors, classes and dataclasses, comprehensions, type hints |
 | 2 | [Python for operations](02-python-for-operations.md) | Work with files and paths, run commands, parse JSON and YAML, call HTTP APIs, use the AWS and Azure SDKs, write CLIs, log properly, and do things in parallel |
 | 3 | [Projects and tooling](03-projects-and-tooling.md) | Set up a project with `uv` and `pyproject.toml`, lint and format with ruff, type-check with mypy, test with pytest, and package and containerize it |
+| 4 | [Testing and linting](04-testing-and-linting.md) | Run every check and know what it catches: ruff (format and lint), mypy, pytest and coverage, the lock file, pip-audit, pre-commit, and CI with reports in GitLab and GitHub |
 
 ## Boilerplate
 
@@ -36,6 +37,8 @@ The same two projects exist in [Go](../go/README.md), so you can compare the lan
 | tag-audit | Find AWS resources missing required tags |
 
 For the wider picture of what teams build in each language, see [what operations teams build](../README.md#what-operations-teams-build).
+
+For writing unit tests (fixtures, fakes, table-driven tests, and more), see [Unit testing in Python](../testing/python/README.md).
 
 ## Setup
 

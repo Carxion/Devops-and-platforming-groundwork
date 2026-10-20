@@ -134,7 +134,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o bin
 | `-ldflags "-s -w"` | Strip debug symbols: a smaller binary |
 | `-ldflags "-X main.version=1.2.0"` | Set a variable at build time |
 
-The [items-api Dockerfile](boilerplate/items-api/Dockerfile) builds in a full Go image and copies only the binary into distroless: about 17 MB, with no shell or package manager for an attacker to use. The [Dockerfiles guide](../../devops/docker/02-dockerfiles.md) explains the pattern, including multi-architecture builds.
+The [items-api Dockerfile](boilerplate/items-api/Dockerfile) builds in a full Go image and copies only the binary into distroless: about 17 MB, with no shell or package manager for an attacker to use. The [Dockerfiles guide](../containers/docker/03-dockerfiles.md) explains the pattern, including multi-architecture builds.
 
 ## In CI
 

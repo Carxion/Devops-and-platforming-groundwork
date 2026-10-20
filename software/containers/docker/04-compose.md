@@ -1,6 +1,6 @@
 # Compose
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 Docker Compose describes a multi-container application in one YAML file: services, networks, volumes, and how they start. It's ideal for local development, CI test environments, and single-host deployments. For running across many hosts, use an orchestrator (Kubernetes, ECS, Azure Container Apps) instead.
 
@@ -64,7 +64,7 @@ Plain `depends_on: [items-api]` only waits for the container to *start*, not for
 ### A file that's also a test
 
 ```sh
-docker compose -f devops/docker/examples/compose.yaml up --build --exit-code-from smoke-test
+docker compose -f software/containers/docker/examples/compose.yaml up --build --exit-code-from smoke-test
 ```
 
 `--exit-code-from smoke-test` stops everything when that service exits and returns its exit code, so CI can run the whole stack and fail on the test's result. That's how to check the examples, locally or in your own pipeline.
@@ -76,7 +76,7 @@ docker compose -f devops/docker/examples/compose.yaml up --build --exit-code-fro
       - "127.0.0.1:8080:8080"
 ```
 
-`"8080:8080"` publishes on every interface, which on a server means the internet. Docker inserts its own firewall rules for published ports, which **bypass ufw and firewalld rules** on the host ([Networking](04-networking-and-storage.md#published-ports-and-the-host-firewall)). Bind to `127.0.0.1` unless the port must be public, and put a reverse proxy in front if it must.
+`"8080:8080"` publishes on every interface, which on a server means the internet. Docker inserts its own firewall rules for published ports, which **bypass ufw and firewalld rules** on the host ([Networking](05-networking-and-storage.md#published-ports-and-the-host-firewall)). Bind to `127.0.0.1` unless the port must be public, and put a reverse proxy in front if it must.
 
 ## Variables and environments
 
@@ -110,7 +110,7 @@ docker compose -f compose.yaml -f compose.prod.yaml up -d
 docker compose --profile traffic up -d
 ```
 
-The [observability lab](../observability/local-stack/compose.yaml) uses a profile for its optional traffic generator.
+The [observability lab](../../../devops/observability/local-stack/compose.yaml) uses a profile for its optional traffic generator.
 
 ## Development workflow
 

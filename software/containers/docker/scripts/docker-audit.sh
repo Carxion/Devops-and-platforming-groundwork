@@ -12,7 +12,7 @@
 #   -h, --help  this help
 #
 # Read-only: it only runs "docker ps" and "docker inspect". Each check is
-# explained in devops/docker/06-security.md.
+# explained in software/containers/docker/08-hardening.md.
 
 set -Euo pipefail
 

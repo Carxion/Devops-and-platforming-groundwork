@@ -1,9 +1,9 @@
 # Compose example: build both sample images, start them with hardened
 # settings, wait until the API is healthy, then run the k6 smoke test from
-# software/api-testing/ against it. Explained in devops/docker/03-compose.md.
+# software/api-testing/ against it. Explained in software/containers/docker/04-compose.md.
 #
-#   docker compose -f devops/docker/examples/compose.yaml up --build --exit-code-from smoke-test
-#   docker compose -f devops/docker/examples/compose.yaml down
+#   docker compose -f software/containers/docker/examples/compose.yaml up --build --exit-code-from smoke-test
+#   docker compose -f software/containers/docker/examples/compose.yaml down
 #
 # "up --exit-code-from smoke-test" stops everything when the test finishes and
 # exits with its result, which makes the whole file usable as a CI check.
@@ -29,8 +29,8 @@ services:
   items-api:
     <<: *hardened
     build:
-      context: ../../../software/api-testing/local-server
-      dockerfile: ../../../devops/docker/examples/items-api/Dockerfile
+      context: ../../../api-testing/local-server
+      dockerfile: ../../containers/docker/examples/items-api/Dockerfile
     image: docker-101/items-api:local
     ports:
       - "127.0.0.1:8080:8080" # loopback only; drop 127.0.0.1 to listen on every interface
@@ -57,7 +57,7 @@ services:
     environment:
       BASE_URL: http://items-api:8080 # service names resolve on the Compose network
     volumes:
-      - ../../../software/api-testing/k6:/scripts:ro
+      - ../../../api-testing/k6:/scripts:ro
     depends_on:
       items-api:
         condition: service_healthy # wait for the health check, not just for the container to start

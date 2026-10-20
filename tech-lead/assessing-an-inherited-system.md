@@ -138,9 +138,9 @@ You don't need to read everything. Check the things that predict trouble:
 | Is infrastructure in code, and does the code match reality? | `terraform plan` against each environment: unexpected changes mean drift | Drift means the code can't be trusted to rebuild anything |
 | Do environments match? | Compare IaC variables and configuration across dev, test, and prod | Differences explain "works in staging" failures |
 | Are runbooks current? | Pick three alerts and follow their runbooks | Stale runbooks fail exactly when needed |
-| How are images and artifacts built? | Dockerfiles, build scripts ([Docker security](../devops/docker/06-security.md)) | Root containers, unpinned bases, and secrets in layers are common |
+| How are images and artifacts built? | Dockerfiles, build scripts ([Docker security](../software/containers/docker/08-hardening.md)) | Root containers, unpinned bases, and secrets in layers are common |
 
-The [devops](../devops/README.md) folder has reference implementations to compare against: what a hardened [Kubernetes workload](../devops/kubernetes/README.md), a secured [Terraform stack](../devops/terraform/README.md), or a [Dockerfile](../devops/docker/02-dockerfiles.md) looks like.
+The [devops](../devops/README.md) folder has reference implementations to compare against: what a hardened [Kubernetes workload](../devops/kubernetes/README.md), a secured [Terraform stack](../devops/terraform/README.md), or a [Dockerfile](../software/containers/docker/03-dockerfiles.md) looks like.
 
 ## 7. Score the risks
 

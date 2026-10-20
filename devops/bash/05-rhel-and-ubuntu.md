@@ -237,5 +237,5 @@ The LVM workflow to grow a disk is the same on both, and is in [Administration](
 | Hostname changes back after reboot | Ubuntu on cloud | cloud-init manages it: `preserve_hostname: true` in `/etc/cloud/cloud.cfg`. |
 | SSH config change has no effect | Both | sshd uses the **first** value it reads, and `sshd_config.d/*.conf` files are read at the top, in name order. A `50-cloud-init.conf` setting beats your later line. Use a low-numbered drop-in and check with `sshd -T`. |
 | `systemctl restart ssh` says the unit isn't found | RHEL | It's `sshd` on RHEL (and `ssh` on Ubuntu). |
-| No `docker` package | RHEL | RHEL ships Podman. Install Docker from Docker's repository ([install-docker.sh](scripts/install-docker.sh)), or use Podman with `podman-docker`. See [Docker 101](../docker/README.md). |
+| No `docker` package | RHEL | RHEL ships Podman. Install Docker from Docker's repository ([install-docker.sh](scripts/install-docker.sh)), or use Podman with `podman-docker`. See [Podman](../../software/containers/podman/README.md). |
 | A `.repo` or `.sources` file you added breaks every update | Both | A vendor repository is down or its key expired. `dnf --disablerepo=NAME` or comment out the source, then fix or remove it. |

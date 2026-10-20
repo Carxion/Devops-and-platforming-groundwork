@@ -244,11 +244,17 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 - **Admission controller:** A Kubernetes component that checks or changes objects before they're stored, used to enforce policy. Kyverno, Gatekeeper, and Pod Security Admission are examples.
 - **AKS, EKS, GKE:** The managed Kubernetes services on Azure, AWS, and Google Cloud.
+- **Buildah:** A daemonless tool for building OCI images, from a Dockerfile or step by step from a script. Podman's builds use it.
+- **Capabilities (Linux):** root's power split into about 40 separate privileges, such as `CAP_NET_ADMIN`. Containers get a reduced set; hardening drops all of them and adds back only what's needed.
+- **cgroup (control group):** A kernel feature that groups processes and limits and accounts for their CPU, memory, and process count. Container resource limits are cgroup settings.
 - **ConfigMap and Secret:** Kubernetes objects that hold configuration and sensitive values for pods. Secrets are only base64-encoded by default, not encrypted, unless encryption at rest is turned on.
+- **conmon:** Podman's small per-container monitor: it holds the container's input, output, and logs, and records its exit code, so no daemon is needed.
 - **Container:** A process packaged with its dependencies and isolated from others on the same host. Lighter than a virtual machine because it shares the host's kernel.
 - **Container image:** The read-only template a container starts from, built from a Dockerfile or similar and stored in a registry.
+- **containerd:** A CNCF container runtime daemon that stores images and supervises containers. Docker uses it, and Kubernetes clusters use it directly through the CRI.
 - **Control plane:** The Kubernetes components that make decisions and store cluster state (API server, scheduler, etcd). Managed services run it for you.
 - **CRD (custom resource definition):** A way to add new object types to Kubernetes, used by operators and add-ons.
+- **CRI (Container Runtime Interface):** The API Kubernetes uses to talk to a container runtime, such as containerd or CRI-O.
 - **DaemonSet:** Runs one copy of a pod on every node (or selected nodes), typically for agents such as log collectors.
 - **Deployment:** Manages a set of identical, interchangeable pods and rolls out new versions of them.
 - **Distroless image:** A container image with only the application and its runtime, without a shell or package manager, which shrinks the attack surface.
@@ -260,13 +266,16 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Job and CronJob:** A Job runs pods until a task completes; a CronJob creates Jobs on a schedule.
 - **kubectl:** The Kubernetes command-line tool.
 - **Kustomize:** A tool, built into kubectl, that customizes plain manifests with overlays instead of templates.
+- **Linux namespace:** A kernel feature that gives a process its own view of a resource (processes, network, mounts, hostname, users). Containers are processes in their own namespaces. Not the same as a Kubernetes namespace.
 - **Liveness, readiness, and startup probes:** Health checks. A failed liveness probe restarts the container, a failed readiness probe removes it from traffic, and a startup probe gives slow starters time before the other two begin.
 - **Manifest:** A YAML or JSON file describing a Kubernetes object.
 - **Namespace:** A partition of a cluster for grouping objects and applying access rules, quotas, and policies.
 - **NetworkPolicy:** Rules for which pods may talk to which. They're only enforced if the cluster's network plugin supports them.
 - **Node:** A machine (usually a VM) that runs pods. A *node pool* or *node group* is a set of identical nodes.
 - **OCI (Open Container Initiative):** The standards for container image formats and runtimes, so images built by one tool run in any other.
+- **OCI runtime:** The low-level program that creates a container from an OCI bundle: namespaces, cgroups, and security settings. runc and crun are the common ones.
 - **Operator:** A controller that manages a complex application (such as a database) on Kubernetes, using custom resources.
+- **Overlay filesystem (overlayfs):** The kernel filesystem that stacks an image's read-only layers under a container's thin writable layer, with copy-on-write.
 - **Podman:** A daemonless, rootless-by-default container engine with Docker-compatible commands; the supported container tool on RHEL.
 - **Pod:** The smallest deployable unit in Kubernetes: one or more containers that share a network address and storage.
 - **PodDisruptionBudget (PDB):** The minimum number of pods that must stay running during voluntary disruptions such as node upgrades.
@@ -274,11 +283,14 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Quadlet:** Podman's systemd integration: a `.container` file describes a container, and systemd runs it as a service.
 - **Requests and limits:** The CPU and memory a container is guaranteed (requests) and may not exceed (limits). The scheduler places pods by their requests.
 - **Rootless containers:** Containers run by an ordinary user, with no root daemon, so an escape lands as that user rather than root.
+- **seccomp:** A kernel feature that filters which system calls a process can make. Docker and Podman apply a default profile that blocks dangerous calls.
 - **Service:** A stable network name and address in front of a changing set of pods.
 - **Service mesh:** A layer (such as Istio or Linkerd) that handles service-to-service traffic, adding mutual TLS, retries, and telemetry without code changes.
 - **Sidecar:** A helper container that runs beside the main container in a pod, such as a proxy or a log shipper.
+- **Skopeo:** A tool that inspects, copies, and mirrors images between registries and local storage without pulling them through a daemon.
 - **StatefulSet:** Like a Deployment, but for pods that need stable names and their own persistent storage, such as databases.
 - **Taints and tolerations:** A taint keeps pods off a node unless they carry a matching toleration. Used to reserve nodes for particular workloads.
+- **User namespace:** A namespace that maps user IDs, so root inside a container can be an unprivileged user on the host. The basis of rootless containers.
 
 ## Cloud
 

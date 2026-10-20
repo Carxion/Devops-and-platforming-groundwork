@@ -1,6 +1,6 @@
 # Networking and storage
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 ## Networks
 
@@ -54,7 +54,7 @@ The long `--mount` syntax is clearer in scripts: `--mount type=volume,src=pgdata
 
 A container running as UID 10001 can only write to a bind-mounted host directory that UID 10001 can write to. Either `chown 10001:10001 /srv/app/data` on the host, or use a named volume (Docker copies the image's directory ownership into a new empty volume).
 
-On RHEL with SELinux, bind mounts also need a label, or the container gets "permission denied": add `:Z` (private to this container) or `:z` (shared between containers) to the volume flag. See [Podman and RHEL](07-podman-and-rhel.md#selinux-and-volumes).
+On RHEL with SELinux, bind mounts also need a label, or the container gets "permission denied": add `:Z` (private to this container) or `:z` (shared between containers) to the volume flag. See [SELinux labels](../podman/06-hardening.md#selinux-labels-and-volumes).
 
 ### Backing up a volume
 

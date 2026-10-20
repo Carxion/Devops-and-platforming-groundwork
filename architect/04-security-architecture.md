@@ -50,9 +50,9 @@ The highest-leverage area. Decisions:
 
 What runs in production is only as trustworthy as everything that built it:
 
-- **Pinned dependencies and base images** (by digest), updated by automation ([Dockerfiles](../devops/docker/02-dockerfiles.md))
+- **Pinned dependencies and base images** (by digest), updated by automation ([Dockerfiles](../software/containers/docker/03-dockerfiles.md))
 - **Scanning** of dependencies, images, and infrastructure code in CI, with gates on fixable critical findings
-- **Build provenance and signing:** artifacts built only in CI, signed, with an SBOM, and verified at deployment ([Docker security](../devops/docker/06-security.md#sboms-and-signing)); the SLSA framework sets levels for this
+- **Build provenance and signing:** artifacts built only in CI, signed, with an SBOM, and verified at deployment ([Docker security](../software/containers/docker/08-hardening.md#sboms-and-signing)); the SLSA framework sets levels for this
 - **Protected pipelines:** branch protection, required reviews, CI identities that can't be used from developer machines, and pinned CI actions or plugins
 - **Minimal runtime images** (distroless or slim), running as non-root with read-only filesystems
 

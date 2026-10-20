@@ -123,7 +123,7 @@ The [items-api Dockerfile](boilerplate/items-api/Dockerfile) shows the pattern f
 1. **Build stage:** copy `pyproject.toml` and `uv.lock` first and install dependencies (cached until they change), then copy the source and install the project, into a virtual environment.
 2. **Runtime stage:** a clean slim image, a non-root user, pip removed, and only the virtual environment copied across.
 
-The [Dockerfiles guide](../../devops/docker/02-dockerfiles.md) explains each practice. Python images are larger than Go's (about 210 MB against 17 MB for the same API here) because they carry the interpreter and libraries.
+The [Dockerfiles guide](../containers/docker/03-dockerfiles.md) explains each practice. Python images are larger than Go's (about 210 MB against 17 MB for the same API here) because they carry the interpreter and libraries.
 
 ## Pre-commit checks
 

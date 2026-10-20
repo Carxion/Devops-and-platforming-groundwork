@@ -1,6 +1,6 @@
 # Complex commands, broken down
 
-[← Docker 101](README.md)
+[← Docker](README.md)
 
 Docker's output is designed to be filtered and reshaped: `--filter` selects, `--format` (a Go template) chooses what to print, and `docker inspect` exposes everything as JSON for `jq`. Each command below is broken into its parts. [scripts/docker-audit.sh](scripts/docker-audit.sh) and [scripts/docker-cleanup.sh](scripts/docker-cleanup.sh) combine many of them.
 
@@ -126,7 +126,7 @@ docker run --rm -it --pid=container:go-hello --network=container:go-hello nicola
 | `--network=container:go-hello` | Share its network namespace: `ss -tlnp`, `curl localhost:8080`, `tcpdump` see exactly what it sees |
 | `nicolaka/netshoot` | An image full of network and debugging tools |
 
-The target image stays minimal; the tools come from a separate container only while you need them. (`docker debug` in Docker Desktop does the same, and Kubernetes has `kubectl debug` with ephemeral containers; see [devops/kubernetes/OPERATIONS.md](../kubernetes/OPERATIONS.md).)
+The target image stays minimal; the tools come from a separate container only while you need them. (`docker debug` in Docker Desktop does the same, and Kubernetes has `kubectl debug` with ephemeral containers; see [devops/kubernetes/OPERATIONS.md](../../../devops/kubernetes/OPERATIONS.md).)
 
 ## 9. Copy files in and out
 
@@ -172,4 +172,4 @@ docker system prune -f                                   # containers, networks,
 
 **Volumes hold data.** `docker volume prune --all` and `docker system prune --volumes` delete named volumes nobody's container is using right now, including the database volume of a stack you stopped yesterday. [docker-cleanup.sh](scripts/docker-cleanup.sh) previews everything first, and touches volumes only with `--volumes`.
 
-Schedule cleanup on build hosts and CI runners, where images and build cache pile up fastest, with a systemd timer ([Writing scripts](../bash/04-scripting.md#scheduling)) running `docker-cleanup.sh --apply`.
+Schedule cleanup on build hosts and CI runners, where images and build cache pile up fastest, with a systemd timer ([Writing scripts](../../../devops/bash/04-scripting.md#scheduling)) running `docker-cleanup.sh --apply`.

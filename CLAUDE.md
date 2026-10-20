@@ -17,6 +17,7 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `scrum-master/`, `product-owner/`: the same shape as `manager/` (a first-90-days checklist, numbered guides, `templates/`). Frameworks cite their primary source and version: the Scrum Guide (November 2020), the Kanban Guide (May 2025). Keep the "who does what" split in `scrum-master/README.md` consistent with the other role folders.
 - `CHANGELOG.md`: add a line under **Unreleased** for every content change.
 - `architect/`: considerations guides (numbered) and `templates/`. Each guide links principles to the tested code in `devops/`; keep those links pointing at real files.
+- `software/testing/`: unit testing principles, and `python/` and `go/` guides, each with an `example/` project on the same pricing domain. Keep the two examples' behavior and tests parallel, and every technique the guides describe used in the example.
 - `software/python/`, `software/go/`: 101 guides, `boilerplate/` projects (a CLI and the Items API in each), and `examples/` (the same five operational tools in each language; keep their flags, JSON output, and exit codes matching). The API implementations must pass the `software/api-testing` contract tests (run locally; see `CONTRIBUTING.md`).
 - `devops/`, `software/`, `manager/`, `scrum-master/`, `product-owner/`: each has a README listing its contents. Material moves between them only when its audience changes.
 - `devops/terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `devops/terraform/README.md`.
@@ -27,7 +28,7 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). Tests: Bats (`tests/*.bats`) and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
 - `devops/ansible/`: guides and a project at the folder root (`site.yml`, `roles/`, `inventory/`, `molecule/default/`). Tests: `molecule test`.
 - `software/git/`: Git 101 guides, `templates/`, `scripts/`, and `tests/recipes.sh`, which runs every recipe in the guides. Run it on Ubuntu 22.04 (Git 2.34), 24.04, and Rocky 9.
-- `devops/docker/`: Docker 101 guides, `examples/` (Dockerfiles and a Compose file), and `scripts/`. Tests: builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`.
+- `software/containers/`: how containers work, then `docker/` (guides, `examples/` with Dockerfiles and a Compose file, `scripts/`) and `podman/`. Tests: builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`. Verify Docker commands against a real daemon and Podman commands in a `quay.io/podman/stable` container before writing them.
 - `ROADMAP.md`: coverage and planned areas; move an area to "Covered today" only when it meets the definition of done there.
 - `scripts/check_cli_commands.py`: checks every `aws`/`az` command, flag, and `--query` in Markdown against the real CLIs (run locally).
 - `.github/workflows/lint.yml`: the only CI workflow, static checks only: markdownlint, cspell, lychee, checklist freshness, ShellCheck, shfmt, yamllint and ansible-lint, ruff, gofmt and golangci-lint, `terraform fmt` and tflint, Hadolint. Every test suite runs locally instead (`CONTRIBUTING.md#running-the-tests-locally`): run the ones for an area before changing it, and keep that table current when adding an area. Don't add heavy jobs (builds, containers, test suites) to CI without asking.
@@ -95,7 +96,7 @@ kubectl kustomize devops/kubernetes/apps/<app>/overlays/<overlay> | kubeconform 
 - Go: standard library first, `gofmt`, `go vet`, golangci-lint v2 (`.golangci.yml` per project), `go test -race`, govulncheck. Local Go may be older than `go.mod` needs; test in `golang:1.27-alpine` (add `gcc musl-dev` for `-race`).
 - Example tests must not need network access or cloud credentials: local servers, generated certificates, moto or a fake client. Exit codes: 0 fine, 1 finding, 2 usage or configuration error.
 - A change to either API implementation must keep Schemathesis (`--checks all`) and Newman passing against the built image.
-- Code blocks in the language guides must parse: Python blocks with `ast.parse`, Go blocks with `go/format.Source` (keep declarations and statements in separate blocks).
+- Code blocks in the language guides and `software/testing/` must parse: Python blocks with `ast.parse`, Go blocks with `go/format.Source` (keep declarations and statements in separate blocks).
 
 ## Ansible
 

@@ -1,0 +1,47 @@
+[project]
+name = "pricing"
+version = "0.1.0"
+description = "A small pricing module, written to show how to unit test with pytest."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "CC-BY-4.0"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4",
+    "pytest>=9.1",
+    "pytest-cov>=7.1",
+    "ruff>=0.17",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "S", "SIM", "PT", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # pytest uses plain assert
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["slow: tests that take more than a second"]
+
+[tool.coverage.run]
+branch = true
+source = ["pricing"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90

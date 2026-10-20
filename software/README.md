@@ -6,12 +6,14 @@ Material for engineers building and testing the software that runs on the platfo
 
 | Folder | What it is | Start with |
 |---|---|---|
+| [containers/](containers/README.md) | How containers work, then Docker and Podman: architecture, command references, Dockerfiles, Compose, pods, Quadlet, and a hardening guide for each engine | [How containers work](containers/01-how-containers-work.md) |
 | [git/](git/README.md) | Git 101: setup and SSH signing, branching and conflicts, complex commands broken down, recovering from almost anything, and code review with repository settings, every recipe tested on Git 2.34 and later | [Basics](git/01-basics.md) |
 | [python/](python/README.md) | Python 101: language essentials, Python for operations (files, commands, HTTP, cloud SDKs, CLIs, concurrency), and projects and tooling (uv, ruff, mypy, pytest, containers), with a CLI and a FastAPI service as boilerplate and five [operational tools](python/examples/README.md) | [Setup](python/README.md#setup) |
 | [go/](go/README.md) | Go 101: language essentials, Go for operations (CLIs, HTTP clients and servers, JSON, goroutines and context, slog), and projects and tooling (modules, testing, golangci-lint, govulncheck, cross-compiling, containers), with the same CLI and service as boilerplate and the same five [operational tools](go/examples/README.md) | [Setup](go/README.md#setup) |
+| [testing/](testing/README.md) | How to write unit tests: principles, test doubles, and coverage, then pytest (Python) and the `testing` package (Go), each with a runnable example project on the same domain | [Unit testing](testing/README.md) |
 | [api-testing/](api-testing/README.md) | An OpenAPI contract for the serverless item API the Terraform stacks deploy, with a reference server and Postman, Schemathesis, k6, and Locust tests that run locally or against AWS and Azure | [Quick start](api-testing/README.md#quick-start-local) |
 
-The [glossary](../GLOSSARY.md#software-engineering) covers software engineering, architecture, and API terms. Building and shipping containers is in [devops/docker](../devops/docker/README.md), and observability for applications (instrumenting with OpenTelemetry, SLOs) is in [devops/observability](../devops/observability/README.md).
+The [glossary](../GLOSSARY.md#software-engineering) covers software engineering, architecture, and API terms. Building and shipping containers is in [containers/](containers/README.md), and observability for applications (instrumenting with OpenTelemetry, SLOs) is in [devops/observability](../devops/observability/README.md).
 
 The Python and Go boilerplate projects implement the same CLI and the same API, and the operational examples implement the same five tools, so the languages can be compared on identical problems. The [API contract tests](api-testing/README.md) run against both API implementations (locally; see each items-api README). More is planned for this folder, including CI/CD pipelines in GitLab CI and Jenkins. See the [roadmap](../ROADMAP.md).
 
