@@ -59,4 +59,4 @@ CI lints the scripts ([lint.yml](../../.github/workflows/lint.yml)); the recipe 
 
 - The [glossary](../../GLOSSARY.md#source-control-and-collaboration) defines branching, merge, rebase, pull request, and trunk-based development.
 - The [tech lead checklist](../../tech-lead/README.md) asks about branch protection, review practices, and repository hygiene in its source control and CI sections.
-- [CI/CD pipelines in GitLab CI and Jenkins](../../ROADMAP.md) are next on the roadmap and build on this.
+- [GitLab CI/CD](../../devops/gitlab/README.md) builds on this: merge requests, protected branches, and pipelines. Jenkins is [on the roadmap](../../ROADMAP.md).

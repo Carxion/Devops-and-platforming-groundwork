@@ -169,6 +169,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **CD (continuous delivery):** Every change that passes the pipeline is releasable, and releasing is a routine, low-risk decision.
 - **CD (continuous deployment):** Every change that passes the pipeline goes to production automatically, with no human release step.
 - **CI (continuous integration):** Merging changes into the shared branch often, with every change built and tested automatically.
+- **CI/CD component:** In GitLab, a reusable, versioned piece of pipeline configuration with declared inputs, included with `include: component:` and listed in the CI/CD Catalog. See [Reusing pipeline code](devops/gitlab/04-reusing-pipeline-code.md#cicd-components).
 - **Deployment vs. release:** Deployment puts code on servers; release exposes it to users. Feature flags let you deploy without releasing.
 - **Environment:** A full running copy of a system for a purpose, such as dev, test, staging, or production.
 - **Environment promotion:** Moving the same artifact through environments in order (dev, then staging, then production), with gates between them.
@@ -178,10 +179,13 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **GitOps:** Keeping the desired state of a system in Git and having an agent (such as Argo CD or Flux) continuously make the running system match it.
 - **Hermetic build:** A build whose result depends only on its declared inputs, not on the machine or the network, so it's reproducible.
 - **Immutable artifact:** An artifact that is never changed after it's built. A fix produces a new version.
+- **Job token:** A short-lived token a CI job gets automatically (`CI_JOB_TOKEN` in GitLab, `GITHUB_TOKEN` in GitHub Actions) for the CI system's own APIs, registries, and repositories.
 - **Pipeline:** The automated sequence of stages (build, test, scan, deploy) that a change goes through.
+- **Protected branch:** A branch that only some roles can push or merge to. In GitLab, protected variables and runners are only available to pipelines on protected branches and tags.
 - **Rollback and roll forward:** Rolling back returns to the previous version; rolling forward fixes the problem with a new version.
 - **Rolling deployment:** Replacing instances of the old version with the new one a few at a time.
 - **Runner or agent:** The machine that executes pipeline jobs. It can be hosted by the CI provider or self-hosted.
+- **Saved plan:** A Terraform plan written to a file (`terraform plan -out`) and applied later, so what's applied is exactly what was reviewed.
 - **Smoke test:** A quick check right after deployment that the system starts and its main paths respond.
 
 ## Infrastructure as code

@@ -27,6 +27,7 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `software/api-testing/`: OpenAPI contract (`openapi/items-api.yaml`), reference server, Postman, k6, and Locust tests. The spec defines the serverless stacks' behavior: change the spec, both handlers, and the local server together.
 - `devops/observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `scripts/check_observability_lab.py` checks the running lab.
 - `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). Tests: Bats (`tests/*.bats`) and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
+- `devops/gitlab/`: GitLab 101 and CI/CD guides, `examples/` (a component project and three pipelines), and `lab/` (Compose and `lab.sh`). `scripts/check_gitlab_examples.py` runs the examples in the lab and lints every yaml block in the guides whose first line is `# .gitlab-ci.yml`; fragments start with anything else. The AWS and Azure `gitlab-oidc` stacks in `devops/terraform/` are its cloud side.
 - `devops/ansible/`: guides and a project at the folder root (`site.yml`, `roles/`, `inventory/`, `molecule/default/`). Tests: `molecule test`.
 - `software/git/`: Git 101 guides, `templates/`, `scripts/`, and `tests/recipes.sh`, which runs every recipe in the guides. Run it on Ubuntu 22.04 (Git 2.34), 24.04, and Rocky 9.
 - `software/containers/`: how containers work, then `docker/` (guides, `examples/` with Dockerfiles and a Compose file, `scripts/`) and `podman/`. Tests: builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`. Verify Docker commands against a real daemon and Podman commands in a `quay.io/podman/stable` container before writing them.
@@ -110,6 +111,13 @@ kubectl kustomize devops/kubernetes/apps/<app>/overlays/<overlay> | kubeconform 
 
 - Every command recipe in `software/git/*.md` needs a matching test in `tests/recipes.sh`. Use the `fails` helper for commands that must fail (a bare `! cmd` doesn't fail a test under `set -e`), and `grep -q <<<"$(cmd)"` rather than `cmd | grep -q` (SIGPIPE under pipefail).
 - Commands must work on Git 2.34 (Ubuntu 22.04); say so where a feature needs a newer version.
+
+## GitLab pipelines
+
+- Run a pipeline in the lab before writing it into an example, and keep `check_gitlab_examples.py` asserting what each example should do (job statuses, parsed reports, pushed images). A pipeline that only passed the linter isn't tested.
+- Complete pipelines in the guides start with `# .gitlab-ci.yml` and must pass the `lint` scenario; partial ones start with another comment.
+- Pin job images to versions (digests for anything that builds or deploys) and components to exact versions. Check each image tag exists before using it; the linter doesn't.
+- Say when a feature needs Premium or Ultimate. Check the tier on the feature's GitLab docs page, not from memory.
 
 ## Dockerfiles
 

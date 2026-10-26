@@ -1,0 +1,77 @@
+# .gitlab-ci.yml
+# Pipeline for a Go service: the Items API in software/go/boilerplate/items-api,
+# at the root of its own project. Format, vet, lint, race-tested unit tests, and
+# a vulnerability check, with results in the merge request; then build, scan,
+# and push the image with the container-image component.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+  auto_cancel:
+    on_new_commit: interruptible
+
+stages: [check, build, test, publish]
+
+include:
+  - component: $CI_SERVER_FQDN/platform/ci-components/container-image@1.0.0
+    inputs:
+      name: items-api
+      build_tags: [image-build]          # a runner that can run Buildah; see the component's README
+
+default:
+  interruptible: true
+
+variables:
+  GOPATH: $CI_PROJECT_DIR/.go          # inside the project directory, so it can be cached
+  GOFLAGS: -mod=readonly               # fail if go.mod or go.sum would change
+
+.go:
+  stage: check
+  image: golang:1.27.3
+  cache:
+    key:
+      files: [go.mod]
+    paths: [.go/pkg/mod/]
+
+vet:
+  extends: .go
+  script:
+    - test -z "$(gofmt -l .)" || { echo "Not gofmt-formatted:"; gofmt -l .; exit 1; }
+    - go mod tidy -diff
+    - go vet ./...
+
+lint:
+  extends: .go
+  image: golangci/golangci-lint:v2.14.0
+  script:
+    - golangci-lint run --output.text.path=stdout --output.code-climate.path=gl-code-quality-report.json ./...
+  artifacts:
+    when: always
+    reports:
+      codequality: gl-code-quality-report.json
+
+test:
+  extends: .go
+  script:
+    - go run gotest.tools/gotestsum@v1.13.0 --junitfile junit.xml -- -race -coverprofile=cover.out ./...
+    - go tool cover -func=cover.out | tail -1
+  coverage: '/total:\s+\(statements\)\s+(\d+.\d+)%/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+
+vulncheck:
+  extends: .go
+  script:
+    - go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      allow_failure: true
+    - when: on_success
+
+items-api-build:
+  needs: [vet, lint, test]

@@ -1,0 +1,110 @@
+spec:
+  description: >-
+    Build a container image with Buildah (no Docker daemon, no privileged mode),
+    scan it with Trivy before it leaves the pipeline, and push it with Skopeo
+    only from the default branch and tags. Merge request pipelines build and scan.
+  inputs:
+    name:
+      description: Prefix for the job names, so one pipeline can build several images.
+      default: image
+    context:
+      description: Build context directory.
+      default: .
+    dockerfile:
+      description: Path to the Dockerfile (Containerfile), relative to the project root.
+      default: Dockerfile
+    image:
+      description: Repository to push to. Defaults to the project's own container registry.
+      default: $CI_REGISTRY_IMAGE
+    build_stage:
+      default: build
+    scan_stage:
+      default: test
+    push_stage:
+      default: publish
+    severity:
+      description: Fail the scan on vulnerabilities at these severities that have a fix available.
+      default: HIGH,CRITICAL
+    build_tags:
+      description: >-
+        Runner tags for the build job. Buildah needs a user namespace for RUN
+        steps, which Docker's default seccomp profile blocks: on self-managed
+        runners, send builds to a runner that allows it. GitLab.com's hosted
+        runners work with the default, no tags.
+      type: array
+      default: []
+---
+# Builds into an OCI layout directory, which the scan and push jobs read as an artifact:
+# the image is scanned before it's pushed anywhere, and the pushed image is
+# exactly the one that was scanned.
+"$[[ inputs.name ]]-build":
+  stage: $[[ inputs.build_stage ]]
+  image: quay.io/buildah/stable:v1.43.5
+  tags: $[[ inputs.build_tags ]]
+  variables:
+    STORAGE_DRIVER: vfs            # no overlay or FUSE needed: works in an unprivileged container
+    BUILDAH_ISOLATION: chroot      # RUN steps in a chroot, not a nested container runtime
+  script:
+    - buildah --version
+    - >
+      buildah build
+      --file "$[[ inputs.dockerfile ]]"
+      --tag "localhost/$[[ inputs.name ]]:ci"
+      --build-arg "VERSION=${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.created=$CI_PIPELINE_CREATED_AT"
+      "$[[ inputs.context ]]"
+    - buildah push "localhost/$[[ inputs.name ]]:ci" "oci:$[[ inputs.name ]]-oci:ci"
+  artifacts:
+    paths: ["$[[ inputs.name ]]-oci/"]
+    expire_in: 1 day
+  interruptible: true
+
+"$[[ inputs.name ]]-scan":
+  stage: $[[ inputs.scan_stage ]]
+  image:
+    name: aquasec/trivy:0.76.1
+    entrypoint: [""]
+  needs: ["$[[ inputs.name ]]-build"]
+  variables:
+    TRIVY_CACHE_DIR: .trivycache   # the vulnerability database, cached between pipelines
+    TRIVY_NO_PROGRESS: "true"
+  cache:
+    key: trivy-db
+    paths: [.trivycache/]
+  script:
+    # One scan: the findings that fail the job, as a JSON artifact.
+    - >
+      trivy image --input "$[[ inputs.name ]]-oci"
+      --ignore-unfixed --severity "$[[ inputs.severity ]]" --exit-code 1
+      --format json --output trivy-report.json
+  after_script:
+    # Runs even when the scan fails, which is when the table is needed.
+    - test -f trivy-report.json && trivy convert --format table trivy-report.json
+  artifacts:
+    when: always
+    paths: [trivy-report.json]
+    expire_in: 30 days
+  interruptible: true
+
+"$[[ inputs.name ]]-push":
+  stage: $[[ inputs.push_stage ]]
+  image:
+    name: quay.io/skopeo/stable:v1.22.3
+    entrypoint: [""]
+  needs: ["$[[ inputs.name ]]-build", "$[[ inputs.name ]]-scan"]
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    # The job token's registry credentials; nothing long-lived is stored.
+    - >
+      skopeo copy --dest-creds "$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD"
+      --digestfile digest.txt
+      "oci:$[[ inputs.name ]]-oci:ci" "docker://$[[ inputs.image ]]:$TAG"
+    # Deploy jobs can refer to the image by digest, which can't be moved.
+    - echo "IMAGE_REF=$[[ inputs.image ]]@$(cat digest.txt)" | tee image.env
+  artifacts:
+    reports:
+      dotenv: image.env

@@ -13,7 +13,7 @@
 # --- Build stage --------------------------------------------------------------
 # $BUILDPLATFORM: compile natively on the build machine, even when targeting
 # another architecture (Go cross-compiles; no emulation needed).
-FROM --platform=$BUILDPLATFORM golang:1.27-alpine@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine@sha256:b8c9b82affbbb82a020bbcf998dad2ba9516944ac7e883524642a481a9505e9c AS build
 
 WORKDIR /src
 

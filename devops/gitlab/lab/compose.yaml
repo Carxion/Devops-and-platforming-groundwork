@@ -1,0 +1,83 @@
+# A throwaway GitLab for testing pipelines: GitLab CE with its container
+# registry, a Docker-executor runner, and moto as a fake AWS for the Terraform
+# example. Lab only: plain HTTP, local ports, nothing to keep.
+#
+#   devops/gitlab/lab/lab.sh up     # start, wait, create a token, register the runner
+#   python scripts/check_gitlab_examples.py
+#   devops/gitlab/lab/lab.sh down   # remove everything, including volumes
+#
+# Needs about 6 GB of free memory; GitLab takes 3 to 5 minutes to start.
+
+name: gitlab-lab
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:19.5.1-ce.0
+    hostname: gitlab.local
+    shm_size: 256m
+    ports:
+      - "127.0.0.1:8929:80"
+    environment:
+      GITLAB_ROOT_PASSWORD: ${GITLAB_LAB_ROOT_PASSWORD:?run lab.sh up, which sets it}
+      # The registry listens on plain HTTP at gitlab.local:5050, reachable only
+      # from job containers on the lab network.
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local'
+        registry_external_url 'http://gitlab.local:5050'
+        # ID tokens need an https issuer (AWS STS, and moto, reject http).
+        # Real instances run on https and don't need this.
+        gitlab_rails['ci_id_tokens_issuer_url'] = 'https://gitlab.local'
+        prometheus_monitoring['enable'] = false
+        gitlab_kas['enable'] = false
+        puma['worker_processes'] = 2
+        sidekiq['concurrency'] = 10
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+    networks:
+      lab:
+        aliases: [gitlab.local]
+
+  runner:
+    image: gitlab/gitlab-runner:alpine-v19.5.1
+    restart: unless-stopped
+    # The Docker executor starts each job as a sibling container on the host's
+    # daemon. Mounting the socket gives the runner control of that daemon:
+    # fine for a lab, never for a shared host.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner-config:/etc/gitlab-runner
+    networks: [lab]
+
+  # A fake AWS API. Jobs reach it at http://moto:5000.
+  moto:
+    image: motoserver/moto:5.2.4
+    networks: [lab]
+
+  # Fills the registries.conf.d directory that lab.sh mounts into every job:
+  # Buildah's stock drop-ins (its short-name aliases, so FROM python:3.14 still
+  # resolves), plus one that lets Buildah and Skopeo use the lab registry's
+  # plain HTTP. Real registries use TLS and need none of this.
+  lab-files:
+    image: quay.io/buildah/stable:v1.43.5
+    command:
+      - sh
+      - -c
+      - >-
+        cp -a /etc/containers/registries.conf.d/. /conf/ &&
+        printf '[[registry]]\nlocation = "gitlab.local:5050"\ninsecure = true\n' > /conf/50-gitlab-lab.conf
+    volumes:
+      - containers-conf:/conf
+
+networks:
+  lab:
+    name: gitlab-lab
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+  runner-config:
+  containers-conf:
+    name: gitlab-lab-containers-conf

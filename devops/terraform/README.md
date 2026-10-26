@@ -29,6 +29,7 @@ For day-to-day commands and troubleshooting, see [OPERATIONS.md](OPERATIONS.md).
 |---|---|---|
 | [bootstrap-state](aws/bootstrap-state/) | S3 state bucket: versioned, KMS-encrypted, TLS-only, public access blocked, native lock files (no DynamoDB) | — |
 | [github-oidc](aws/github-oidc/) | GitHub OIDC provider and two roles: **plan** (pull requests, read-only plus state lock) and **apply** (protected environment only) | bootstrap-state |
+| [gitlab-oidc](aws/gitlab-oidc/) | The same for GitLab CI/CD: OIDC provider and two roles: **plan** (any branch of one project, read-only plus state lock) and **apply** (one protected branch only) | bootstrap-state |
 | [network-vpc](aws/network-vpc/) | VPC with public, private, and isolated subnets per AZ, NAT per AZ (or one shared), flow logs, S3 gateway endpoint, locked-down default security group | — |
 | [ecs-fargate-web](aws/ecs-fargate-web/) | HTTPS-only ALB with WAF managed rules, Fargate service in private subnets (non-root, read-only root filesystem), immutable KMS-encrypted ECR, autoscaling, deployment circuit breaker | network-vpc |
 | [eks-cluster](aws/eks-cluster/) | EKS with private API endpoint, access entries (no `aws-auth`), KMS-encrypted Secrets, enforced NetworkPolicy (VPC CNI), all control plane logs, IMDSv2-only nodes, Pod Identity agent | network-vpc |
@@ -40,6 +41,7 @@ For day-to-day commands and troubleshooting, see [OPERATIONS.md](OPERATIONS.md).
 |---|---|---|
 | [bootstrap-state](azure/bootstrap-state/) | State storage account with shared keys disabled (Entra ID only), versioning, soft delete, delete lock | — |
 | [github-oidc](azure/github-oidc/) | Two Entra ID apps with federated credentials (no secrets): **plan** (pull requests, Reader) and **apply** (protected environment only) | bootstrap-state |
+| [gitlab-oidc](azure/gitlab-oidc/) | The same for GitLab CI/CD: **plan** (listed branches, Reader; optionally every branch through a preview flexible credential) and **apply** (one protected branch only) | bootstrap-state |
 | [network-hub-spoke](azure/network-hub-spoke/) | Hub VNet with firewall, Bastion, and gateway subnets; peered spokes with an NSG per subnet; explicit egress (NAT gateway, Azure Firewall, or none); shared Log Analytics workspace | — |
 | [app-service-web](azure/app-service-web/) | Zone-balanced App Service running a container, with VNet integration, managed identity, and App Insights; private PostgreSQL Flexible Server with Entra ID auth only | network-hub-spoke |
 | [aks-cluster](azure/aks-cluster/) | AKS with Entra ID and Azure RBAC (local accounts off), workload identity, CNI overlay with Cilium, automatic patch upgrades, Azure Policy, Container Insights | network-hub-spoke |
@@ -114,13 +116,13 @@ The azurerm provider uses your Azure CLI sign-in locally. In CI it uses OIDC (se
 
 ### Permissions for the first run
 
-A person, not the pipeline, runs `bootstrap-state` and `github-oidc` once per account or subscription. They need more access than the pipeline ever will:
+A person, not the pipeline, runs `bootstrap-state` and `github-oidc` (or `gitlab-oidc`) once per account or subscription. They need more access than the pipeline ever will:
 
 | Stack | Needs |
 |---|---|
-| aws/bootstrap-state, aws/github-oidc | IAM administrator (to create the OIDC provider and roles) |
+| aws/bootstrap-state, aws/github-oidc, aws/gitlab-oidc | IAM administrator (to create the OIDC provider and roles) |
 | azure/bootstrap-state | Owner, or Contributor plus Role Based Access Control Administrator, on the subscription (it creates a role assignment) |
-| azure/github-oidc | The same subscription access, plus an Entra ID role that can create app registrations, such as Application Administrator or Cloud Application Administrator |
+| azure/github-oidc, azure/gitlab-oidc | The same subscription access, plus an Entra ID role that can create app registrations, such as Application Administrator or Cloud Application Administrator |
 
 After that, all changes go through the pipeline's plan and apply identities.
 
@@ -131,7 +133,7 @@ After that, all changes go through the pipeline's plan and apply identities.
 | aws/ecs-fargate-web | An ACM certificate in the same region. For the first apply, point `container_image` at an image you can already pull (from your approved mirror). Then push to the new ECR repository and switch to its digest. |
 | aws/eks-cluster | The IAM role ARNs of cluster admins, such as your SSO admin role. With the default private endpoint, a network path into the VPC: VPN, Direct Connect, a bastion, or CI runners inside the VPC. |
 | aws/serverless-api | An OIDC issuer and audience for the JWT authorizer, such as a Cognito user pool or your IdP |
-| aws/github-oidc | The managed policy (or policies) the apply role gets, and ideally a permissions boundary policy. Create both deliberately; there's no safe default. |
+| aws/github-oidc, aws/gitlab-oidc | The managed policy (or policies) the apply role gets, and ideally a permissions boundary policy. Create both deliberately; there's no safe default. |
 | azure/app-service-web | An Entra ID group for database admins, a container image in a registry, and spoke subnets delegated to `Microsoft.Web/serverFarms` and `Microsoft.DBforPostgreSQL/flexibleServers` (the network-hub-spoke example creates them) |
 | azure/aks-cluster | An Entra ID group for cluster admins. Register host encryption once per subscription: `az feature register --namespace Microsoft.Compute --name EncryptionAtHost`, wait for `Registered`, then `az provider register --namespace Microsoft.Compute`. Or set `host_encryption = false`. |
 | azure/functions-api | A region that supports Flex Consumption (`az functionapp list-flexconsumption-locations`), and an Entra ID app registration for `entra_client_id` |

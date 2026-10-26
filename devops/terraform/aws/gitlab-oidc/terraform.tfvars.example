@@ -1,0 +1,15 @@
+project = "example"
+region  = "us-east-1"
+owner   = "platform-team"
+
+gitlab_url          = "https://gitlab.com"
+gitlab_project_path = "example-group/example-infra"
+gitlab_project_id   = 12345678 # GitLab.com only; leave out on self-managed
+apply_branch        = "main"
+
+# From bootstrap-state outputs
+state_bucket_arn  = "arn:aws:s3:::example-tfstate-111122223333-us-east-1"
+state_kms_key_arn = "arn:aws:kms:us-east-1:111122223333:key/00000000-0000-0000-0000-000000000000"
+
+apply_policy_arns              = ["arn:aws:iam::111122223333:policy/example-terraform-apply"]
+apply_permissions_boundary_arn = "arn:aws:iam::111122223333:policy/example-pipeline-boundary"
