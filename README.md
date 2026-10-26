@@ -16,6 +16,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | **A DevOps or platform engineer** | [devops/](devops/README.md): Bash 101 and [containers](software/containers/README.md), then Ansible, Terraform, Kubernetes, your cloud, and observability | The [complex commands](devops/bash/07-complex-commands.md) and the [observability lab](devops/observability/local-stack/README.md) |
 | **A software engineer** | [software/](software/README.md): Git 101, Python and Go 101 with boilerplate and operational tools, unit testing and linting, API contracts, and testing at every layer | Building and hardening images in [containers](software/containers/README.md), and instrumenting services in [observability](devops/observability/README.md) |
 | **An architect** designing cloud and platform foundations | [architect/](architect/README.md): the ten questions for any design, then quality attributes and trade-offs, foundations, reliability, security, delivery, observability, cost, and portability | The [architecture review checklist](architect/templates/architecture-review-checklist.md) and the tested implementations in [devops/](devops/README.md) |
+| **A solutions architect** turning a business problem into an agreed solution | [solutions-architect/](solutions-architect/README.md): the role, discovery and requirements, designing the solution, working with stakeholders, preparing a proposal, and presenting | Its [templates](solutions-architect/templates/README.md), and the [architect](architect/README.md) guides for what makes a design sound |
 | **A manager** of a DevOps, platform, or SRE team | [Your first 90 days](manager/00-first-90-days.md), then the rest of [manager/](manager/README.md): one-on-ones, hiring, planning and metrics, on-call health, stakeholders, and templates | The [tech lead checklist](tech-lead/README.md) sections on stakeholders and evaluating problems |
 | **A scrum master** or agile coach for a platform team | [Your first 90 days](scrum-master/00-first-90-days.md), then the rest of [scrum-master/](scrum-master/README.md): Scrum for interrupt-driven teams, running the events, flow metrics, impediments, and templates | The [product owner](product-owner/README.md) and [manager](manager/README.md) guides, to agree who does what |
 | **A product owner** of a platform or internal tool | [Your first 90 days](product-owner/00-first-90-days.md), then the rest of [product-owner/](product-owner/README.md): the platform as a product, backlog, prioritization, roadmaps, and measuring outcomes | [Structuring platform teams](manager/07-structuring-platform-teams.md) and the [DORA metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics) |
@@ -71,6 +72,19 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | [Cost architecture](architect/07-cost-architecture.md) | Unit cost, the big cost levers, commitments, spot capacity, sustainability |
 | [Portability and multi-cloud](architect/08-portability-and-multi-cloud.md) | Lock-in as a trade-off, levels of portability, hybrid, multi-cloud done well, exit plans |
 | [templates/](architect/templates/) | Architecture review checklist, decision matrix, quality attribute requirements |
+
+### [solutions-architect/](solutions-architect/README.md)
+
+| Path | What it is |
+|---|---|
+| [Your first 90 days](solutions-architect/00-first-90-days.md) | A W1/30/60/90 checklist for joining a vendor, consultancy, or internal team as a solutions architect |
+| [The role](solutions-architect/01-the-role.md) | What a solutions architect owns, how it differs from other architect roles, and the arc of an engagement |
+| [Discovery and requirements](solutions-architect/02-discovery-and-requirements.md) | Problem before solution, what to find out, running sessions, turning notes into requirements, traps |
+| [Designing the solution](solutions-architect/03-designing-the-solution.md) | Real options, choosing between them, reference architectures, diagrams, proofs of concept, estimating, RAID |
+| [Working with stakeholders](solutions-architect/04-working-with-stakeholders.md) | Who's in the room, building trust, scope and expectations, disagreement, handing over to delivery |
+| [Preparing a proposal](solutions-architect/05-preparing-a-proposal.md) | Structure, the executive summary, scope and assumptions, pricing, RFP responses, review |
+| [Presenting the solution](solutions-architect/06-presenting.md) | Outcome first, the story, slides, diagrams, demos, whiteboarding, questions and objections, remote |
+| [templates/](solutions-architect/templates/README.md) | Discovery guide, solution design, proof-of-concept plan, proposal, presentation plan, delivery handover |
 
 ### [manager/](manager/README.md)
 

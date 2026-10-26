@@ -1,6 +1,6 @@
 # Roadmap
 
-What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [architect/](architect/README.md), [devops/](devops/README.md), [software/](software/README.md), [manager/](manager/README.md), [scrum-master/](scrum-master/README.md), and [product-owner/](product-owner/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
+What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [architect/](architect/README.md), [solutions-architect/](solutions-architect/README.md), [devops/](devops/README.md), [software/](software/README.md), [manager/](manager/README.md), [scrum-master/](scrum-master/README.md), and [product-owner/](product-owner/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
 
 Proposals and priorities are discussed in issues; open one with the [new item template](.github/ISSUE_TEMPLATE/new-item.yml) to suggest an area or argue for reordering. See [what "done" means](#definition-of-done-for-a-new-area) before starting one.
 
@@ -27,6 +27,7 @@ Proposals and priorities are discussed in issues; open one with the [new item te
 | Managing DevOps and platform teams: first 90 days, eight guides, eight templates | [manager/](manager/README.md) | Lint, spelling, links |
 | Tech lead guides: assessment method, worked example, design reviews, migrations, working with leadership | [tech-lead/](tech-lead/README.md) | Lint, spelling, links |
 | Architecture considerations: eight guides and three templates | [architect/](architect/README.md) | Lint, spelling, links |
+| Solutions architect: first 90 days, six guides on discovery, design, stakeholders, proposals, and presenting, six templates | [solutions-architect/](solutions-architect/README.md) | Lint, spelling, links |
 
 ## Phase 1: next
 

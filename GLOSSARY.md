@@ -60,6 +60,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Blast radius:** How much is affected when something fails or goes wrong: one request, one cell, one zone, or everything. Architects design to keep it small, with isolation such as separate accounts, cells, and progressive rollouts.
 - **Bounded context:** In domain-driven design, a boundary within which one model and its terms have one consistent meaning. "Customer" can mean different things in billing and in support; each is its own bounded context. Bounded contexts are a common guide for drawing service boundaries.
 - **Bulkhead:** Isolating resources (thread pools, connections, instances) per dependency or customer, so one overloaded part can't sink the rest.
+- **C4 model:** A way of diagramming software architecture at four levels of detail: system context, containers, components, and code. See [c4model.com](https://c4model.com/).
 - **Cell-based architecture:** Splitting users or tenants across several independent copies of a system (cells), so a failure or bad deployment affects only one cell.
 - **Clean architecture and onion architecture:** Layered designs where business logic sits at the center and depends on nothing outside it; frameworks, databases, and user interfaces sit at the edges and depend inward.
 - **Context map:** A diagram of the bounded contexts in a system and how they relate, such as which one is upstream, and where translation happens.
@@ -80,6 +81,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Pilot light, warm standby:** Disaster recovery strategies. Pilot light keeps data replicated and core infrastructure ready but mostly off in a recovery region; warm standby runs a scaled-down full copy. Both sit between backup-and-restore and active-active in cost and recovery speed.
 - **Publish-subscribe (pub/sub):** Senders publish messages to a topic without knowing who receives them; every subscriber to the topic gets a copy.
 - **Quality attribute:** A non-functional requirement that says how well a system must do its job: availability, latency, scalability, recoverability, security, operability, cost. Most architectural decisions are driven by these.
+- **Reference architecture:** A proven, documented design for a common problem, used as a starting point and adapted to each solution's requirements.
 - **Repository pattern:** An interface that looks like a collection of domain objects and hides how they're stored.
 - **Retry with exponential backoff and jitter:** Retrying a failed call after waits that grow each time, with randomness added so many clients don't retry in lockstep.
 - **Saga:** A way to run a business process across several services without a distributed transaction: a series of local steps, each with a *compensating action* that undoes it if a later step fails. Coordinated either by a central orchestrator or by services reacting to each other's events (choreography).
@@ -446,6 +448,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **FinOps:** The practice of managing cloud spending through shared accountability between engineering, finance, and the business.
 - **Orphaned resources:** Resources still billing after whatever used them is gone, such as unattached disks, old snapshots, and idle IP addresses.
 - **Rightsizing:** Matching resource sizes to actual use, usually by moving to smaller instances.
+- **TCO (total cost of ownership):** The full cost of a solution over a set period, usually three to five years: build or migration, infrastructure, licenses, support, and the people to run it.
 - **Unit cost:** Cloud spend divided by a business measure, such as cost per customer or per thousand requests. It shows whether costs scale efficiently.
 
 ## Delivery, teams, and governance
@@ -473,16 +476,21 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Platform engineering:** A team building internal tools and paved paths (an *internal developer platform*) so product teams can ship without becoming infrastructure experts.
 - **Product Goal:** In Scrum, the long-term objective the Product Backlog serves. The team works toward one Product Goal at a time.
 - **Product owner:** The person accountable for maximizing a product's value: setting the Product Goal and ordering the backlog. In Scrum, one person, not a committee.
+- **Proof of concept (POC):** A small, time-boxed experiment that answers one specific question about whether an approach will work, with success criteria agreed in advance. Not a pilot or a first phase. See the [template](solutions-architect/templates/proof-of-concept-plan.md).
 - **RACI:** A responsibility chart marking who is Responsible, Accountable, Consulted, and Informed for each task.
+- **RAID log:** A running list of a project's risks, assumptions, issues, and dependencies, each with an owner.
 - **Retrospective:** A regular meeting where a team inspects how it worked and chooses improvements. In Scrum, the Sprint Retrospective ends each sprint.
+- **RFP (request for proposal):** A formal invitation for suppliers to propose a solution, with set requirements, format, and deadline. Related: RFI (request for information) and RFQ (request for quotation).
 - **RICE:** A prioritization score from Intercom: reach × impact × confidence ÷ effort.
 - **Risk register:** A list of identified risks with their likelihood, impact, owner, and plan.
 - **Roadmap:** A plan of intended outcomes over time, usually by quarter.
 - **Scrum:** An agile framework with fixed-length sprints, defined roles (product owner, Scrum Master, developers), and regular planning, review, and retrospective meetings.
 - **Scrum master:** The person accountable for a Scrum team's effectiveness: helping it use Scrum well, coaching, and removing impediments.
+- **Solutions architect:** The person who designs a solution to a specific business problem, makes the case for it, and hands it to the team that builds it. See [solutions-architect/](solutions-architect/README.md).
 - **Sprint:** A fixed period, typically two weeks, in which a team completes a set of work.
 - **Sprint Goal:** The single objective for a sprint, which gives the team focus and lets it adapt the plan while still delivering value.
 - **Stakeholder:** Anyone who affects or is affected by the work, such as customers, users, managers, security, and operations.
+- **Statement of work (SOW):** The contract document that defines an engagement's scope, deliverables, timeline, assumptions, and responsibilities.
 - **Team Topologies:** A model of four team types (stream-aligned, platform, enabling, complicated subsystem) and how they interact.
 - **Throughput:** The number of work items a team finishes per unit of time; the basis for flow-based forecasting.
 - **User story:** A backlog item written from the user's point of view: `As a <user>, I want <something>, so that <reason>.` A prompt for a conversation, not a specification.

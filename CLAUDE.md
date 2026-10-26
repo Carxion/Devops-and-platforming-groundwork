@@ -15,11 +15,12 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `tech-lead/assessing-an-inherited-system.md`: the method behind checklist sections 2 and 9. Keep its step numbers and template links in step with the checklist.
 - `manager/`: guides (`00-first-90-days.md` is a checklist in the same item format as the tech lead checklist, but not generated into views) and `templates/`.
 - `scrum-master/`, `product-owner/`: the same shape as `manager/` (a first-90-days checklist, numbered guides, `templates/`). Frameworks cite their primary source and version: the Scrum Guide (November 2020), the Kanban Guide (May 2025). Keep the "who does what" split in `scrum-master/README.md` consistent with the other role folders.
+- `solutions-architect/`: the same shape (a first-90-days checklist, numbered guides, `templates/`). It covers discovery, stakeholders, proposals, and presenting; design quality stays in `architect/`, which it links to rather than repeats.
 - `CHANGELOG.md`: add a line under **Unreleased** for every content change.
 - `architect/`: considerations guides (numbered) and `templates/`. Each guide links principles to the tested code in `devops/`; keep those links pointing at real files.
 - `software/testing/`: unit testing principles, and `python/` and `go/` guides, each with an `example/` project on the same pricing domain. Keep the two examples' behavior and tests parallel, and every technique the guides describe used in the example.
 - `software/python/`, `software/go/`: 101 guides, `boilerplate/` projects (a CLI and the Items API in each), and `examples/` (the same five operational tools in each language; keep their flags, JSON output, and exit codes matching). The API implementations must pass the `software/api-testing` contract tests (run locally; see `CONTRIBUTING.md`).
-- `devops/`, `software/`, `manager/`, `scrum-master/`, `product-owner/`: each has a README listing its contents. Material moves between them only when its audience changes.
+- `devops/`, `software/`, `manager/`, `scrum-master/`, `product-owner/`, `solutions-architect/`: each has a README listing its contents. Material moves between them only when its audience changes.
 - `devops/terraform/`: reference stacks, `aws/*` and `azure/*`, each a self-contained root module. See `devops/terraform/README.md`.
 - `devops/kubernetes/`: Kustomize bases, overlays, and components for sample apps. See `devops/kubernetes/README.md`.
 - `devops/aws/`, `devops/azure/`: CLI operations guides (`guides/`) plus CloudFormation (`devops/aws/cloudformation/`) and Bicep (`devops/azure/bicep/`) templates.
