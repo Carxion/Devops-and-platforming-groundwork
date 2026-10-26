@@ -1,0 +1,11 @@
+replicaCount: 3
+
+# The queue it consumes, through a VPC endpoint in the private subnets.
+networkPolicy:
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.32.0/19
+      ports:
+        - protocol: TCP
+          port: 443

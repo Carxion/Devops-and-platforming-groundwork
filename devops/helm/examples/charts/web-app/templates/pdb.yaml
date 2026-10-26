@@ -1,0 +1,3 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{ include "platform-lib.podDisruptionBudget" . }}
+{{- end }}

@@ -1,0 +1,6 @@
+---
+# Linux user names (useradd's default rule): a lowercase letter or underscore,
+# then lowercase letters, digits, underscores, or hyphens; at most 32 characters.
+admin_users_name_pattern: '^[a-z_][a-z0-9_-]{0,31}$'
+# An OpenSSH public key line. A private key, or a key pasted with line breaks, won't match.
+admin_users_key_pattern: '^(ssh-(ed25519|rsa)|ecdsa-sha2-nistp(256|384|521)|sk-(ssh-ed25519|ecdsa-sha2-nistp256)@openssh\.com) [A-Za-z0-9+/=]+( .*)?$'

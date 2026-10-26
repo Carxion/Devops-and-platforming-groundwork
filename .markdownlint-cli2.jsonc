@@ -4,10 +4,11 @@
   "config": {
     "default": true,
     "MD013": false,
+    "MD010": { "code_blocks": false }, // Go code is tab-indented by gofmt
     "MD024": { "siblings_only": true }, // phases repeat section headings
     "MD034": false,
     "MD036": false, // the bold tagline under the title
     "MD060": false
   },
-  "ignores": ["LICENSE", "node_modules/**"]
+  "ignores": ["LICENSE", "node_modules/**", "platform-engineering/examples/out/**"]
 }

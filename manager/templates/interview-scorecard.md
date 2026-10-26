@@ -37,7 +37,7 @@ Ask the same core questions of every candidate for the role; use follow-ups to g
 ### Troubleshooting and systems thinking
 
 - A service's response times doubled after a deploy, but error rates are normal. Walk me through how you'd find out why. *(Listen for: hypotheses, checking what changed, metrics before guesses, looking at dependencies.)*
-- A container keeps restarting in production. What do you look at, in what order? *(Exit codes, logs, OOM kills, probes, recent changes; see [Docker troubleshooting](../../devops/docker/08-troubleshooting.md).)*
+- A container keeps restarting in production. What do you look at, in what order? *(Exit codes, logs, OOM kills, probes, recent changes; see [Docker troubleshooting](../../software/containers/docker/09-troubleshooting.md).)*
 - Tell me about the hardest production problem you've debugged. What made it hard, and what did you learn?
 
 ### Infrastructure as code and automation

@@ -1,0 +1,56 @@
+suite: autoscaling and disruption budget
+templates:
+  - templates/hpa.yaml
+  - templates/pdb.yaml
+tests:
+  - it: scales between the configured bounds on CPU
+    template: templates/hpa.yaml
+    asserts:
+      - equal:
+          path: spec.minReplicas
+          value: 3
+      - equal:
+          path: spec.maxReplicas
+          value: 10
+      - equal:
+          path: 'spec.metrics[0].resource.target.averageUtilization'
+          value: 70
+      - equal:
+          path: spec.scaleTargetRef.name
+          value: RELEASE-NAME-web-app
+
+  - it: renders no HPA when autoscaling is off
+    template: templates/hpa.yaml
+    set:
+      autoscaling.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: rejects maxReplicas below minReplicas
+    template: templates/hpa.yaml
+    set:
+      autoscaling:
+        minReplicas: 5
+        maxReplicas: 2
+    asserts:
+      - failedTemplate:
+          errorPattern: maxReplicas must be at least
+
+  - it: lets drains take one pod at a time
+    template: templates/pdb.yaml
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - equal:
+          path: 'spec.selector.matchLabels["app.kubernetes.io/name"]'
+          value: web-app
+
+  - it: can be turned off for single-replica environments
+    template: templates/pdb.yaml
+    set:
+      podDisruptionBudget.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0

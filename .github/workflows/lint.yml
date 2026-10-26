@@ -1,0 +1,188 @@
+name: lint
+
+# Fast static checks on every push and pull request: formatting, linters, and
+# docs. Nothing here builds images, starts services, or runs test suites; each
+# folder's README says how to run its tests locally.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CSPELL_VERSION: 10.3.6
+  SHELLCHECK_IMAGE: koalaman/shellcheck:v0.11.0
+  SHFMT_IMAGE: mvdan/shfmt:v3.14.1
+  HADOLINT_IMAGE: hadolint/hadolint:v2.15.1
+  RUFF_VERSION: 0.17.0
+  GOLANGCI_LINT_VERSION: v2.14.0
+  TERRAFORM_VERSION: 1.16.5
+  TFLINT_VERSION: v0.64.0
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
+        with:
+          globs: "**/*.md"
+      - name: cspell
+        run: npx --yes "cspell@${CSPELL_VERSION}" --no-progress "**/*.md"
+      - name: Links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --config lychee.toml --no-progress "**/*.md"
+          fail: true
+      - name: tech-lead/checklists/ matches tech-lead/README.md
+        run: python3 scripts/build_checklists.py --check
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: ShellCheck
+        # SCRIPTDIR: resolve "source lib/common.sh" relative to each script.
+        run: |
+          docker run --rm -v "$PWD:/mnt" -w /mnt "$SHELLCHECK_IMAGE" -x -P SCRIPTDIR \
+            devops/bash/scripts/*.sh devops/bash/scripts/lib/*.sh devops/bash/tests/integration.sh \
+            software/containers/docker/scripts/*.sh software/git/scripts/*.sh software/git/tests/recipes.sh \
+            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh \
+            platform-engineering/examples/check.sh platform-engineering/examples/golden-path-python-service/test/generate-and-update.sh
+      - name: shfmt
+        run: |
+          docker run --rm -v "$PWD:/mnt" -w /mnt "$SHFMT_IMAGE" -d -i 2 -ci \
+            devops/bash/scripts devops/bash/tests/integration.sh software/containers/docker/scripts software/git/scripts software/git/tests \
+            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh \
+            platform-engineering/examples/check.sh platform-engineering/examples/golden-path-python-service/test/generate-and-update.sh
+
+  ansible:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: devops/ansible
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: devops/ansible/requirements.txt
+      - name: Install the pinned tools and collections
+        run: |
+          pip install -r requirements.txt
+          ansible-galaxy collection install -r requirements.yml
+      - name: yamllint
+        run: yamllint --format github .
+      - name: Syntax check
+        run: |
+          ansible-playbook site.yml --syntax-check
+          ansible-playbook playbooks/reboot-if-needed.yml --syntax-check
+      - name: ansible-lint (production profile)
+        run: ansible-lint
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - software/python/boilerplate/healthcheck
+          - software/python/boilerplate/items-api
+          - software/python/examples
+          - software/testing/python/example
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      # ruff reads each project's pyproject.toml; it doesn't need the project installed.
+      - name: ruff (lint and format)
+        run: |
+          uvx "ruff@${RUFF_VERSION}" check --output-format=github .
+          uvx "ruff@${RUFF_VERSION}" format --check .
+
+  go:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - software/go/boilerplate/healthcheck
+          - software/go/boilerplate/items-api
+          - software/go/examples
+          - software/testing/go/example
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: ${{ matrix.project }}/go.mod
+          cache: false
+      - name: gofmt
+        working-directory: ${{ matrix.project }}
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then echo "Not formatted:"; echo "$unformatted"; exit 1; fi
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: ${{ matrix.project }}
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff devops/terraform
+      - uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
+      - name: tflint
+        working-directory: devops/terraform
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # avoids rate limits when downloading rulesets
+        run: |
+          tflint --init
+          tflint --recursive --config "$(pwd)/.tflint.hcl" --format compact
+
+  dockerfiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Hadolint (every Dockerfile in the repository)
+        run: |
+          status=0
+          for f in $(git ls-files '*Dockerfile'); do
+            echo "::group::$f"
+            docker run --rm -i "$HADOLINT_IMAGE" hadolint - < "$f" || status=1
+            echo "::endgroup::"
+          done
+          exit $status

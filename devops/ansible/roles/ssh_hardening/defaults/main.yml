@@ -1,0 +1,18 @@
+---
+ssh_hardening_port: 22
+# Only members of these groups may log in, for example [wheel] or [sudo]. Empty: no restriction.
+ssh_hardening_allow_groups: []
+# Extra sshd settings, written after the baseline ones, e.g. {"MaxSessions": "4"}.
+ssh_hardening_extra_settings: {}
+# Refuse to turn off passwords unless someone can log in with a key.
+ssh_hardening_require_key: true
+
+# sshd uses the FIRST value it reads for most settings, and both distributions
+# include sshd_config.d/*.conf at the top of sshd_config in lexical order. "10-"
+# sorts before RHEL's 50-redhat.conf and cloud-init's 50-cloud-init.conf.
+ssh_hardening_dropin: /etc/ssh/sshd_config.d/10-hardening.conf
+ssh_hardening_manage_services: "{{ ansible_facts['service_mgr'] == 'systemd' }}"
+# Ubuntu 22.10 and later start sshd from ssh.socket by default. Set false if
+# you've switched a host back to the plain ssh.service.
+ssh_hardening_socket_activation: >-
+  {{ ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] is version('22.10', '>=') }}

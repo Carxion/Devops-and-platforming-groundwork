@@ -20,6 +20,6 @@ Platform and operations teams have problems product teams don't: interrupt-drive
 
 ## Templates
 
-[templates/](templates/README.md): one-on-one document, career ladder, interview scorecard and question bank, new-hire onboarding plan, quarterly planning worksheet, on-call policy, incident review, and team charter. The [tech lead templates](../tech-lead/templates/) (stakeholder map, weekly status, ADR, RFC, roadmap, risk register, RACI) work for managers too.
+[templates/](templates/README.md): one-on-one document, career ladder, interview scorecard and question bank, new-hire onboarding plan, quarterly planning worksheet, on-call policy, incident review, and team charter. The [tech lead templates](../tech-lead/templates/) (stakeholder map, weekly status, ADR, RFC, roadmap, risk register, RACI) work for managers too. Working with a scrum master or product owner? Their guides are in [scrum-master/](../scrum-master/README.md) and [product-owner/](../product-owner/README.md), including [who does what](../scrum-master/README.md#who-does-what).
 
 > **Status.** Starter content: practitioner defaults, with sources where a claim rests on research. More is planned in the [roadmap](../ROADMAP.md).

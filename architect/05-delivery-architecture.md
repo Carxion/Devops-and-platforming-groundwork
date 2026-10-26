@@ -75,6 +75,8 @@ A **golden path** (or paved road) is a supported, pre-built way to do a common t
 - Keep it **optional but attractive:** teams with unusual needs can leave the path, and take on what it would have handled.
 - **Version and maintain it** like a product, with the platform team as owner ([platform as a product](../manager/07-structuring-platform-teams.md#the-platform-as-a-product)).
 
+[Golden paths](../platform-engineering/03-golden-paths.md) in the platform engineering guides covers designing, building, and keeping golden paths current, with a tested example.
+
 ## Review questions
 
 - How does a change reach production, and how long does it take?

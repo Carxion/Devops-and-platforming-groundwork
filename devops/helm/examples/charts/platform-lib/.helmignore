@@ -1,0 +1,3 @@
+# Library charts package only templates/_*.tpl and Chart.yaml.
+.git/
+.DS_Store

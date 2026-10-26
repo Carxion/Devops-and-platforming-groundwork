@@ -1,0 +1,42 @@
+nameOverride: ""
+fullnameOverride: ""
+partOf: sample-apps
+
+# busybox stands in for the real process.
+image:
+  repository: docker.io/library/busybox
+  tag: 1.38.0
+  digest: sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
+
+replicaCount: 2
+
+# Long enough to finish the current unit of work after SIGTERM.
+terminationGracePeriodSeconds: 60
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    memory: 64Mi
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+serviceAccount:
+  annotations: {}
+
+podLabels: {}
+
+networkPolicy:
+  enabled: true
+  # What the worker calls, beyond DNS: HTTPS anywhere by default. Replace
+  # 0.0.0.0/0 with the queue's or API's real address range where you can.
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,0 +1,35 @@
+{{- if .Values.networkPolicy.enabled }}
+# Adds to the namespace's default-deny: other pods in the namespace may call
+# the service, the ingress controller may if ingress.allowFrom says where it
+# is, and egress is DNS plus whatever networkPolicy.extraEgress adds.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "platform-lib.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-lib.labels" . | nindent 4 }}
+spec:
+  # Always an explicit selector: an empty one would apply this policy to
+  # every pod in the namespace.
+  podSelector:
+    matchLabels:
+      {{- include "platform-lib.selectorLabels" . | nindent 6 }}
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - port: http
+    {{- if and .Values.ingress.enabled .Values.ingress.allowFrom }}
+    - from:
+        {{- toYaml .Values.ingress.allowFrom | nindent 8 }}
+      ports:
+        - port: http
+    {{- end }}
+  egress:
+    {{- include "platform-lib.dnsEgressRule" . | nindent 4 }}
+    {{- with .Values.networkPolicy.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,37 @@
+# golangci-lint v2 configuration, shared by the Go boilerplate projects.
+#   golangci-lint run ./...   (from each project's directory)
+version: "2"
+
+linters:
+  # The standard set: errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+  enable:
+    - bodyclose     # HTTP response bodies must be closed
+    - errorlint     # wrap and compare errors correctly (%w, errors.Is/As)
+    - gosec         # security problems
+    - misspell
+    - noctx         # HTTP requests must carry a context
+    - revive        # style, the successor to golint
+    - unconvert     # unnecessary type conversions
+  settings:
+    errcheck:
+      # Failing to write to stdout or stderr leaves a CLI nothing useful to do.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+  exclusions:
+    rules:
+      # Tests may ignore errors from writing test responses.
+      - path: _test\.go
+        linters: [errcheck, gosec]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

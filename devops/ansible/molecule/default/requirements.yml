@@ -1,0 +1,12 @@
+---
+# The roles' collections, plus community.docker (Molecule's docker driver) and
+# community.crypto (the test SSH key).
+collections:
+  - name: ansible.posix
+    version: "2.2.2"
+  - name: community.general
+    version: "13.5.0"
+  - name: community.docker
+    version: "5.4.0"
+  - name: community.crypto
+    version: "3.5.0"

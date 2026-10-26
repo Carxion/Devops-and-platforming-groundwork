@@ -2,7 +2,7 @@
 
 The shell is where most operations work happens: reading logs, checking services, fixing a config at 2 a.m., and automating anything done twice. This folder teaches Bash and the core Linux tools from the first command to complex pipelines, with every complex command broken down piece by piece, and a focus on the two server families you'll meet most: **Red Hat Enterprise Linux** (and its rebuilds, Rocky Linux and AlmaLinux) and **Ubuntu**.
 
-It ends with a [library of scripts](scripts/) for setting up and running servers, each tested on real Ubuntu, Rocky Linux, and UBI (RHEL) systems in CI.
+It ends with a [library of scripts](scripts/) for setting up and running servers, each tested on real Ubuntu, Rocky Linux, and UBI (RHEL) systems in containers.
 
 > **Status.** Every script passes ShellCheck and shfmt, the [unit tests](tests/scripts.bats) and [regex tests](tests/regex.bats) run with Bats, and the [integration test](tests/integration.sh) applies the full server baseline for real inside Ubuntu 24.04, Rocky Linux 9, and a dry run on UBI 9, twice, to prove it's idempotent. Containers have no systemd, so starting and enabling services is the one part exercised only on real hosts.
 
@@ -68,7 +68,7 @@ sudo bash /tmp/scripts/bootstrap-server.sh --hostname web-01 \
 ssh deploy@203.0.113.10 'sudo -v && echo sudo works'
 ```
 
-For a fleet, use these as a reference for configuration management (Ansible, cloud-init, or image builds with Packer) rather than running scripts by hand on each host. A cloud-init `runcmd` can call the same script at first boot.
+For a fleet, use configuration management rather than running scripts by hand on each host: [devops/ansible](../ansible/README.md) applies the same baseline as tested roles. Cloud-init and image builds with Packer are the other options. A cloud-init `runcmd` can call the same script at first boot.
 
 ### Running the tests
 
@@ -86,4 +86,4 @@ docker run --rm -v "$PWD/devops/bash:/work:ro" ubuntu:24.04 bash /work/tests/int
 docker run --rm -v "$PWD/devops/bash:/work:ro" rockylinux/rockylinux:9 bash /work/tests/integration.sh
 ```
 
-The [bash workflow](../../.github/workflows/bash.yml) runs all of these on every change.
+CI runs the lint step on every change. Run the Bats and integration tests locally before changing a script.

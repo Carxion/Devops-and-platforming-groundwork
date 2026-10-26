@@ -1,0 +1,64 @@
+# Compose example: build both sample images, start them with hardened
+# settings, wait until the API is healthy, then run the k6 smoke test from
+# software/api-testing/ against it. Explained in software/containers/docker/04-compose.md.
+#
+#   docker compose -f software/containers/docker/examples/compose.yaml up --build --exit-code-from smoke-test
+#   docker compose -f software/containers/docker/examples/compose.yaml down
+#
+# "up --exit-code-from smoke-test" stops everything when the test finishes and
+# exits with its result, which makes the whole file usable as a CI check.
+
+name: docker-101
+
+# Settings shared by both services, merged in with "<<: *hardened".
+x-hardened: &hardened
+  read_only: true # root filesystem is read-only; write only where mounted
+  cap_drop: [ALL] # no Linux capabilities
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: "0.50"
+        memory: 128M
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" } # the default json-file log grows without limit
+
+services:
+  items-api:
+    <<: *hardened
+    build:
+      context: ../../../api-testing/local-server
+      dockerfile: ../../containers/docker/examples/items-api/Dockerfile
+    image: docker-101/items-api:local
+    ports:
+      - "127.0.0.1:8080:8080" # loopback only; drop 127.0.0.1 to listen on every interface
+    healthcheck:
+      # Uses the Dockerfile's HEALTHCHECK, with a faster interval for this demo.
+      interval: 5s
+      start_period: 5s
+
+  go-hello:
+    <<: *hardened
+    build:
+      context: ./go-hello
+      args:
+        VERSION: "1.0.0"
+    image: docker-101/go-hello:local
+    environment:
+      PORT: "9090"
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  smoke-test:
+    image: grafana/k6:2.3.0
+    command: ["run", "--quiet", "/scripts/smoke.js"]
+    environment:
+      BASE_URL: http://items-api:8080 # service names resolve on the Compose network
+    volumes:
+      - ../../../api-testing/k6:/scripts:ro
+    depends_on:
+      items-api:
+        condition: service_healthy # wait for the health check, not just for the container to start
+    restart: "no"

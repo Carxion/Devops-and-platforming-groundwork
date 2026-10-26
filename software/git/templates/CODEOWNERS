@@ -1,0 +1,28 @@
+# CODEOWNERS: who must review changes to which paths.
+# GitHub reads .github/CODEOWNERS, CODEOWNERS, or docs/CODEOWNERS.
+# GitLab reads CODEOWNERS, .gitlab/CODEOWNERS, or docs/CODEOWNERS.
+#
+# Patterns work like .gitignore. The LAST matching line wins, so put the
+# catch-all first and the specific paths after it. Owners are @users or @org/teams;
+# a team needs write access to the repository to be a code owner.
+
+# Everything, unless a later line says otherwise.
+*                               @example-org/platform-team
+
+# Infrastructure and delivery.
+/terraform/                     @example-org/infrastructure
+/kubernetes/                    @example-org/infrastructure
+/.github/workflows/             @example-org/platform-team @example-org/security
+/.gitlab-ci.yml                 @example-org/platform-team @example-org/security
+/Jenkinsfile                    @example-org/platform-team @example-org/security
+
+# Application areas.
+/src/billing/                   @example-org/billing
+/src/auth/                      @example-org/identity @example-org/security
+/db/migrations/                 @example-org/data
+
+# Documentation can be approved by anyone on the team.
+/docs/                          @example-org/platform-team
+
+# Changing ownership needs the people who own the rules.
+/.github/CODEOWNERS             @example-org/engineering-leads

@@ -1,0 +1,11 @@
+# Dev: one or two replicas, no ingress. Reach it with the port-forward the
+# install notes print. Everything not set here comes from the chart's values.yaml.
+config:
+  PODINFO_UI_MESSAGE: Hello from dev
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+
+podDisruptionBudget:
+  enabled: false  # one replica: a PDB would block node drains

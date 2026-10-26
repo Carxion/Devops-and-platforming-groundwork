@@ -1,0 +1,71 @@
+# A recommended ~/.gitconfig. Copy the parts you want, then set your own name and email.
+# Every setting works on Git 2.34 and later unless noted.
+
+[user]
+	name = Your Name
+	email = you@example.com
+	# Sign with your SSH key (Git 2.34+). Add the same key to your Git host as a signing key.
+	signingkey = ~/.ssh/id_ed25519.pub
+
+[gpg]
+	format = ssh
+
+[commit]
+	gpgsign = true
+	# Show the diff below the message while you write it.
+	verbose = true
+
+[tag]
+	gpgsign = true
+
+[init]
+	defaultBranch = main
+
+[pull]
+	# Replay local commits on top of what you pulled, instead of making merge commits.
+	rebase = true
+
+[fetch]
+	# Forget remote branches that were deleted on the server.
+	prune = true
+	pruneTags = true
+
+[push]
+	# "git push" on a new branch pushes it under the same name and sets the upstream (Git 2.37+; ignored before).
+	autoSetupRemote = true
+	default = simple
+
+[rebase]
+	# Move fixup! and squash! commits into place automatically.
+	autoSquash = true
+	# Stash uncommitted changes before a rebase and reapply them after.
+	autoStash = true
+
+[merge]
+	# Show the original lines (the base) in conflicts, not just both sides. zdiff3 needs Git 2.35+; use diff3 on 2.34.
+	conflictStyle = zdiff3
+
+[rerere]
+	# Remember conflict resolutions and reuse them.
+	enabled = true
+
+[diff]
+	# A better diff for moved and changed code.
+	algorithm = histogram
+	colorMoved = default
+
+[branch]
+	# List branches by most recent commit.
+	sort = -committerdate
+
+[help]
+	# Ask before running a corrected command ("Did you mean...?").
+	autocorrect = prompt
+
+[alias]
+	st = status -sb
+	lg = log --graph --format='%C(auto)%h %C(blue)%ad%C(auto)%d %s %C(dim)(%an)' --date=short
+	last = log -1 --stat
+	unstage = restore --staged
+	# Branches whose upstream was deleted (usually merged): review, then delete.
+	gone = "!git fetch --prune && git branch -vv | awk '/: gone]/ { print $1 }'"

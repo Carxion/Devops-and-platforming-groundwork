@@ -1,0 +1,78 @@
+---
+# Molecule test: apply site.yml's roles to throwaway containers of each
+# supported distribution, apply them again and fail if anything changes
+# (idempotence), then check the results (verify.yml).
+#
+#   molecule test                  # the whole sequence, then clean up
+#   molecule converge              # create and apply, keep the containers
+#   molecule login -h rocky-9      # look around inside one
+#   molecule verify / molecule destroy
+#
+# Containers don't run systemd, so the inventory below turns service management
+# off and those tasks are skipped; everything else is applied for real.
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ${MOLECULE_SCENARIO_DIRECTORY}/requirements.yml
+
+driver:
+  name: docker
+
+platforms:
+  # pre_build_image: false builds each image from the driver's Dockerfile,
+  # which adds Python and sudo, the two things Ansible needs on a host.
+  # The ufw module reads the live netfilter rules, which a container may only
+  # do with the NET_ADMIN capability (narrower than a privileged container).
+  - name: ubuntu-2404
+    image: ubuntu:24.04
+    pre_build_image: false
+    capabilities: [NET_ADMIN]
+  - name: ubuntu-2204
+    image: ubuntu:22.04
+    pre_build_image: false
+    capabilities: [NET_ADMIN]
+  - name: rocky-9
+    image: rockylinux/rockylinux:9
+    pre_build_image: false
+  - name: alma-9
+    image: almalinux:9
+    pre_build_image: false
+
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/roles
+  # Converge every container at once (site.yml otherwise does a quarter at a time).
+  ansible_args: [--extra-vars, baseline_serial=100%]
+  inventory:
+    group_vars:
+      all:
+        # systemd is installed in the RHEL images but isn't running, so Ansible's
+        # service_mgr fact says "systemd". Tell the roles there are no services to manage.
+        base_manage_services: false
+        ssh_hardening_manage_services: false
+        firewall_manage_services: false
+        auto_updates_manage_services: false
+        # Real keys are generated in prepare.yml; the test reads the public half.
+        admin_users_accounts:
+          - name: deploy
+            ssh_keys: ["{{ lookup('ansible.builtin.file', molecule_ephemeral_directory ~ '/deploy.pub') }}"]
+          - name: robot
+            ssh_keys: ["{{ lookup('ansible.builtin.file', molecule_ephemeral_directory ~ '/deploy.pub') }}"]
+            nopasswd: true
+        firewall_allow: [443/tcp, 8000-8100/tcp]
+
+verifier:
+  name: ansible
+
+scenario:
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy

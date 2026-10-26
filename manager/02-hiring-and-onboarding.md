@@ -22,7 +22,7 @@ Every candidate for the same role gets the same questions, scored against the sa
 | Practical exercise (60 to 90 min) | Doing the work | Troubleshoot a broken service in a sandbox, or review a Terraform or Kubernetes change for problems |
 | Collaboration (45 min) | How they work with others | An incident or disagreement: what happened, what they did, what they'd do differently |
 
-**Work samples beat puzzles.** For operations roles, the best exercise is close to the job: a container that won't start, a pipeline that fails, a pull request with a security flaw. The [Docker troubleshooting](../devops/docker/08-troubleshooting.md) and [Kubernetes operations](../devops/kubernetes/OPERATIONS.md) guides are a good source of realistic, broken-on-purpose scenarios. Keep take-home work short (two hours at most) and say so.
+**Work samples beat puzzles.** For operations roles, the best exercise is close to the job: a container that won't start, a pipeline that fails, a pull request with a security flaw. The [Docker troubleshooting](../software/containers/docker/09-troubleshooting.md) and [Kubernetes operations](../devops/kubernetes/OPERATIONS.md) guides are a good source of realistic, broken-on-purpose scenarios. Keep take-home work short (two hours at most) and say so.
 
 Score each area separately on a written scale (for example 1 to 4, with what each score means) before the debrief, so the first opinion voiced doesn't anchor everyone else's.
 

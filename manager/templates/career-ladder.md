@@ -20,7 +20,7 @@ Each level includes everything in the levels below it. People are assessed on su
 
 | Level | Looks like |
 |---|---|
-| L1 | Writes and changes infrastructure code, scripts, and pipelines with review. Follows runbooks. Uses the [shell](../../devops/bash/README.md) and [containers](../../devops/docker/README.md) confidently for daily tasks. |
+| L1 | Writes and changes infrastructure code, scripts, and pipelines with review. Follows runbooks. Uses the [shell](../../devops/bash/README.md) and [containers](../../software/containers/docker/README.md) confidently for daily tasks. |
 | L2 | Builds components end to end: a Terraform module, a pipeline, a service's monitoring. Debugs across layers (network, OS, container, application) to find causes, not just symptoms. |
 | L3 | Designs systems that are secure, observable, and operable by default. Anticipates failure modes, capacity, and cost. Their reviews make others' designs better. |
 | L4 | Solves problems that span teams: platform architecture, migrations, standards. Chooses when not to build. Their designs are adopted beyond their team. |

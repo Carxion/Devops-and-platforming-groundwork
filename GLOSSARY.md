@@ -60,6 +60,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Blast radius:** How much is affected when something fails or goes wrong: one request, one cell, one zone, or everything. Architects design to keep it small, with isolation such as separate accounts, cells, and progressive rollouts.
 - **Bounded context:** In domain-driven design, a boundary within which one model and its terms have one consistent meaning. "Customer" can mean different things in billing and in support; each is its own bounded context. Bounded contexts are a common guide for drawing service boundaries.
 - **Bulkhead:** Isolating resources (thread pools, connections, instances) per dependency or customer, so one overloaded part can't sink the rest.
+- **C4 model:** A way of diagramming software architecture at four levels of detail: system context, containers, components, and code. See [c4model.com](https://c4model.com/).
 - **Cell-based architecture:** Splitting users or tenants across several independent copies of a system (cells), so a failure or bad deployment affects only one cell.
 - **Clean architecture and onion architecture:** Layered designs where business logic sits at the center and depends on nothing outside it; frameworks, databases, and user interfaces sit at the edges and depend inward.
 - **Context map:** A diagram of the bounded contexts in a system and how they relate, such as which one is upstream, and where translation happens.
@@ -80,6 +81,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Pilot light, warm standby:** Disaster recovery strategies. Pilot light keeps data replicated and core infrastructure ready but mostly off in a recovery region; warm standby runs a scaled-down full copy. Both sit between backup-and-restore and active-active in cost and recovery speed.
 - **Publish-subscribe (pub/sub):** Senders publish messages to a topic without knowing who receives them; every subscriber to the topic gets a copy.
 - **Quality attribute:** A non-functional requirement that says how well a system must do its job: availability, latency, scalability, recoverability, security, operability, cost. Most architectural decisions are driven by these.
+- **Reference architecture:** A proven, documented design for a common problem, used as a starting point and adapted to each solution's requirements.
 - **Repository pattern:** An interface that looks like a collection of domain objects and hides how they're stored.
 - **Retry with exponential backoff and jitter:** Retrying a failed call after waits that grow each time, with randomness added so many clients don't retry in lockstep.
 - **Saga:** A way to run a business process across several services without a distributed transaction: a series of local steps, each with a *compensating action* that undoes it if a later step fails. Coordinated either by a central orchestrator or by services reacting to each other's events (choreography).
@@ -129,23 +131,33 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 ## Source control and collaboration
 
+- **Bisect:** A binary search through history for the commit that introduced a bug (`git bisect`), marking each tested commit good or bad, by hand or with a script.
 - **Branch:** An independent line of development in a repository.
 - **Branch protection:** Rules on a branch (usually the default one) such as required reviews, required passing checks, and no force-pushes.
+- **Cherry-pick:** Copying one commit's changes onto another branch as a new commit, typically to bring a fix to a release branch.
 - **CODEOWNERS:** A file that maps paths in a repository to the people or teams who must review changes to them.
 - **Commit:** A recorded snapshot of changes in Git, with an author, a message, and a unique hash.
 - **Conventional Commits:** A commit-message format (`feat:`, `fix:`, `chore:`) that tools can parse to generate changelogs and version numbers.
 - **Default branch:** The branch new work merges into, usually `main`.
+- **Detached HEAD:** Having a commit checked out instead of a branch. Commits made there belong to no branch until you create one.
+- **Force push:** Overwriting a remote branch's history. `--force-with-lease` refuses if someone else pushed in the meantime; protected branches should block force pushes entirely.
 - **Fork:** A personal copy of someone else's repository, used to propose changes without write access to the original.
 - **Git:** The distributed version control system used by nearly every team. GitHub, GitLab, Bitbucket, and Azure Repos host Git repositories.
 - **GitFlow:** A branching model with long-lived `develop` and `release` branches. Most teams that deploy often have moved to trunk-based development.
+- **HEAD:** Git's name for what you have checked out: usually a branch, which in turn points at its latest commit.
 - **Merge conflict:** Two changes touch the same lines, so Git can't combine them automatically and a person must choose.
 - **Monorepo:** One repository holding many projects or services. A *polyrepo* setup gives each its own repository.
 - **Pull request (PR) or merge request (MR):** A proposal to merge a branch, with review comments and automated checks. GitHub calls it a pull request and GitLab a merge request.
 - **Rebase:** Replaying your commits on top of another branch to keep history linear. Never rebase commits others have already pulled.
+- **Reflog:** Git's local record of where each branch and HEAD pointed over time. It's how "lost" commits are found after a reset, rebase, or deleted branch.
+- **Revert:** A new commit that undoes an earlier one. The safe way to undo something on a shared branch, because history is only added to.
 - **Signed commit:** A commit carrying a cryptographic signature that proves who made it.
 - **Squash merge:** Combining all of a pull request's commits into one commit on merge.
+- **Staging area (index):** Where the next commit is assembled: `git add` puts changes there and `git commit` records them.
+- **Stash:** Uncommitted changes set aside (`git stash`) so the working tree is clean, to be reapplied later.
 - **Tag:** A named pointer to a specific commit, usually marking a release (`v1.4.0`).
 - **Trunk-based development:** Everyone integrates small changes into the default branch at least daily, using short-lived branches and feature flags instead of long-lived branches.
+- **Worktree:** An extra working directory attached to the same repository (`git worktree add`), so two branches can be checked out at once.
 
 ## Continuous integration and delivery
 
@@ -157,6 +169,7 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **CD (continuous delivery):** Every change that passes the pipeline is releasable, and releasing is a routine, low-risk decision.
 - **CD (continuous deployment):** Every change that passes the pipeline goes to production automatically, with no human release step.
 - **CI (continuous integration):** Merging changes into the shared branch often, with every change built and tested automatically.
+- **CI/CD component:** In GitLab, a reusable, versioned piece of pipeline configuration with declared inputs, included with `include: component:` and listed in the CI/CD Catalog. See [Reusing pipeline code](devops/gitlab/04-reusing-pipeline-code.md#cicd-components).
 - **Deployment vs. release:** Deployment puts code on servers; release exposes it to users. Feature flags let you deploy without releasing.
 - **Environment:** A full running copy of a system for a purpose, such as dev, test, staging, or production.
 - **Environment promotion:** Moving the same artifact through environments in order (dev, then staging, then production), with gates between them.
@@ -166,30 +179,41 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **GitOps:** Keeping the desired state of a system in Git and having an agent (such as Argo CD or Flux) continuously make the running system match it.
 - **Hermetic build:** A build whose result depends only on its declared inputs, not on the machine or the network, so it's reproducible.
 - **Immutable artifact:** An artifact that is never changed after it's built. A fix produces a new version.
+- **Job token:** A short-lived token a CI job gets automatically (`CI_JOB_TOKEN` in GitLab, `GITHUB_TOKEN` in GitHub Actions) for the CI system's own APIs, registries, and repositories.
 - **Pipeline:** The automated sequence of stages (build, test, scan, deploy) that a change goes through.
+- **Protected branch:** A branch that only some roles can push or merge to. In GitLab, protected variables and runners are only available to pipelines on protected branches and tags.
 - **Rollback and roll forward:** Rolling back returns to the previous version; rolling forward fixes the problem with a new version.
 - **Rolling deployment:** Replacing instances of the old version with the new one a few at a time.
 - **Runner or agent:** The machine that executes pipeline jobs. It can be hosted by the CI provider or self-hosted.
+- **Saved plan:** A Terraform plan written to a file (`terraform plan -out`) and applied later, so what's applied is exactly what was reviewed.
 - **Smoke test:** A quick check right after deployment that the system starts and its main paths respond.
 
 ## Infrastructure as code
 
+- **Ansible:** An agentless configuration management tool: it connects over SSH (or WinRM) and runs modules that each make one thing true on the host.
+- **Ansible Vault:** Ansible's built-in encryption for secrets stored in a repository. A secrets manager queried at run time is usually better for production.
 - **Bicep:** Microsoft's language for declaring Azure resources. It compiles to ARM templates.
 - **CloudFormation:** AWS's service for declaring AWS resources in YAML or JSON templates, deployed as *stacks*.
+- **Collection (Ansible):** A distributable package of Ansible modules, plugins, and roles, such as `ansible.posix` or `amazon.aws`, installed with `ansible-galaxy`.
 - **Configuration management:** Tools that set up software and settings on existing servers, such as Ansible, Chef, and Puppet.
 - **Declarative:** Describing the end state you want and letting the tool work out the steps. Most IaC is declarative; scripts are *imperative*.
 - **Drift:** Differences between what the code declares and what actually exists, usually from changes made by hand.
 - **GitOps:** See [Continuous integration and delivery](#continuous-integration-and-delivery).
 - **Golden image:** A pre-built, hardened machine or container image that teams start from.
+- **Handler (Ansible):** A task that runs only when another task reports a change, once, at the end of the play. Typically restarts or reloads a service.
 - **IaC (infrastructure as code):** Defining infrastructure in version-controlled files that a tool applies, instead of by hand in a console.
 - **Idempotent apply:** Applying the same code twice changes nothing the second time. Good IaC is idempotent.
 - **Immutable infrastructure:** Replacing servers instead of changing them in place.
+- **Inventory (Ansible):** The list of hosts Ansible manages and the groups they belong to: a file, or generated from a cloud API by an inventory plugin.
 - **Module:** A reusable, parameterized package of IaC, such as a standard network or database.
+- **Molecule:** A testing framework for Ansible roles: it creates throwaway instances, applies the role, applies it again to check idempotence, and verifies the result.
 - **OpenTofu:** An open-source fork of Terraform, maintained under the Linux Foundation.
 - **Plan and apply:** Terraform's two steps. *Plan* shows what would change; *apply* makes the changes. Review the plan before applying.
+- **Playbook:** An Ansible YAML file that maps groups of hosts to the roles and tasks they should get.
 - **Provider:** A Terraform plugin that talks to one platform's API, such as AWS, Azure, or GitHub.
 - **Pulumi:** An IaC tool that uses general-purpose languages such as TypeScript, Python, and Go.
 - **Remote state:** Terraform state stored in shared storage (such as S3 or Azure Blob Storage) with locking, so a team can work on it safely.
+- **Role (Ansible):** A reusable package of Ansible tasks, defaults, templates, and handlers with a standard folder layout.
 - **Stack:** A set of resources deployed and managed as one unit. The word is used by CloudFormation, Pulumi, and many teams' Terraform layouts.
 - **State:** Terraform's record of which real resources its code manages. It can contain secrets, so it's protected like one.
 - **State lock:** A lock that stops two runs from changing the same state at once.
@@ -226,29 +250,39 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 
 - **Admission controller:** A Kubernetes component that checks or changes objects before they're stored, used to enforce policy. Kyverno, Gatekeeper, and Pod Security Admission are examples.
 - **AKS, EKS, GKE:** The managed Kubernetes services on Azure, AWS, and Google Cloud.
+- **Buildah:** A daemonless tool for building OCI images, from a Dockerfile or step by step from a script. Podman's builds use it.
+- **Capabilities (Linux):** root's power split into about 40 separate privileges, such as `CAP_NET_ADMIN`. Containers get a reduced set; hardening drops all of them and adds back only what's needed.
+- **cgroup (control group):** A kernel feature that groups processes and limits and accounts for their CPU, memory, and process count. Container resource limits are cgroup settings.
 - **ConfigMap and Secret:** Kubernetes objects that hold configuration and sensitive values for pods. Secrets are only base64-encoded by default, not encrypted, unless encryption at rest is turned on.
+- **conmon:** Podman's small per-container monitor: it holds the container's input, output, and logs, and records its exit code, so no daemon is needed.
 - **Container:** A process packaged with its dependencies and isolated from others on the same host. Lighter than a virtual machine because it shares the host's kernel.
 - **Container image:** The read-only template a container starts from, built from a Dockerfile or similar and stored in a registry.
+- **containerd:** A CNCF container runtime daemon that stores images and supervises containers. Docker uses it, and Kubernetes clusters use it directly through the CRI.
 - **Control plane:** The Kubernetes components that make decisions and store cluster state (API server, scheduler, etcd). Managed services run it for you.
 - **CRD (custom resource definition):** A way to add new object types to Kubernetes, used by operators and add-ons.
+- **CRI (Container Runtime Interface):** The API Kubernetes uses to talk to a container runtime, such as containerd or CRI-O.
 - **DaemonSet:** Runs one copy of a pod on every node (or selected nodes), typically for agents such as log collectors.
 - **Deployment:** Manages a set of identical, interchangeable pods and rolls out new versions of them.
 - **Distroless image:** A container image with only the application and its runtime, without a shell or package manager, which shrinks the attack surface.
 - **Docker:** The tool that popularized containers. Its image format is now standardized as OCI (Open Container Initiative).
-- **Helm:** A package manager for Kubernetes. A *chart* is a templated set of manifests.
+- **Helm:** A package manager for Kubernetes. A *chart* is a templated set of manifests with default values; installing one creates a *release*, which Helm can upgrade and roll back as a unit. See [devops/helm](devops/helm/README.md).
+- **Helm library chart:** A chart of named templates that other charts include, which renders nothing on its own. Used to share labels, security settings, and common resources.
 - **HPA (Horizontal Pod Autoscaler):** Adds or removes pod replicas based on metrics such as CPU use.
 - **Image digest:** An image's content hash (`sha256:...`). Unlike a tag, it can't be moved to point at different contents.
 - **Ingress and Gateway API:** Kubernetes objects that route outside HTTP traffic to services. Gateway API is the newer, more expressive successor to Ingress.
 - **Job and CronJob:** A Job runs pods until a task completes; a CronJob creates Jobs on a schedule.
 - **kubectl:** The Kubernetes command-line tool.
 - **Kustomize:** A tool, built into kubectl, that customizes plain manifests with overlays instead of templates.
+- **Linux namespace:** A kernel feature that gives a process its own view of a resource (processes, network, mounts, hostname, users). Containers are processes in their own namespaces. Not the same as a Kubernetes namespace.
 - **Liveness, readiness, and startup probes:** Health checks. A failed liveness probe restarts the container, a failed readiness probe removes it from traffic, and a startup probe gives slow starters time before the other two begin.
 - **Manifest:** A YAML or JSON file describing a Kubernetes object.
 - **Namespace:** A partition of a cluster for grouping objects and applying access rules, quotas, and policies.
 - **NetworkPolicy:** Rules for which pods may talk to which. They're only enforced if the cluster's network plugin supports them.
 - **Node:** A machine (usually a VM) that runs pods. A *node pool* or *node group* is a set of identical nodes.
 - **OCI (Open Container Initiative):** The standards for container image formats and runtimes, so images built by one tool run in any other.
+- **OCI runtime:** The low-level program that creates a container from an OCI bundle: namespaces, cgroups, and security settings. runc and crun are the common ones.
 - **Operator:** A controller that manages a complex application (such as a database) on Kubernetes, using custom resources.
+- **Overlay filesystem (overlayfs):** The kernel filesystem that stacks an image's read-only layers under a container's thin writable layer, with copy-on-write.
 - **Podman:** A daemonless, rootless-by-default container engine with Docker-compatible commands; the supported container tool on RHEL.
 - **Pod:** The smallest deployable unit in Kubernetes: one or more containers that share a network address and storage.
 - **PodDisruptionBudget (PDB):** The minimum number of pods that must stay running during voluntary disruptions such as node upgrades.
@@ -256,11 +290,14 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Quadlet:** Podman's systemd integration: a `.container` file describes a container, and systemd runs it as a service.
 - **Requests and limits:** The CPU and memory a container is guaranteed (requests) and may not exceed (limits). The scheduler places pods by their requests.
 - **Rootless containers:** Containers run by an ordinary user, with no root daemon, so an escape lands as that user rather than root.
+- **seccomp:** A kernel feature that filters which system calls a process can make. Docker and Podman apply a default profile that blocks dangerous calls.
 - **Service:** A stable network name and address in front of a changing set of pods.
 - **Service mesh:** A layer (such as Istio or Linkerd) that handles service-to-service traffic, adding mutual TLS, retries, and telemetry without code changes.
 - **Sidecar:** A helper container that runs beside the main container in a pod, such as a proxy or a log shipper.
+- **Skopeo:** A tool that inspects, copies, and mirrors images between registries and local storage without pulling them through a daemon.
 - **StatefulSet:** Like a Deployment, but for pods that need stable names and their own persistent storage, such as databases.
 - **Taints and tolerations:** A taint keeps pods off a node unless they carry a matching toleration. Used to reserve nodes for particular workloads.
+- **User namespace:** A namespace that maps user IDs, so root inside a container can be an unprivileged user on the host. The basis of rootless containers.
 
 ## Cloud
 
@@ -416,10 +453,12 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **FinOps:** The practice of managing cloud spending through shared accountability between engineering, finance, and the business.
 - **Orphaned resources:** Resources still billing after whatever used them is gone, such as unattached disks, old snapshots, and idle IP addresses.
 - **Rightsizing:** Matching resource sizes to actual use, usually by moving to smaller instances.
+- **TCO (total cost of ownership):** The full cost of a solution over a set period, usually three to five years: build or migration, infrastructure, licenses, support, and the people to run it.
 - **Unit cost:** Cloud spend divided by a business measure, such as cost per customer or per thousand requests. It shows whether costs scale efficiently.
 
 ## Delivery, teams, and governance
 
+- **Acceptance criteria:** The conditions a backlog item must meet to be accepted, written before the work starts; often in Given/When/Then form.
 - **ADR (architecture decision record):** A short document recording an important decision, its context, and its consequences. See the [template](tech-lead/templates/adr-template.md).
 - **Agile:** Delivering in small increments with frequent feedback, rather than a single big plan. Scrum and Kanban are common forms.
 - **Backlog:** The ordered list of work not yet started.
@@ -427,24 +466,53 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Change advisory board (CAB):** A group that approves changes before release. Automated checks and small changes usually manage risk better than a meeting.
 - **Change fail rate:** The share of deployments that need immediate intervention in production, such as a rollback or hotfix. One of the DORA metrics.
 - **Conway's law:** Systems tend to mirror the communication structure of the organizations that build them.
+- **Cost of delay:** What it costs to do something later instead of now: lost value, a missed deadline, or a risk left open. The basis of WSJF.
 - **Definition of done:** The team's shared checklist for when work counts as finished, such as tested, reviewed, documented, and deployed.
 - **DevOps:** A culture and set of practices that bring development and operations together, so teams build, ship, and run their own software through automation and shared responsibility.
 - **DORA metrics:** Measures of software delivery performance from the DevOps Research and Assessment program. Throughput: change lead time, deployment frequency, and failed deployment recovery time. Instability: change fail rate and deployment rework rate. Earlier versions had four metrics, with mean time to restore. See [Planning and metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics).
 - **Epic, story, task:** Units of planned work, from large (epic) to small (task). A user story describes a need from the user's point of view.
+- **Golden cage:** A golden path that can't be left: everything must go through it. Produces workarounds and shadow infrastructure. Good paths have escape hatches.
+- **Guardrail:** An automated control that keeps a change safe and lets it through, such as an admission policy or a pipeline scan, instead of a gate where someone approves it by hand.
+- **Increment:** In Scrum, a usable step toward the Product Goal. Work counts as part of an increment only when it meets the Definition of Done.
 - **Inner source:** Using open-source practices (open repositories, contributions across teams) inside a company.
+- **Internal developer portal:** A website in front of a platform: the software catalog, templates, docs, and status. Not the platform itself; Backstage is the best-known example.
 - **ITIL:** A widely used framework of IT service management practices, covering incident, problem, and change management.
 - **Kanban:** Managing work as a visual flow on a board, with limits on how much is in progress at once.
 - **Lead time and cycle time:** Lead time runs from request (or commit) to production; cycle time runs from when work starts to when it's done.
-- **Platform engineering:** A team building internal tools and paved paths (an *internal developer platform*) so product teams can ship without becoming infrastructure experts.
+- **Monte Carlo forecast:** A forecast made by simulating future work many times from the team's past throughput, giving a date or amount with a probability ("85% likely by June 3").
+- **OKR (objectives and key results):** A goal-setting method: a qualitative objective, with a few measurable key results that show it's been met.
+- **Paved road:** Often a synonym for golden path; see *golden path* under Architecture and design.
+- **Platform engineering:** Building and running an internal developer platform as a product, so product teams can ship through self-service without becoming infrastructure experts. See [platform-engineering/](platform-engineering/README.md), and its [concepts and terms](platform-engineering/02-concepts-and-terms.md) for the field's vocabulary.
+- **Product Goal:** In Scrum, the long-term objective the Product Backlog serves. The team works toward one Product Goal at a time.
+- **Product owner:** The person accountable for maximizing a product's value: setting the Product Goal and ordering the backlog. In Scrum, one person, not a committee.
+- **Proof of concept (POC):** A small, time-boxed experiment that answers one specific question about whether an approach will work, with success criteria agreed in advance. Not a pilot or a first phase. See the [template](solutions-architect/templates/proof-of-concept-plan.md).
 - **RACI:** A responsibility chart marking who is Responsible, Accountable, Consulted, and Informed for each task.
+- **RAID log:** A running list of a project's risks, assumptions, issues, and dependencies, each with an owner.
+- **Retrospective:** A regular meeting where a team inspects how it worked and chooses improvements. In Scrum, the Sprint Retrospective ends each sprint.
+- **RFP (request for proposal):** A formal invitation for suppliers to propose a solution, with set requirements, format, and deadline. Related: RFI (request for information) and RFQ (request for quotation).
+- **RICE:** A prioritization score from Intercom: reach × impact × confidence ÷ effort.
 - **Risk register:** A list of identified risks with their likelihood, impact, owner, and plan.
 - **Roadmap:** A plan of intended outcomes over time, usually by quarter.
 - **Scrum:** An agile framework with fixed-length sprints, defined roles (product owner, Scrum Master, developers), and regular planning, review, and retrospective meetings.
+- **Scrum master:** The person accountable for a Scrum team's effectiveness: helping it use Scrum well, coaching, and removing impediments.
+- **Shift down:** Moving concerns such as security and operations into the platform underneath developers, instead of earlier onto developers (shift left).
+- **Software catalog:** The inventory of services, APIs, and resources with their owners and relationships, usually in Backstage's `catalog-info.yaml` format.
+- **Solutions architect:** The person who designs a solution to a specific business problem, makes the case for it, and hands it to the team that builds it. See [solutions-architect/](solutions-architect/README.md).
 - **Sprint:** A fixed period, typically two weeks, in which a team completes a set of work.
+- **Sprint Goal:** The single objective for a sprint, which gives the team focus and lets it adapt the plan while still delivering value.
 - **Stakeholder:** Anyone who affects or is affected by the work, such as customers, users, managers, security, and operations.
+- **Statement of work (SOW):** The contract document that defines an engagement's scope, deliverables, timeline, assumptions, and responsibilities.
 - **Team Topologies:** A model of four team types (stream-aligned, platform, enabling, complicated subsystem) and how they interact.
+- **Template drift:** The gap between services and the template they came from, as the template improves and they don't. Closed by updatable templates and referenced components.
+- **Thinnest viable platform (TVP):** From Team Topologies: the smallest platform that makes product teams measurably faster, grown only where users pull.
+- **Throughput:** The number of work items a team finishes per unit of time; the basis for flow-based forecasting.
+- **Ticket-ops:** Delivering platform capabilities through requests worked by hand. What self-service replaces.
+- **User story:** A backlog item written from the user's point of view: `As a <user>, I want <something>, so that <reason>.` A prompt for a conversation, not a specification.
 - **Value stream:** All the steps from an idea to value delivered to the customer. Mapping it shows where work waits.
+- **Velocity:** Story points a team completes per sprint. Useful only to the team itself for rough planning; misleading as a target or for comparing teams.
 - **WIP (work in progress):** Work started but not finished. Limiting it shortens lead times.
+- **Work item age:** How long an item in progress has been in progress. The earliest warning that work is stuck.
+- **WSJF (weighted shortest job first):** A prioritization method from the Scaled Agile Framework: cost of delay divided by job size, so small, urgent, valuable work goes first.
 
 ## AWS and Azure equivalents
 

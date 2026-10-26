@@ -1,0 +1,104 @@
+suite: ingress and network policy
+templates:
+  - templates/ingress.yaml
+  - templates/networkpolicy.yaml
+tests:
+  - it: renders no Ingress by default
+    template: templates/ingress.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders the Ingress for the given class and host
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        enabled: true
+        className: alb
+        host: shop.example.com
+    asserts:
+      - equal:
+          path: spec.ingressClassName
+          value: alb
+      - equal:
+          path: 'spec.rules[0].host'
+          value: shop.example.com
+      - equal:
+          path: 'spec.rules[0].http.paths[0].backend.service.port.name'
+          value: http
+
+  - it: requires a class when ingress is enabled
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - failedTemplate:
+          errorPattern: ingress.className is required
+
+  - it: selects only this release's pods, never every pod
+    template: templates/networkpolicy.yaml
+    asserts:
+      - equal:
+          path: spec.podSelector.matchLabels
+          value:
+            app.kubernetes.io/name: web-app
+            app.kubernetes.io/instance: RELEASE-NAME
+
+  - it: allows DNS egress and nothing else by default
+    template: templates/networkpolicy.yaml
+    asserts:
+      - lengthEqual:
+          path: spec.egress
+          count: 1
+      - equal:
+          path: 'spec.egress[0].ports[0].port'
+          value: 53
+
+  - it: opens the path from the ingress controller only when ingress is on
+    template: templates/networkpolicy.yaml
+    set:
+      ingress:
+        enabled: true
+        className: alb
+        allowFrom:
+          - ipBlock:
+              cidr: 10.0.0.0/16
+    asserts:
+      - lengthEqual:
+          path: spec.ingress
+          count: 2
+      - equal:
+          path: 'spec.ingress[1].from[0].ipBlock.cidr'
+          value: 10.0.0.0/16
+
+  - it: ignores allowFrom while ingress is off
+    template: templates/networkpolicy.yaml
+    set:
+      ingress:
+        allowFrom:
+          - ipBlock:
+              cidr: 10.0.0.0/16
+    asserts:
+      - lengthEqual:
+          path: spec.ingress
+          count: 1
+
+  - it: appends extra egress rules after DNS
+    template: templates/networkpolicy.yaml
+    set:
+      networkPolicy:
+        extraEgress:
+          - to:
+              - ipBlock:
+                  cidr: 10.0.64.0/19
+            ports:
+              - protocol: TCP
+                port: 5432
+    asserts:
+      - lengthEqual:
+          path: spec.egress
+          count: 2
+      - equal:
+          path: 'spec.egress[1].ports[0].port'
+          value: 5432

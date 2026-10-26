@@ -1,0 +1,27 @@
+# Production on EKS: an internet-facing ALB through the AWS Load Balancer
+# Controller, which must be installed in the cluster. Promote a release by
+# changing image.digest here, in a reviewed change.
+image:
+  tag: 6.15.0
+  digest: sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da
+
+ingress:
+  enabled: true
+  className: alb
+  host: web-app.example.com
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:111122223333:certificate/00000000-0000-0000-0000-000000000000
+    alb.ingress.kubernetes.io/healthcheck-path: /readyz
+  # The ALB reaches pod IPs directly from its ENIs: allow the VPC CIDR
+  # (network-vpc's vpc_cidr output), or narrow it to the public subnets.
+  allowFrom:
+    - ipBlock:
+        cidr: 10.0.0.0/16
+
+serviceAccount:
+  annotations: {}  # EKS Pod Identity maps the role in Terraform; IRSA would add eks.amazonaws.com/role-arn here

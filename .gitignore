@@ -47,6 +47,10 @@ software/api-testing/response.json
 .schemathesis/
 .hypothesis/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# ansible-lint and Molecule
+.ansible/
 
 # Secrets and credentials that local work can create
 .env
@@ -58,11 +62,27 @@ software/api-testing/response.json
 *.pfx
 kubeconfig
 *.kubeconfig
+# Ansible Vault password files
+.vault-pass*
+*.vault-pass
 
 # Backups from sed -i.bak and the scripts' backup_file
 *.bak
 *.bak.*
 
 # Scan and test output
+.coverage
+coverage.xml
+htmlcov/
+junit.xml
+cover.out
 sbom.json
 trivy-report.*
+
+# Helm: dependency archives are rebuilt from Chart.lock; lab output and kubeconfig stay local
+devops/helm/examples/charts/*/charts/
+devops/helm/lab/out/
+devops/helm/lab/.kubeconfig
+
+# Golden path check output
+platform-engineering/examples/out/

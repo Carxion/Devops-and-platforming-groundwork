@@ -1,0 +1,22 @@
+# {{ service_name }} in dev, deployed with the platform's web-app chart
+# ({{ platform_charts }}/web-app {{ platform_chart_version }}). The pipeline sets
+# the image by digest; everything else not set here is the chart's default.
+# Resources and labels are named after the service, not the shared chart.
+nameOverride: {{ service_name }}
+
+container:
+  command: null  # use the image's ENTRYPOINT (uvicorn)
+  args: null
+  port: 8080
+  metricsPort: null
+
+config:
+  GREETING: Hello from {{ service_name }} in dev
+  LOG_LEVEL: DEBUG
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+
+podDisruptionBudget:
+  enabled: false  # one replica: a PDB would block node drains

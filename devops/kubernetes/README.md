@@ -2,9 +2,9 @@
 
 Sample applications for the three workload shapes most programs run, plus the namespace baseline they run inside. They're written to the standards the [onboarding checklist](../../tech-lead/README.md) asks you to look for ([section 7.5](../../tech-lead/README.md#75-platform-and-runtime-hardening)), and they target the clusters built by the [EKS](../terraform/aws/eks-cluster/) and [AKS](../terraform/azure/aks-cluster/) stacks.
 
-They're plain YAML managed with [Kustomize](https://kustomize.io), which is built into `kubectl`, so there's no templating language to learn and what you review is what gets applied.
+They're plain YAML managed with [Kustomize](https://kustomize.io), which is built into `kubectl`, so there's no templating language to learn and what you review is what gets applied. The same apps are packaged as Helm charts in [devops/helm](../helm/README.md), for comparison and for teams that deploy with Helm.
 
-> **Status.** Every overlay renders, passes strict schema validation against Kubernetes 1.34 (kubeconform), and passes checkov's Kubernetes policies, in CI on every change. They haven't been applied to a live cluster by this project. Deploy to a dev cluster first.
+> **Status.** Every overlay rendered, passed strict schema validation against Kubernetes 1.34 (kubeconform), and passed checkov's Kubernetes policies when last checked. CI doesn't run these; run them with the commands in [Checks and tested versions](#checks-and-tested-versions). They haven't been applied to a live cluster by this project. Deploy to a dev cluster first.
 
 ## Contents
 
@@ -196,7 +196,7 @@ Build an image once, then promote **the same digest** through environments ([sec
 
 ### Verify in CI
 
-This repository's [kubernetes.yml](../../.github/workflows/kubernetes.yml) renders every overlay, validates it against the target Kubernetes version's schemas, and runs checkov on the rendered output. Copy it, and add `kubectl diff` against a dev cluster if your CI can reach one.
+The commands in [Checks and tested versions](#checks-and-tested-versions) are what a pipeline should run: render every overlay, validate it against the target Kubernetes version's schemas, and run checkov on the rendered output. Add `kubectl diff` against a dev cluster if your CI can reach one.
 
 ### Enforce in the cluster, too
 

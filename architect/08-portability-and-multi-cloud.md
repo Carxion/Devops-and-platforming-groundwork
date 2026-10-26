@@ -40,7 +40,7 @@ Most organizations get the best value from the second or third level: **portable
 
 ## Standards that keep options open cheaply
 
-- **Containers and Kubernetes** for application packaging and runtime ([Docker](../devops/docker/README.md), [Kubernetes](../devops/kubernetes/README.md))
+- **Containers and Kubernetes** for application packaging and runtime ([Docker](../software/containers/docker/README.md), [Kubernetes](../devops/kubernetes/README.md))
 - **Terraform or OpenTofu** across providers, with provider-specific modules behind consistent interfaces ([reference stacks for AWS and Azure](../devops/terraform/README.md))
 - **OpenTelemetry** for telemetry, so the observability backend can change ([observability](../devops/observability/README.md))
 - **OIDC and SAML** for identity federation, rather than provider-specific identity in applications

@@ -1,0 +1,6 @@
+# Every change is reviewed by the owning team. The platform team owns the
+# pipeline and deploy configuration that came from the golden path, so changes
+# to them get a second look.
+*                @{{ gitlab_group }}/{{ owner }}
+/.gitlab-ci.yml  @{{ gitlab_group }}/{{ owner }} @platform/platform-team
+/deploy/         @{{ gitlab_group }}/{{ owner }} @platform/platform-team

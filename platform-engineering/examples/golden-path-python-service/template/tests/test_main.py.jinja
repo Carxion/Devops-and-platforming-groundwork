@@ -1,0 +1,36 @@
+"""Tests for the platform conventions every service on the golden path keeps."""
+
+from __future__ import annotations
+
+from collections.abc import Iterator
+
+import pytest
+from fastapi.testclient import TestClient
+
+from {{ module_name }}.main import create_app
+
+
+@pytest.fixture
+def client() -> Iterator[TestClient]:
+    with TestClient(create_app()) as c:
+        yield c
+
+
+def test_liveness(client: TestClient) -> None:
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_readiness(client: TestClient) -> None:
+    response = client.get("/readyz")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}
+
+
+def test_index_reads_its_greeting_from_the_environment(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GREETING", "Hello from a test")
+    response = client.get("/")
+    assert response.json() == {"service": "{{ service_name }}", "message": "Hello from a test"}

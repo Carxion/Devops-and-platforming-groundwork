@@ -1,0 +1,15 @@
+---
+# Settings for every host. Values per group go in group_vars/<group>.yml and
+# per host in host_vars/<host>.yml; the more specific file wins.
+
+base_timezone: UTC
+
+# Administrators: who can log in, and with which keys. Keys are public, so
+# they can live here; anything secret goes in an Ansible Vault file instead.
+admin_users_accounts:
+  - name: deploy
+    ssh_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleKeyReplaceWithYourOwnPublicKey0000 deploy@example
+
+# Everyone can reach SSH; web servers also serve HTTPS (see group_vars/web.yml).
+firewall_allow: []

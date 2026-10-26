@@ -1,0 +1,3 @@
+---
+firewall_allow:
+  - 443/tcp

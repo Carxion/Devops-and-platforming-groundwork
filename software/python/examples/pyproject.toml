@@ -1,0 +1,54 @@
+[project]
+name = "ops-examples"
+version = "0.1.0"
+description = "Standard operational tools in Python: certificate expiry, log statistics, a Prometheus exporter, an alert relay, and a cloud tag audit."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "CC-BY-4.0"
+dependencies = [
+    "boto3>=1.43",              # tag-audit
+    "prometheus-client>=0.26",  # probe-exporter
+]
+
+[project.scripts]
+certcheck = "ops_examples.certcheck:main"
+logstats = "ops_examples.logstats:main"
+probe-exporter = "ops_examples.probe_exporter:main"
+alert-relay = "ops_examples.alert_relay:main"
+tag-audit = "ops_examples.tag_audit:main"
+
+[dependency-groups]
+dev = [
+    "boto3-stubs[resourcegroupstaggingapi,s3]>=1.43",  # type stubs for boto3
+    "cryptography>=50.0",                              # test certificates for certcheck
+    "moto[resourcegroupstaggingapi,s3]>=5.2",          # fake AWS for tag-audit tests
+    "mypy>=2.4",
+    "pytest>=9.1",
+    "ruff>=0.17",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106", "E501"]  # asserts, fake tokens, long sample log lines
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["moto", "moto.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

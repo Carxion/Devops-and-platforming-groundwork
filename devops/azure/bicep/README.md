@@ -2,7 +2,7 @@
 
 Bicep templates for identity, governance, and baseline security. Bicep is Azure's native infrastructure-as-code language: it compiles to ARM JSON and needs no state file, because Azure itself is the source of truth. Use these where a program standardizes on Bicep, or for subscription-level governance that sits outside your Terraform stacks.
 
-> **Status.** Every template builds, passes the Bicep linter, and passes checkov in CI. Built-in role and policy IDs were checked against Microsoft's published definitions. None has been deployed to a real subscription by this project; deploy to a sandbox first.
+> **Status.** Every template built, passed the Bicep linter, and passed checkov when written. CI doesn't run them; run them locally before changing a template ([how](../../../CONTRIBUTING.md#running-the-tests-locally)). Built-in role and policy IDs were checked against Microsoft's published definitions. None has been deployed to a real subscription by this project; deploy to a sandbox first.
 
 | Template | Scope | What it creates |
 |---|---|---|

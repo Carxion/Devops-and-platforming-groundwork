@@ -1,0 +1,21 @@
+apiVersion: v2
+name: web-app
+description: >-
+  A stateless HTTP service with the platform's hardened defaults: probes,
+  graceful shutdown, zone spreading, autoscaling, a disruption budget, and a
+  NetworkPolicy. The Helm version of devops/kubernetes/apps/web-app.
+type: application
+# The chart's own version: bump it for every change to the chart.
+version: 0.2.0
+# The version of the application it deploys by default (podinfo here).
+appVersion: "6.15.0"
+kubeVersion: ">=1.30.0-0"
+home: https://github.com/Carxion/Devops-and-platforming-groundwork
+sources:
+  - https://github.com/Carxion/Devops-and-platforming-groundwork/tree/main/devops/helm/examples/charts/web-app
+maintainers:
+  - name: Platform team
+dependencies:
+  - name: platform-lib
+    version: 1.0.0
+    repository: file://../platform-lib

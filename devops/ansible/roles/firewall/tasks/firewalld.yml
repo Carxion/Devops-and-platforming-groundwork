@@ -1,0 +1,35 @@
+---
+# firewalld's default zone (public) already rejects inbound traffic that isn't
+# allowed, so allowing ports is all that's needed.
+- name: Install firewalld
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: Start and enable firewalld
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: started
+    enabled: true
+  when: firewall_manage_services
+
+# permanent writes the saved configuration; immediate also applies it to the
+# running firewall. Offline mode edits the saved files when firewalld isn't
+# running (as in a container or an image build).
+- name: Allow SSH
+  ansible.posix.firewalld:
+    service: "{{ 'ssh' if firewall_ssh_port | int == 22 else omit }}"
+    port: "{{ omit if firewall_ssh_port | int == 22 else firewall_ssh_port ~ '/tcp' }}"
+    permanent: true
+    immediate: "{{ firewall_manage_services }}"
+    offline: "{{ not firewall_manage_services }}"
+    state: enabled
+
+- name: Allow the other ports
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    permanent: true
+    immediate: "{{ firewall_manage_services }}"
+    offline: "{{ not firewall_manage_services }}"
+    state: enabled
+  loop: "{{ firewall_allow }}"

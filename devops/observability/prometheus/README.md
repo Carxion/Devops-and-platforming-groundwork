@@ -18,7 +18,7 @@ Prometheus is the open-source standard for metrics: it pulls numbers from your s
 The files in this folder:
 
 - [rules/web-app-slo.yaml](rules/web-app-slo.yaml): SLO recording rules and multiwindow burn-rate alerts for the web app
-- [tests/web-app-slo.test.yaml](tests/web-app-slo.test.yaml): unit tests for those rules, run in CI with `promtool test rules`
+- [tests/web-app-slo.test.yaml](tests/web-app-slo.test.yaml): unit tests for those rules, run with `promtool test rules`
 
 ---
 

@@ -1,0 +1,136 @@
+# .gitlab-ci.yml
+# Pipeline for one Terraform root module on AWS, such as the stacks in
+# devops/terraform/aws/. No stored cloud keys: each job exchanges a GitLab ID
+# token for short-lived credentials from the roles that the gitlab-oidc stack
+# creates.
+#
+#   merge request:   fmt, validate, offline tests, IaC scan, plan (shown in the MR)
+#   default branch:  the same, then a manual apply of exactly the reviewed plan
+#
+# CI/CD variables to set (Settings > CI/CD > Variables):
+#   AWS_PLAN_ROLE_ARN    plan_role_arn output of gitlab-oidc
+#   AWS_APPLY_ROLE_ARN   apply_role_arn output; protected, so only protected branches see it
+#   TF_BACKEND_CONFIG    a file variable with the backend settings (bootstrap-state's backend_config)
+#   TF_VARS_FILE         a file variable with the module's inputs for this environment (a .tfvars file)
+#   AWS_REGION
+#
+# Inputs go in TF_VARS_FILE, passed to plan only, rather than as TF_VAR_<name>
+# variables: those reach every job, including `terraform test`, and silently
+# override the values the tests set.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages: [validate, test, plan, apply]
+
+include:
+  # GitLab's IaC scanner (KICS). Free tier; it runs in the test stage.
+  - template: Jobs/SAST-IaC.gitlab-ci.yml
+
+variables:
+  TF_ROOT: .                           # the module's directory within the project
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  TF_ENVIRONMENT: production
+  # The stable security templates skip merge request pipelines unless this is set.
+  AST_ENABLE_MR_PIPELINES: "true"
+
+.terraform:
+  image:
+    name: hashicorp/terraform:1.16.5
+    entrypoint: [""]
+  variables:
+    TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform-plugin-cache
+  cache:
+    key:
+      files: ["$TF_ROOT/.terraform.lock.hcl"]
+    paths: [.terraform-plugin-cache/]
+  before_script:
+    - mkdir -p "$TF_PLUGIN_CACHE_DIR"
+    - cd "$TF_ROOT"
+
+# Short-lived AWS credentials. The AWS SDK, the Terraform provider, and the S3
+# backend all read AWS_ROLE_ARN and AWS_WEB_IDENTITY_TOKEN_FILE and call
+# AssumeRoleWithWebIdentity themselves, so there's no aws CLI step. The token
+# is valid for this job only, and the role's trust policy checks its sub claim.
+.aws-oidc:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: sts.amazonaws.com
+  variables:
+    AWS_WEB_IDENTITY_TOKEN_FILE: $CI_PROJECT_DIR/.oidc-token
+    AWS_ROLE_SESSION_NAME: gitlab-$CI_PROJECT_ID-$CI_JOB_ID
+
+fmt:
+  extends: .terraform
+  stage: validate
+  script:
+    - terraform fmt -check -recursive -diff
+
+validate:
+  extends: .terraform
+  stage: validate
+  script:
+    - terraform init -backend=false -lockfile=readonly
+    - terraform validate
+
+# Offline tests with mocked providers (tests/*.tftest.hcl): no credentials needed.
+test:
+  extends: .terraform
+  stage: test
+  needs: [validate]
+  script:
+    - terraform init -backend=false -lockfile=readonly
+    - terraform test
+
+plan:
+  extends: [.terraform, .aws-oidc]
+  stage: plan
+  needs: [fmt, validate, test]
+  variables:
+    AWS_ROLE_ARN: $AWS_PLAN_ROLE_ARN
+  resource_group: terraform-$TF_ENVIRONMENT   # one plan or apply at a time per environment
+  script:
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > "$AWS_WEB_IDENTITY_TOKEN_FILE"
+    - terraform init -backend-config="$TF_BACKEND_CONFIG" -lockfile=readonly
+    - terraform plan -var-file="$TF_VARS_FILE" -out=plan.cache -lock-timeout=5m
+    # The summary GitLab shows in the merge request widget.
+    - apk add --no-cache jq >/dev/null
+    - >
+      terraform show -json plan.cache | jq -r '([.resource_changes[]?.change.actions]) as $a |
+      {create: ($a | map(select(index("create"))) | length),
+       update: ($a | map(select(. == ["update"])) | length),
+       delete: ($a | map(select(index("delete"))) | length)}' > plan-summary.json
+    - cat plan-summary.json
+  artifacts:
+    # A saved plan can contain secrets in clear text: limit who can download it.
+    access: developer
+    paths:
+      - $TF_ROOT/plan.cache
+    reports:
+      terraform: $TF_ROOT/plan-summary.json
+    expire_in: 7 days
+
+# Applies the saved plan, so what runs is exactly what was reviewed. If anything
+# changed since (another apply), Terraform refuses the stale plan.
+apply:
+  extends: [.terraform, .aws-oidc]
+  stage: apply
+  needs: [plan]
+  variables:
+    AWS_ROLE_ARN: $AWS_APPLY_ROLE_ARN
+  resource_group: terraform-$TF_ENVIRONMENT
+  environment:
+    name: $TF_ENVIRONMENT
+    deployment_tier: production
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual                     # a person starts it; the pipeline waits ("blocked")
+  script:
+    - test -n "$AWS_ROLE_ARN" || { echo "AWS_APPLY_ROLE_ARN isn't set. It's protected; is this branch protected?"; exit 1; }
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > "$AWS_WEB_IDENTITY_TOKEN_FILE"
+    - terraform init -backend-config="$TF_BACKEND_CONFIG" -lockfile=readonly
+    - terraform apply -lock-timeout=5m plan.cache

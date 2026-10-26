@@ -1,0 +1,12 @@
+project         = "example"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+owner           = "platform-team"
+
+gitlab_url          = "https://gitlab.com"
+gitlab_project_path = "example-group/example-infra"
+plan_branches       = ["main"]
+plan_any_branch     = false # true to plan in every merge request (preview feature)
+apply_branch        = "main"
+
+# From bootstrap-state outputs
+state_storage_account_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example-tfstate/providers/Microsoft.Storage/storageAccounts/stexampletfstateabc123"

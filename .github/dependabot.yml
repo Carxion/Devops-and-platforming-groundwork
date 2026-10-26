@@ -20,9 +20,33 @@ updates:
 
   # Base images in the example Dockerfiles (pinned by tag and digest).
   - package-ecosystem: docker
-    directories: ["/devops/docker/examples/items-api", "/devops/docker/examples/go-hello"]
+    directories: ["/software/containers/docker/examples/items-api", "/software/containers/docker/examples/go-hello", "/software/python/boilerplate/items-api", "/software/go/boilerplate/items-api"]
     schedule:
       interval: monthly
     groups:
       base-images:
         patterns: ["*"]
+
+  # Ansible's pinned control-node tools.
+  - package-ecosystem: pip
+    directory: /devops/ansible
+    schedule:
+      interval: monthly
+    groups:
+      ansible:
+        patterns: ["*"]
+
+  # Python dependencies in the boilerplate and examples projects' uv.lock files.
+  - package-ecosystem: uv
+    directories: ["/software/python/boilerplate/healthcheck", "/software/python/boilerplate/items-api", "/software/python/examples", "/software/testing/python/example"]
+    schedule:
+      interval: monthly
+    groups:
+      python:
+        patterns: ["*"]
+
+  # Go version and modules in the boilerplate and examples modules.
+  - package-ecosystem: gomod
+    directories: ["/software/go/boilerplate/healthcheck", "/software/go/boilerplate/items-api", "/software/go/examples", "/software/testing/go/example"]
+    schedule:
+      interval: monthly

@@ -1,0 +1,76 @@
+# The golden path for a new Python HTTP service: one command gives a team a
+# service that builds, tests, scans, deploys, and is registered in the catalog,
+# with every platform default already in place.
+#
+#   copier copy --trust gl:platform/golden-paths/python-service orders-api
+#   copier update --trust          # later, inside the service: take template improvements
+#
+# --trust allows the one task below (uv lock). The template is the platform
+# team's own; review its changes like any other code you run.
+
+_min_copier_version: "9.4.0"
+_subdirectory: template
+_answers_file: .copier-answers.yml
+_templates_suffix: .jinja
+
+# Resolve and lock dependencies for this service's name, after copy and after
+# each update. Needs uv on the machine running Copier.
+_tasks:
+  - uv lock --quiet
+
+service_name:
+  type: str
+  help: Service name, used for the repository, image, release, and catalog entry (lowercase letters, digits, hyphens)
+  validator: >-
+    {% if not service_name[:1].isalpha() or service_name != service_name.lower()
+       or not service_name.replace('-', '').isalnum() or not service_name.isascii()
+       or service_name.endswith('-') or service_name | length > 40 %}
+    Use 2 to 40 lowercase letters, digits, and hyphens, starting with a letter.
+    {% endif %}
+
+description:
+  type: str
+  help: One sentence about what it does, for the README and the catalog
+  default: A service on the platform's Python golden path.
+
+owner:
+  type: str
+  help: Owning team, as its catalog group name; it gets CODEOWNERS and the catalog entry
+  default: team-example
+  validator: "{% if not owner %}Every service needs an owning team.{% endif %}"
+
+system:
+  type: str
+  help: The catalog system it's part of
+  default: sample-apps
+
+lifecycle:
+  type: str
+  help: Catalog lifecycle
+  choices: [experimental, production]
+  default: experimental
+
+gitlab_group:
+  type: str
+  help: GitLab group the repository lives in
+  default: apps
+
+ci_components:
+  type: str
+  help: The platform's CI/CD component project
+  default: platform/ci-components
+
+platform_charts:
+  type: str
+  help: OCI registry path of the platform's Helm charts (without oci://)
+  default: registry.example.com/platform/charts
+
+platform_chart_version:
+  type: str
+  help: Version of the platform's web-app chart to deploy with
+  default: 0.2.0
+
+module_name:
+  type: str
+  when: false
+  default: "{{ service_name | replace('-', '_') }}"

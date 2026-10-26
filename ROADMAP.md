@@ -1,12 +1,12 @@
 # Roadmap
 
-What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [architect/](architect/README.md), [devops/](devops/README.md), [software/](software/README.md), and [manager/](manager/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
+What this repository covers today, and the areas planned next. Material is organized by audience: [tech-lead/](tech-lead/README.md), [architect/](architect/README.md), [solutions-architect/](solutions-architect/README.md), [devops/](devops/README.md), [software/](software/README.md), [manager/](manager/README.md), [scrum-master/](scrum-master/README.md), and [product-owner/](product-owner/README.md). New areas go in the folder whose readers need them most. The [guide](tech-lead/README.md) is the backbone: each new area should help a tech lead do something its checklist asks for, with material that's tested, not just written.
 
 Proposals and priorities are discussed in issues; open one with the [new item template](.github/ISSUE_TEMPLATE/new-item.yml) to suggest an area or argue for reordering. See [what "done" means](#definition-of-done-for-a-new-area) before starting one.
 
 ## Covered today
 
-| Area | Where | Tested by CI |
+| Area | Where | Checked by (CI lints every area; the tests run locally) |
 |---|---|---|
 | Tech lead onboarding checklist, phase view, tracker CSV | [tech-lead/](tech-lead/README.md), [tech-lead/checklists/](tech-lead/checklists/) | Lint, spelling, links, generated-file freshness |
 | Copy-ready templates | [tech-lead/templates/](tech-lead/templates/) | Lint |
@@ -14,13 +14,23 @@ Proposals and priorities are discussed in issues; open one with the [new item te
 | Terraform reference stacks (AWS, Azure) | [devops/terraform/](devops/terraform/) | fmt, validate, `terraform test`, tflint, checkov |
 | Kubernetes sample apps and operations | [devops/kubernetes/](devops/kubernetes/) | Kustomize render, kubeconform, checkov |
 | AWS and Azure CLI guides, CloudFormation and Bicep | [devops/aws/](devops/aws/), [devops/azure/](devops/azure/) | Every `aws`/`az` command checked against the real CLIs; cfn-lint, Bicep, checkov |
+| Python and Go 101, with CLI and API boilerplate and five operational tools in each language (certificate expiry, log statistics, a Prometheus exporter, an alert relay, a tag audit) | [software/python/](software/python/README.md), [software/go/](software/go/README.md) | Lint, types, tests, govulncheck, contract tests and Trivy on both API images; tool tests run offline against local servers and fake clouds |
+| Unit testing, and testing and linting for Python and Go | [software/testing/](software/testing/README.md), [Python](software/python/04-testing-and-linting.md), [Go](software/go/04-testing-and-linting.md) | ruff, gofmt, golangci-lint in CI; pytest and `go test` with coverage, benchmarks, and fuzzing locally |
 | API testing | [software/api-testing/](software/api-testing/) | Spectral, Newman, Schemathesis, k6, Locust against a reference server |
 | Observability: Prometheus, Grafana, OpenTelemetry, CloudWatch, Azure Monitor | [devops/observability/](devops/observability/) | promtool rule tests, config validation, the full lab started and checked end to end |
+| Git 101 and code review: setup and signing, branching, complex commands broken down, recovery, review practices and repository settings | [software/git/](software/git/README.md) | Every recipe run against real repositories on Git 2.34 (Ubuntu 22.04), Ubuntu 24.04, and Rocky 9, including filter-repo; ShellCheck and shfmt |
+| GitLab 101 and GitLab CI/CD: nine guides, a CI/CD component, reference pipelines for the Python and Go services and for Terraform with OIDC, and `gitlab-oidc` Terraform stacks for AWS and Azure | [devops/gitlab/](devops/gitlab/README.md), [aws](devops/terraform/aws/gitlab-oidc/) and [azure](devops/terraform/azure/gitlab-oidc/) `gitlab-oidc` | Every example pipeline run end to end in a local GitLab CE 19.5 with real runners and moto; guide pipelines through the CI Lint API with a simulated pipeline; `terraform test` on both stacks |
+| Helm: eight guides, a library chart and two application charts (the Kustomize samples as charts) with values per environment, a publishing script, and a kind lab | [devops/helm/](devops/helm/README.md) | helm lint, kubeconform, checkov, helm-unittest, and chart-testing; install, `helm test`, upgrade, automatic rollback, rollback, and OCI publish and install-by-digest on kind with the namespace baseline |
+| Platform engineering: first 90 days, eight guides (concepts and terms, golden paths, self-service, portals and catalogs, building, adoption and measurement, anti-patterns), five templates, and a Copier golden path for a Python service | [platform-engineering/](platform-engineering/README.md) | The golden path generated, checked, updated, built, rendered with the platform chart, and deployed to kind with the namespace baseline |
+| Ansible: the server baseline as roles for RHEL and Ubuntu, Vault and secrets managers, CI in GitHub, GitLab, and Jenkins, fleet operations | [devops/ansible/](devops/ansible/README.md) | yamllint, ansible-lint (production profile), Molecule converge, idempotence, and verify on Ubuntu 22.04 and 24.04, Rocky 9, and AlmaLinux 9 |
 | Bash and Linux administration (RHEL and Ubuntu) | [devops/bash/](devops/bash/) | ShellCheck, shfmt, Bats, server baseline applied in Ubuntu 22.04 and 24.04, Rocky 9, and AlmaLinux 9 containers |
-| Docker and Podman | [devops/docker/](devops/docker/) | Hadolint, builds, Trivy, Compose run with a smoke test, container audit |
+| Containers: how they work, Docker, and Podman | [software/containers/](software/containers/README.md) | Hadolint, builds, Trivy, Compose run with a smoke test, container audit |
+| Scrum master: first 90 days, five guides on Scrum and flow for interrupt-driven platform teams, six templates | [scrum-master/](scrum-master/README.md) | Lint, spelling, links |
+| Product owner: first 90 days, five guides on running a platform as a product, six templates | [product-owner/](product-owner/README.md) | Lint, spelling, links |
 | Managing DevOps and platform teams: first 90 days, eight guides, eight templates | [manager/](manager/README.md) | Lint, spelling, links |
 | Tech lead guides: assessment method, worked example, design reviews, migrations, working with leadership | [tech-lead/](tech-lead/README.md) | Lint, spelling, links |
 | Architecture considerations: eight guides and three templates | [architect/](architect/README.md) | Lint, spelling, links |
+| Solutions architect: first 90 days, six guides on discovery, design, stakeholders, proposals, and presenting, six templates | [solutions-architect/](solutions-architect/README.md) | Lint, spelling, links |
 
 ## Phase 1: next
 
@@ -28,10 +38,8 @@ The gaps a new tech lead hits first.
 
 | Area | Why | What it would contain | Builds on |
 |---|---|---|---|
-| **CI/CD pipelines in GitLab CI and Jenkins** | Section [5](tech-lead/README.md#5-continuous-integration) and [6](tech-lead/README.md#6-continuous-delivery-and-deployment) of the guide are tool-neutral, and the repository's own CI is GitHub Actions only. Many programs run GitLab or Jenkins. | Reference pipelines for the sample apps in all three systems: build, test, scan, sign, deploy with environment gates. Short-lived cloud credentials from each CI system (GitLab and Jenkins OIDC to AWS and Azure). Shared libraries, runners and agents, caching, and pipeline security. | [api-testing](software/api-testing/), [docker](devops/docker/), the `github-oidc` Terraform stacks |
-| **Git 101 and code review** | Every other area assumes it, and review practices are a frequent finding in section [2](tech-lead/README.md#2-evaluating-the-programs-problems) | Everyday Git with complex commands broken down (rebase, bisect, reflog recovery, history rewriting and when not to), branching models, review checklists, protected branches and CODEOWNERS | [bash](devops/bash/) style of breakdowns |
-| **Ansible** | Scripts don't scale past a handful of hosts; most RHEL estates use Ansible | The [bash baseline](devops/bash/scripts/bootstrap-server.sh) rebuilt as roles for RHEL and Ubuntu, inventory and variables, vault for secrets, Molecule tests in containers, running from CI | [bash](devops/bash/), [Molecule](https://ansible.readthedocs.io/projects/molecule/) in the same containers the Bash integration test uses |
-| **Helm and GitOps** | The Kubernetes samples are plain Kustomize; most programs deploy with Helm or Argo CD | A Helm chart for the web app alongside the Kustomize version, Argo CD (or Flux) application definitions, environment promotion through Git, progressive delivery with canaries | [kubernetes](devops/kubernetes/), [observability](devops/observability/) for canary analysis |
+| **CI/CD pipelines in Jenkins** | Section [5](tech-lead/README.md#5-continuous-integration) and [6](tech-lead/README.md#6-continuous-delivery-and-deployment) of the guide are tool-neutral. GitLab is [covered](devops/gitlab/README.md); many programs run Jenkins. | The same reference pipelines as [devops/gitlab](devops/gitlab/examples/README.md) as Jenkinsfiles: build, test, scan, deploy with environment gates. Short-lived cloud credentials from Jenkins (OIDC to AWS and Azure). Shared libraries, agents, caching, and pipeline security, tested in a local Jenkins like the GitLab lab. | [devops/gitlab](devops/gitlab/README.md), the `github-oidc` and `gitlab-oidc` Terraform stacks |
+| **GitOps** | The samples deploy with Kustomize and [Helm](devops/helm/README.md) from a pipeline; many programs deploy with Argo CD or Flux | Argo CD (or Flux) application definitions for the Kustomize overlays and the Helm charts, environment promotion through Git, progressive delivery with canaries, tested on the Helm lab's kind cluster | [kubernetes](devops/kubernetes/), [helm](devops/helm/), [observability](devops/observability/) for canary analysis |
 | **Secrets management** | Leaked and long-lived credentials are the most common cloud breach path | Vault, AWS Secrets Manager, and Azure Key Vault side by side; External Secrets Operator for Kubernetes; SOPS for files in Git; rotation runbooks; secret scanning in CI | [terraform](devops/terraform/), [kubernetes](devops/kubernetes/), the regex [secret patterns](devops/bash/03-regex.md#aws-access-key-id-for-secret-scanning) |
 
 ### For managers
@@ -54,8 +62,8 @@ Done: [Assessing an inherited system](tech-lead/assessing-an-inherited-system.md
 | **Policy as code** | Guardrails that run in CI catch problems before review does | OPA and Conftest for Terraform plans and Kubernetes manifests, Kyverno policies for the sample namespace, mapping to Azure Policy and AWS SCPs already in the repository |
 | **Incident management and on-call** | Section [8](tech-lead/README.md#8-observability-and-operations) asks for runbooks and postmortems | Severity matrix, incident roles and communication templates, runbook and postmortem templates, an on-call handbook, and game-day exercises using the [observability lab](devops/observability/local-stack/README.md) |
 | **Backup and disaster recovery** | Untested restores are a top finding in inherited systems | RPO and RTO worksheets, backup and restore runbooks for the reference stacks' data stores, restore tests that run in CI, region failover exercises |
-| **Python for operations** | The step after Bash, for tools with real logic | CLI tool structure, boto3 and the Azure SDK, testing with pytest, packaging, and when to choose Python over Bash |
-| **TLS, PKI, and certificates** | Expired certificates are a classic avoidable outage | How TLS works in practice, ACME and cert-manager, internal CAs, certificate inventory and expiry monitoring, mutual TLS |
+| **TLS, PKI, and certificates** | Expired certificates are a classic avoidable outage | How TLS works in practice, ACME and cert-manager, internal CAs, certificate inventory and expiry monitoring (building on the certcheck [examples](software/python/examples/README.md)), mutual TLS |
+| **Kubernetes operators and controllers** | Platform teams extend Kubernetes for self-service; operators are where Go is most often required | The controller pattern and reconcile loops, a small operator built with Kubebuilder and the same idea in Python with Kopf, admission webhooks, testing with envtest and kind |
 | **Databases** | Most incidents eventually involve one | PostgreSQL operations: backups and point-in-time recovery, migrations in pipelines, connection pooling, managed service differences on AWS and Azure, performance triage |
 
 ## Phase 3: later
@@ -63,7 +71,7 @@ Done: [Assessing an inherited system](tech-lead/assessing-an-inherited-system.md
 | Area | Notes |
 |---|---|
 | **Google Cloud** | A third cloud with the same depth as AWS and Azure: CLI guide with commands checked by CI, Terraform stacks, and the cross-cloud tables extended |
-| **Platform engineering** | Internal developer platforms and golden paths: templates, a service catalog (Backstage), self-service infrastructure, measuring developer experience |
+| **Platform engineering, further** | [Covered](platform-engineering/README.md) as concepts and one golden path. Next: a running Backstage with the catalog and the golden path as a scaffolder template, a second golden path (an event consumer with a managed queue), and self-service databases through Crossplane or Terraform modules |
 | **FinOps in depth** | Tag enforcement, cost allocation and showback, anomaly alerts, commitment planning, unit cost dashboards built on the observability stack |
 | **Resilience testing** | Chaos experiments with AWS Fault Injection Service, Azure Chaos Studio, and LitmusChaos against the sample apps, tied to the SLOs |
 | **Service mesh** | When a mesh is worth its cost, mutual TLS, traffic shifting, and mesh telemetry, with Istio or Linkerd on the sample cluster |
@@ -76,7 +84,7 @@ Done: [Assessing an inherited system](tech-lead/assessing-an-inherited-system.md
 An area joins "Covered today" when:
 
 - [ ] It answers questions a tech lead has while working through the [checklist](tech-lead/README.md), and the relevant checklist sections link to it.
-- [ ] Every command and configuration has been run, not just written, and CI keeps it working: linted, validated, and where possible executed (as the existing areas do). Commands for cloud CLIs pass [check_cli_commands.py](scripts/check_cli_commands.py).
+- [ ] Every command and configuration has been run, not just written: linted in CI, and validated and where possible executed by tests anyone can run locally ([how](CONTRIBUTING.md#running-the-tests-locally)). Commands for cloud CLIs pass [check_cli_commands.py](scripts/check_cli_commands.py).
 - [ ] Factual claims come from primary sources (vendor documentation, standards bodies), checked for the current version.
 - [ ] It follows the repository's rules in [CONTRIBUTING.md](CONTRIBUTING.md) and [CLAUDE.md](CLAUDE.md): no program-specific information, secure defaults, plain language.
 - [ ] New terms are in the [glossary](GLOSSARY.md), and the change is in the [CHANGELOG](CHANGELOG.md).

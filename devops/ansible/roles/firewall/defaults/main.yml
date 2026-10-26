@@ -1,0 +1,6 @@
+---
+# Inbound ports to allow besides SSH: PORT/tcp, PORT/udp, or START-END/tcp.
+firewall_allow: []
+# The SSH port, always allowed first so enabling the firewall can't cut off Ansible.
+firewall_ssh_port: "{{ ssh_hardening_port | default(22) }}"
+firewall_manage_services: "{{ ansible_facts['service_mgr'] == 'systemd' }}"
