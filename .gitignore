@@ -78,3 +78,8 @@ junit.xml
 cover.out
 sbom.json
 trivy-report.*
+
+# Helm: dependency archives are rebuilt from Chart.lock; lab output and kubeconfig stay local
+devops/helm/examples/charts/*/charts/
+devops/helm/lab/out/
+devops/helm/lab/.kubeconfig

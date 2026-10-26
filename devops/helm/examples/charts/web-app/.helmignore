@@ -1,0 +1,10 @@
+# Files left out of the packaged chart. Tests run against the source; they
+# don't need to ship to everyone who installs it.
+tests/
+.git/
+.gitignore
+*.tmp
+*.swp
+.DS_Store
+.idea/
+.vscode/

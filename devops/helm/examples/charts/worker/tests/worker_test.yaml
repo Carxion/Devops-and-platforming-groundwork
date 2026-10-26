@@ -1,0 +1,49 @@
+suite: worker
+templates:
+  - templates/deployment.yaml
+  - templates/networkpolicy.yaml
+tests:
+  - it: pins the image by digest and runs hardened
+    template: templates/deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: '@sha256:[a-f0-9]{64}$'
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: 'spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem'
+          value: true
+
+  - it: gives the current batch time to finish on shutdown
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.terminationGracePeriodSeconds
+          value: 60
+
+  - it: probes liveness with the heartbeat file, not a port
+    template: templates/deployment.yaml
+    asserts:
+      - exists:
+          path: 'spec.template.spec.containers[0].livenessProbe.exec'
+      - notExists:
+          path: 'spec.template.spec.containers[0].ports'
+
+  - it: allows no inbound traffic
+    template: templates/networkpolicy.yaml
+    asserts:
+      - lengthEqual:
+          path: spec.ingress
+          count: 0
+
+  - it: allows DNS plus the configured egress
+    template: templates/networkpolicy.yaml
+    asserts:
+      - lengthEqual:
+          path: spec.egress
+          count: 2
+      - equal:
+          path: 'spec.egress[1].ports[0].port'
+          value: 443

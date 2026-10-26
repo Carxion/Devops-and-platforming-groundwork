@@ -1,0 +1,13 @@
+apiVersion: v2
+name: platform-lib
+description: >-
+  Named templates every workload chart shares: standard labels, the hardened
+  pod and container security contexts, and the service account and pod
+  disruption budget. A library chart renders nothing on its own.
+type: library
+version: 1.0.0
+home: https://github.com/Carxion/Devops-and-platforming-groundwork
+sources:
+  - https://github.com/Carxion/Devops-and-platforming-groundwork/tree/main/devops/helm/examples/charts/platform-lib
+maintainers:
+  - name: Platform team

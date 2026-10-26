@@ -1,0 +1,16 @@
+{{ include "platform-lib.fullname" . }} {{ .Chart.AppVersion }} is deployed to namespace {{ .Release.Namespace }} (revision {{ .Release.Revision }}).
+
+{{- if .Values.ingress.enabled }}
+
+URL: https://{{ .Values.ingress.host }}/
+{{- else }}
+
+No ingress. Reach it from your machine with:
+
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "platform-lib.fullname" . }} 8080:{{ .Values.service.port }}
+  curl -s http://127.0.0.1:8080/readyz
+{{- end }}
+
+Check it from inside the cluster:
+
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

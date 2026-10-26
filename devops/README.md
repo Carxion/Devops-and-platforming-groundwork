@@ -11,6 +11,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 | [gitlab/](gitlab/README.md) | GitLab 101 and GitLab CI/CD: rules and pipeline types, components, runners, OIDC to AWS and Azure, deployments, and pipeline security, with reference pipelines and a local GitLab lab that runs them | [GitLab 101](gitlab/01-basics.md) |
 | [ansible/](ansible/README.md) | Ansible: inventory and ad hoc commands, playbooks and roles, Vault and secrets managers, Molecule testing, CI in GitHub, GitLab, and Jenkins, and fleet operations, with the server baseline as five tested roles for RHEL and Ubuntu | [Basics](ansible/01-basics.md) |
 | [terraform/](terraform/README.md) | Reference AWS and Azure stacks: state, CI identity, networking, container apps, Kubernetes, serverless. Plus setup, operations, and troubleshooting. | [README](terraform/README.md), then [OPERATIONS](terraform/OPERATIONS.md) |
+| [helm/](helm/README.md) | Helm 101, using and writing charts, library charts, testing, packaging to OCI registries, and operating releases, with the sample apps as charts and a kind lab that installs, upgrades, and rolls them back | [Helm 101](helm/01-basics.md) |
 | [kubernetes/](kubernetes/README.md) | Hardened sample apps (web app, worker, scheduled job), a namespace baseline, and administration and troubleshooting commands | [README](kubernetes/README.md), then [OPERATIONS](kubernetes/OPERATIONS.md) |
 | [aws/](aws/README.md) | AWS CLI guides for identity, networking, compute, data, logging, security and incident response, and cost; CloudFormation templates for IAM and baseline security | [Setup](aws/README.md#setup) |
 | [azure/](azure/README.md) | The same for Azure, with Bicep templates | [Setup](azure/README.md#setup) |
@@ -23,7 +24,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 3. **Servers at scale:** [ansible](ansible/README.md), applying the baseline the Bash scripts build by hand.
 4. **Your cloud:** the [AWS](aws/README.md) or [Azure](azure/README.md) setup and identity guides.
 5. **Infrastructure as code:** [terraform](terraform/README.md), deploying one stack to a sandbox.
-6. **Running workloads:** [kubernetes](kubernetes/README.md) on the cluster that stack built.
+6. **Running workloads:** [kubernetes](kubernetes/README.md) on the cluster that stack built, then [helm](helm/README.md) for the same apps as charts.
 7. **Seeing what's happening:** [observability](observability/README.md), starting with the lab.
 
 The [tech lead checklist](../tech-lead/README.md) sections 3 to 8 point into these folders for each "find out" item, and [software/api-testing](../software/api-testing/README.md) tests the serverless APIs the Terraform stacks deploy.

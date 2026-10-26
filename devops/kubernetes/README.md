@@ -2,7 +2,7 @@
 
 Sample applications for the three workload shapes most programs run, plus the namespace baseline they run inside. They're written to the standards the [onboarding checklist](../../tech-lead/README.md) asks you to look for ([section 7.5](../../tech-lead/README.md#75-platform-and-runtime-hardening)), and they target the clusters built by the [EKS](../terraform/aws/eks-cluster/) and [AKS](../terraform/azure/aks-cluster/) stacks.
 
-They're plain YAML managed with [Kustomize](https://kustomize.io), which is built into `kubectl`, so there's no templating language to learn and what you review is what gets applied.
+They're plain YAML managed with [Kustomize](https://kustomize.io), which is built into `kubectl`, so there's no templating language to learn and what you review is what gets applied. The same apps are packaged as Helm charts in [devops/helm](../helm/README.md), for comparison and for teams that deploy with Helm.
 
 > **Status.** Every overlay rendered, passed strict schema validation against Kubernetes 1.34 (kubeconform), and passed checkov's Kubernetes policies when last checked. CI doesn't run these; run them with the commands in [Checks and tested versions](#checks-and-tested-versions). They haven't been applied to a live cluster by this project. Deploy to a dev cluster first.
 

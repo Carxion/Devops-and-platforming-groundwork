@@ -17,7 +17,7 @@ Scenarios, in the order they run:
   terraform   devops/terraform/aws/network-vpc with examples/terraform against moto:
               a merge request plans; main plans, then the manual apply is played and passes
   lint        every .gitlab-ci.yml under devops/gitlab/examples, and every yaml block in
-              devops/gitlab/*.md whose first line is "# .gitlab-ci.yml", through GitLab's
+              devops/gitlab/*.md and devops/helm/*.md whose first line is "# .gitlab-ci.yml", through GitLab's
               CI Lint API with a simulated pipeline (dry run)
 
 lint runs last because the snippets include the component release made by
@@ -475,7 +475,7 @@ def gitlab_ci_blocks() -> list[tuple[str, str]]:
     found = [
         (str(p.relative_to(ROOT)), p.read_text(encoding="utf-8")) for p in sorted(EXAMPLES.rglob(".gitlab-ci.yml"))
     ]
-    for md in sorted(GITLAB.glob("*.md")):
+    for md in sorted(GITLAB.glob("*.md")) + sorted((ROOT / "devops" / "helm").glob("*.md")):
         for n, block in enumerate(
             re.findall(r"^```yaml\n(.*?)^```", md.read_text(encoding="utf-8"), re.DOTALL | re.MULTILINE), 1
         ):

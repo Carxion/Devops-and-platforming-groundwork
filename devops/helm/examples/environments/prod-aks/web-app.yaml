@@ -1,0 +1,27 @@
+# Production on AKS: HTTPS through the application routing add-on (managed
+# NGINX), with the certificate from Key Vault.
+image:
+  tag: 6.15.0
+  digest: sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da
+
+ingress:
+  enabled: true
+  className: webapprouting.kubernetes.azure.com
+  host: web-app.example.com
+  annotations:
+    kubernetes.azure.com/tls-cert-keyvault-uri: https://example-kv.vault.azure.net/certificates/web-app
+  tls:
+    - hosts: [web-app.example.com]
+      secretName: keyvault-web-app  # the add-on syncs the Key Vault certificate into this secret
+  # The add-on's controller runs in app-routing-system.
+  allowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: app-routing-system
+
+# Workload identity: the pod label and service account annotation.
+podLabels:
+  azure.workload.identity/use: "true"
+serviceAccount:
+  annotations:
+    azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000

@@ -1,0 +1,70 @@
+# Defaults are production-shaped; environment values files change size and
+# add ingress. values.schema.json validates everything here.
+
+nameOverride: ""
+fullnameOverride: ""
+partOf: sample-apps
+
+image:
+  repository: ghcr.io/stefanprodan/podinfo
+  tag: 6.15.0  # for readers only; the digest is what's pulled
+  # Pin by digest. Promote a release by changing it, in a reviewed change.
+  digest: sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da
+
+# Non-secret settings, passed as environment variables. A change rolls the
+# pods (the Deployment carries a checksum of this config). Secrets don't
+# belong in values: see devops/helm/07-deploying-and-operating.md.
+config:
+  PODINFO_UI_MESSAGE: Hello from the sample web app
+  PODINFO_UI_COLOR: "#34577c"
+
+# Used when autoscaling is off.
+replicaCount: 3
+
+autoscaling:
+  enabled: true  # needs metrics-server (built into AKS; an add-on on EKS)
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    memory: 128Mi  # no CPU limit by design: requests guarantee a share, limits throttle
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+serviceAccount:
+  annotations: {}  # for example eks.amazonaws.com/role-arn or azure.workload.identity/client-id
+
+service:
+  port: 80
+
+# Extra pod labels, for example azure.workload.identity/use: "true".
+podLabels: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: web-app.example.com
+  tls: []
+  # Where traffic from the ingress controller comes from, as NetworkPolicy
+  # peers. The namespace's default-deny blocks it until this allows it.
+  allowFrom: []
+
+networkPolicy:
+  enabled: true
+  # Extra egress rules beyond DNS, for example a database subnet.
+  extraEgress: []
+
+# The pod a `helm test` run starts: it requests the service's /readyz.
+tests:
+  image:
+    repository: docker.io/library/busybox
+    tag: 1.38.0
+    digest: sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e

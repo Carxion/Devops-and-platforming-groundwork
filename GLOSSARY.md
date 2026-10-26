@@ -265,7 +265,8 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Deployment:** Manages a set of identical, interchangeable pods and rolls out new versions of them.
 - **Distroless image:** A container image with only the application and its runtime, without a shell or package manager, which shrinks the attack surface.
 - **Docker:** The tool that popularized containers. Its image format is now standardized as OCI (Open Container Initiative).
-- **Helm:** A package manager for Kubernetes. A *chart* is a templated set of manifests.
+- **Helm:** A package manager for Kubernetes. A *chart* is a templated set of manifests with default values; installing one creates a *release*, which Helm can upgrade and roll back as a unit. See [devops/helm](devops/helm/README.md).
+- **Helm library chart:** A chart of named templates that other charts include, which renders nothing on its own. Used to share labels, security settings, and common resources.
 - **HPA (Horizontal Pod Autoscaler):** Adds or removes pod replicas based on metrics such as CPU use.
 - **Image digest:** An image's content hash (`sha256:...`). Unlike a tag, it can't be moved to point at different contents.
 - **Ingress and Gateway API:** Kubernetes objects that route outside HTTP traffic to services. Gateway API is the newer, more expressive successor to Ingress.

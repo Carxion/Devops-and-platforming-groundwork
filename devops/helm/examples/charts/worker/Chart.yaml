@@ -1,0 +1,17 @@
+apiVersion: v2
+name: worker
+description: >-
+  A background worker that consumes work and serves no traffic: a heartbeat
+  liveness probe, a long shutdown window, and egress only to what it calls.
+  The Helm version of devops/kubernetes/apps/worker.
+type: application
+version: 0.1.0
+appVersion: "1.38.0"
+kubeVersion: ">=1.30.0-0"
+home: https://github.com/Carxion/Devops-and-platforming-groundwork
+maintainers:
+  - name: Platform team
+dependencies:
+  - name: platform-lib
+    version: 1.0.0
+    repository: file://../platform-lib

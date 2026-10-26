@@ -28,6 +28,7 @@ DevOps and Platforming Groundwork: public, CC BY 4.0 material organized by audie
 - `devops/observability/`: Prometheus guide and SLO rules (`prometheus/`), Grafana 101 and dashboards (`grafana/`), the Compose lab (`local-stack/`), and AWS and Azure guides with templates. `scripts/check_observability_lab.py` checks the running lab.
 - `devops/bash/`: Bash 101 guides and `scripts/` (sourcing `lib/common.sh`). Tests: Bats (`tests/*.bats`) and `tests/integration.sh` in Ubuntu, Rocky, and AlmaLinux containers.
 - `devops/gitlab/`: GitLab 101 and CI/CD guides, `examples/` (a component project and three pipelines), and `lab/` (Compose and `lab.sh`). `scripts/check_gitlab_examples.py` runs the examples in the lab and lints every yaml block in the guides whose first line is `# .gitlab-ci.yml`; fragments start with anything else. The AWS and Azure `gitlab-oidc` stacks in `devops/terraform/` are its cloud side.
+- `devops/helm/`: Helm guides, `examples/` (charts, environment values, `publish-charts.sh`), and `lab/` (tools Dockerfile, kind config, `lab.sh`, `check.sh`). The charts are the `devops/kubernetes` apps as Helm: keep images, digests, security settings, and policies the same in both.
 - `devops/ansible/`: guides and a project at the folder root (`site.yml`, `roles/`, `inventory/`, `molecule/default/`). Tests: `molecule test`.
 - `software/git/`: Git 101 guides, `templates/`, `scripts/`, and `tests/recipes.sh`, which runs every recipe in the guides. Run it on Ubuntu 22.04 (Git 2.34), 24.04, and Rocky 9.
 - `software/containers/`: how containers work, then `docker/` (guides, `examples/` with Dockerfiles and a Compose file, `scripts/`) and `podman/`. Tests: builds, Trivy, the Compose smoke test, and `docker-audit.sh --strict`. Verify Docker commands against a real daemon and Podman commands in a `quay.io/podman/stable` container before writing them.
@@ -118,6 +119,14 @@ kubectl kustomize devops/kubernetes/apps/<app>/overlays/<overlay> | kubeconform 
 - Complete pipelines in the guides start with `# .gitlab-ci.yml` and must pass the `lint` scenario; partial ones start with another comment.
 - Pin job images to versions (digests for anything that builds or deploys) and components to exact versions. Check each image tag exists before using it; the linter doesn't.
 - Say when a feature needs Premium or Ultimate. Check the tier on the feature's GitLab docs page, not from memory.
+
+## Helm charts
+
+- Run `devops/helm/lab/lab.sh check` (after `lab.sh up` for the cluster part) before changing a chart: lint with every environment's values, kubeconform, checkov, helm-unittest, ct lint, and the install, upgrade, and rollback steps. Bump the chart's `version` for every change.
+- Every namespaced resource sets `namespace: {{ .Release.Namespace }}`; selector labels are name and instance only; images are pinned by digest; test pods meet Pod Security restricted and get their own NetworkPolicy.
+- Add a helm-unittest case for any new value that changes what renders, and one for any input that must fail.
+- Commit `Chart.lock`; never commit `charts/*/charts/` (generated).
+- Check Helm flags against `helm <command> --help` from the lab image: Helm 4 renamed and changed several (`--atomic`, `--force`, `--wait`).
 
 ## Dockerfiles
 

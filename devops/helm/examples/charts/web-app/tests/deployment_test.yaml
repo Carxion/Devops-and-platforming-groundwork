@@ -1,0 +1,118 @@
+suite: deployment
+templates:
+  - templates/deployment.yaml
+  - templates/configmap.yaml
+tests:
+  - it: pins the image by digest, with the tag for readers
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/stefanprodan/podinfo:6.15.0@sha256:ec73780a8425f59ea49f5bc8cdff0d598805a224fbaa1f86c67a244f250fa9da
+
+  - it: runs with the hardened security contexts
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 10001
+      - equal:
+          path: spec.template.spec.securityContext.seccompProfile.type
+          value: RuntimeDefault
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+      - equal:
+          path: 'spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem'
+          value: true
+      - equal:
+          path: 'spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation'
+          value: false
+      - contains:
+          path: 'spec.template.spec.containers[0].securityContext.capabilities.drop'
+          content: ALL
+
+  - it: leaves replicas to the HPA when autoscaling is on
+    template: templates/deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.replicas
+
+  - it: sets replicas when autoscaling is off
+    template: templates/deployment.yaml
+    set:
+      autoscaling.enabled: false
+      replicaCount: 2
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: selects on name and instance only, which never change
+    template: templates/deployment.yaml
+    release:
+      name: shop
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: web-app
+            app.kubernetes.io/instance: shop
+
+  - it: carries a config checksum, so a config change rolls the pods
+    template: templates/deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.metadata.annotations["checksum/config"]
+          pattern: ^[a-f0-9]{64}$
+
+  - it: adds extra pod labels without touching the selector
+    template: templates/deployment.yaml
+    set:
+      podLabels:
+        azure.workload.identity/use: "true"
+    asserts:
+      - equal:
+          path: 'spec.template.metadata.labels["azure.workload.identity/use"]'
+          value: "true"
+      - notExists:
+          path: 'spec.selector.matchLabels["azure.workload.identity/use"]'
+
+  - it: puts config values in the ConfigMap as strings
+    template: templates/configmap.yaml
+    set:
+      config:
+        FEATURE_X: "true"
+    asserts:
+      - equal:
+          path: data.FEATURE_X
+          value: "true"
+
+  - it: rejects an image without a digest
+    set:
+      image:
+        digest: ""
+    asserts:
+      - failedTemplate:
+          errorPattern: digest
+
+  - it: rejects a tag where a digest should be
+    set:
+      image:
+        digest: latest
+    asserts:
+      - failedTemplate:
+          errorPattern: sha256
+
+  - it: writes the release namespace into the manifest, for helm template and GitOps
+    template: templates/deployment.yaml
+    release:
+      namespace: shop
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: shop
+

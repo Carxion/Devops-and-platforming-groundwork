@@ -1,0 +1,5 @@
+{{ include "platform-lib.fullname" . }} is running {{ .Values.replicaCount }} replica(s) in namespace {{ .Release.Namespace }} (revision {{ .Release.Revision }}).
+
+Follow its logs:
+
+  kubectl -n {{ .Release.Namespace }} logs -f deploy/{{ include "platform-lib.fullname" . }}
