@@ -27,6 +27,7 @@ REGISTRY_IMAGE="registry:3.1.2"
 NETWORK=kind # the network kind creates; the registry and tools join it too
 CHECKOV_IMAGE="bridgecrew/checkov:3.3.30"
 METRICS_SERVER_VERSION=3.14.0
+REGISTRY_HOST_PORT=5001
 # Git Bash on Windows rewrites paths like /var/run/docker.sock; stop it.
 export MSYS_NO_PATHCONV=1
 
@@ -83,8 +84,16 @@ cmd_up() {
   tools --root -- "kind get kubeconfig --internal --name $CLUSTER > devops/helm/lab/.kubeconfig && chmod 644 devops/helm/lab/.kubeconfig"
   if ! docker inspect "$REGISTRY" >/dev/null 2>&1; then
     log "starting the OCI registry"
-    docker run -d --name "$REGISTRY" --network "$NETWORK" --restart unless-stopped "$REGISTRY_IMAGE" >/dev/null
+    # On the kind network for the tools container, and on 127.0.0.1:5001 so
+    # images built on this machine can be pushed to it.
+    docker run -d --name "$REGISTRY" --network "$NETWORK" -p "127.0.0.1:$REGISTRY_HOST_PORT:5000" \
+      --restart unless-stopped "$REGISTRY_IMAGE" >/dev/null
   fi
+  # Let the cluster pull localhost:5001/... images from the registry over plain
+  # HTTP (kind's documented local registry setup; node images since kind 0.27
+  # read containerd's certs.d directory).
+  docker exec "$CLUSTER-control-plane" sh -c "mkdir -p /etc/containerd/certs.d/localhost:$REGISTRY_HOST_PORT &&
+    printf '[host.\"http://$REGISTRY:5000\"]\n' > /etc/containerd/certs.d/localhost:$REGISTRY_HOST_PORT/hosts.toml"
   # metrics-server, so HorizontalPodAutoscalers have CPU metrics. kind's kubelets
   # use self-signed certificates, hence --kubelet-insecure-tls: lab only.
   log "installing metrics-server"

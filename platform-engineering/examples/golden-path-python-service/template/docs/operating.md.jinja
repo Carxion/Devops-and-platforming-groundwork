@@ -1,0 +1,23 @@
+# Operating {{ service_name }}
+
+| | |
+|---|---|
+| Owner | {{ owner }} |
+| Deployed with | The platform's web-app chart, {{ platform_chart_version }}, values in `deploy/` |
+| Health | `/healthz` (liveness), `/readyz` (readiness) |
+| Logs | JSON on stdout, one object per line |
+| Settings | Environment variables from `config` in `deploy/<environment>.yaml` |
+
+## Deploys and rollbacks
+
+The pipeline deploys `main` to dev automatically and to production when someone starts the `deploy-production` job. Each deploy waits for the new pods to be ready and rolls back by itself if they aren't. To roll back a release that's ready but wrong, re-run the previous pipeline's deploy job, or revert the change and merge.
+
+## Keeping up with the golden path
+
+This service was generated from the platform's Python template. When the template improves, take the changes with:
+
+```sh
+copier update --trust
+```
+
+Review the result like any change; it arrives as a merge you can inspect, and your own edits are kept.

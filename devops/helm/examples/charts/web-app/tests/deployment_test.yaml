@@ -116,3 +116,49 @@ tests:
           path: metadata.namespace
           value: shop
 
+  - it: runs podinfo by default
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: 'spec.template.spec.containers[0].command'
+          value: ["./podinfo"]
+      - equal:
+          path: 'spec.template.spec.containers[0].ports[0].containerPort'
+          value: 9898
+
+  - it: runs any service that sets its own entrypoint, port, and probe paths
+    template: templates/deployment.yaml
+    set:
+      container:
+        command: null
+        args: null
+        port: 8080
+        metricsPort: null
+      probes:
+        livenessPath: /livez
+        readinessPath: /ready
+    asserts:
+      - notExists:
+          path: 'spec.template.spec.containers[0].command'
+      - notExists:
+          path: 'spec.template.spec.containers[0].args'
+      - lengthEqual:
+          path: 'spec.template.spec.containers[0].ports'
+          count: 1
+      - equal:
+          path: 'spec.template.spec.containers[0].ports[0].containerPort'
+          value: 8080
+      - equal:
+          path: 'spec.template.spec.containers[0].livenessProbe.httpGet.path'
+          value: /livez
+      - equal:
+          path: 'spec.template.spec.containers[0].readinessProbe.httpGet.path'
+          value: /ready
+
+  - it: rejects a port a non-root container can't bind
+    set:
+      container:
+        port: 80
+    asserts:
+      - failedTemplate:
+          errorPattern: container/port

@@ -1,0 +1,16 @@
+# {{ service_name }}
+
+{{ description }}
+
+Owned by {{ owner }}. Generated from the platform's Python golden path; [docs/](docs/index.md) has how to run, change, and operate it.
+
+| Path | Is |
+|---|---|
+| `src/{{ module_name }}/` | The service: FastAPI, with `/healthz` and `/readyz` |
+| `tests/` | pytest |
+| `Dockerfile` | The platform's non-root image pattern |
+| `.gitlab-ci.yml` | Checks, image build and scan, deploy to dev and production |
+| `deploy/` | Values for the platform's web-app chart, per environment |
+| `catalog-info.yaml` | Its entry in the developer portal's catalog |
+| `docs/`, `mkdocs.yml` | TechDocs, rendered in the portal |
+| `.copier-answers.yml` | What it was generated from; used by `copier update` |

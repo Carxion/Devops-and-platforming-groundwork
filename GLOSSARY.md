@@ -471,14 +471,18 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **DevOps:** A culture and set of practices that bring development and operations together, so teams build, ship, and run their own software through automation and shared responsibility.
 - **DORA metrics:** Measures of software delivery performance from the DevOps Research and Assessment program. Throughput: change lead time, deployment frequency, and failed deployment recovery time. Instability: change fail rate and deployment rework rate. Earlier versions had four metrics, with mean time to restore. See [Planning and metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics).
 - **Epic, story, task:** Units of planned work, from large (epic) to small (task). A user story describes a need from the user's point of view.
+- **Golden cage:** A golden path that can't be left: everything must go through it. Produces workarounds and shadow infrastructure. Good paths have escape hatches.
+- **Guardrail:** An automated control that keeps a change safe and lets it through, such as an admission policy or a pipeline scan, instead of a gate where someone approves it by hand.
 - **Increment:** In Scrum, a usable step toward the Product Goal. Work counts as part of an increment only when it meets the Definition of Done.
 - **Inner source:** Using open-source practices (open repositories, contributions across teams) inside a company.
+- **Internal developer portal:** A website in front of a platform: the software catalog, templates, docs, and status. Not the platform itself; Backstage is the best-known example.
 - **ITIL:** A widely used framework of IT service management practices, covering incident, problem, and change management.
 - **Kanban:** Managing work as a visual flow on a board, with limits on how much is in progress at once.
 - **Lead time and cycle time:** Lead time runs from request (or commit) to production; cycle time runs from when work starts to when it's done.
 - **Monte Carlo forecast:** A forecast made by simulating future work many times from the team's past throughput, giving a date or amount with a probability ("85% likely by June 3").
 - **OKR (objectives and key results):** A goal-setting method: a qualitative objective, with a few measurable key results that show it's been met.
-- **Platform engineering:** A team building internal tools and paved paths (an *internal developer platform*) so product teams can ship without becoming infrastructure experts.
+- **Paved road:** Often a synonym for golden path; see *golden path* under Architecture and design.
+- **Platform engineering:** Building and running an internal developer platform as a product, so product teams can ship through self-service without becoming infrastructure experts. See [platform-engineering/](platform-engineering/README.md), and its [concepts and terms](platform-engineering/02-concepts-and-terms.md) for the field's vocabulary.
 - **Product Goal:** In Scrum, the long-term objective the Product Backlog serves. The team works toward one Product Goal at a time.
 - **Product owner:** The person accountable for maximizing a product's value: setting the Product Goal and ordering the backlog. In Scrum, one person, not a committee.
 - **Proof of concept (POC):** A small, time-boxed experiment that answers one specific question about whether an approach will work, with success criteria agreed in advance. Not a pilot or a first phase. See the [template](solutions-architect/templates/proof-of-concept-plan.md).
@@ -491,13 +495,18 @@ Terms are grouped by topic and sorted alphabetically within each group. Abbrevia
 - **Roadmap:** A plan of intended outcomes over time, usually by quarter.
 - **Scrum:** An agile framework with fixed-length sprints, defined roles (product owner, Scrum Master, developers), and regular planning, review, and retrospective meetings.
 - **Scrum master:** The person accountable for a Scrum team's effectiveness: helping it use Scrum well, coaching, and removing impediments.
+- **Shift down:** Moving concerns such as security and operations into the platform underneath developers, instead of earlier onto developers (shift left).
+- **Software catalog:** The inventory of services, APIs, and resources with their owners and relationships, usually in Backstage's `catalog-info.yaml` format.
 - **Solutions architect:** The person who designs a solution to a specific business problem, makes the case for it, and hands it to the team that builds it. See [solutions-architect/](solutions-architect/README.md).
 - **Sprint:** A fixed period, typically two weeks, in which a team completes a set of work.
 - **Sprint Goal:** The single objective for a sprint, which gives the team focus and lets it adapt the plan while still delivering value.
 - **Stakeholder:** Anyone who affects or is affected by the work, such as customers, users, managers, security, and operations.
 - **Statement of work (SOW):** The contract document that defines an engagement's scope, deliverables, timeline, assumptions, and responsibilities.
 - **Team Topologies:** A model of four team types (stream-aligned, platform, enabling, complicated subsystem) and how they interact.
+- **Template drift:** The gap between services and the template they came from, as the template improves and they don't. Closed by updatable templates and referenced components.
+- **Thinnest viable platform (TVP):** From Team Topologies: the smallest platform that makes product teams measurably faster, grown only where users pull.
 - **Throughput:** The number of work items a team finishes per unit of time; the basis for flow-based forecasting.
+- **Ticket-ops:** Delivering platform capabilities through requests worked by hand. What self-service replaces.
 - **User story:** A backlog item written from the user's point of view: `As a <user>, I want <something>, so that <reason>.` A prompt for a conversation, not a specification.
 - **Value stream:** All the steps from an idea to value delivered to the customer. Mapping it shows where work waits.
 - **Velocity:** Story points a team completes per sprint. Useful only to the team itself for rough planning; misleading as a target or for comparing teams.

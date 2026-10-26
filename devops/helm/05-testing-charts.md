@@ -87,7 +87,7 @@ helm unittest ./web-app
  PASS  ingress and network policy         tests/ingress_and_network_test.yaml
 Charts:      1 passed, 1 total
 Test Suites: 3 passed, 3 total
-Tests:       24 passed, 24 total
+Tests:       27 passed, 27 total
 ```
 
 Helm 4 verifies plugin signatures by default. Installing from a Git repository can't be verified, so without `--verify=false` it fails with `plugin source does not support verification`. Skipping verification means trusting the source at that version; the lab's image instead downloads the plugin's release archive and checks it against a pinned checksum.

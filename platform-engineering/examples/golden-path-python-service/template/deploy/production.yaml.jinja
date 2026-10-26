@@ -1,0 +1,22 @@
+# {{ service_name }} in production, with the platform's web-app chart. The
+# chart's defaults are production-shaped (three replicas or more, a PDB,
+# zone spreading); this file sets only what's specific to the service.
+# Resources and labels are named after the service, not the shared chart.
+nameOverride: {{ service_name }}
+
+container:
+  command: null
+  args: null
+  port: 8080
+  metricsPort: null
+
+config:
+  GREETING: Hello from {{ service_name }}
+  LOG_LEVEL: INFO
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 96Mi
+  limits:
+    memory: 192Mi

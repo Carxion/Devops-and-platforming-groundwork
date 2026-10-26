@@ -17,6 +17,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | **A software engineer** | [software/](software/README.md): Git 101, Python and Go 101 with boilerplate and operational tools, unit testing and linting, API contracts, and testing at every layer | Building and hardening images in [containers](software/containers/README.md), and instrumenting services in [observability](devops/observability/README.md) |
 | **An architect** designing cloud and platform foundations | [architect/](architect/README.md): the ten questions for any design, then quality attributes and trade-offs, foundations, reliability, security, delivery, observability, cost, and portability | The [architecture review checklist](architect/templates/architecture-review-checklist.md) and the tested implementations in [devops/](devops/README.md) |
 | **A solutions architect** turning a business problem into an agreed solution | [solutions-architect/](solutions-architect/README.md): the role, discovery and requirements, designing the solution, working with stakeholders, preparing a proposal, and presenting | Its [templates](solutions-architect/templates/README.md), and the [architect](architect/README.md) guides for what makes a design sound |
+| **A platform engineer** or platform lead building an internal developer platform | [platform-engineering/](platform-engineering/README.md): what platform engineering is, the vocabulary (golden paths, paved roads, guardrails, the thinnest viable platform), self-service, portals and catalogs, building and measuring the platform | The [golden path example](platform-engineering/examples/golden-path-python-service/README.md), and the [product owner](product-owner/README.md) guides for running the platform as a product |
 | **A manager** of a DevOps, platform, or SRE team | [Your first 90 days](manager/00-first-90-days.md), then the rest of [manager/](manager/README.md): one-on-ones, hiring, planning and metrics, on-call health, stakeholders, and templates | The [tech lead checklist](tech-lead/README.md) sections on stakeholders and evaluating problems |
 | **A scrum master** or agile coach for a platform team | [Your first 90 days](scrum-master/00-first-90-days.md), then the rest of [scrum-master/](scrum-master/README.md): Scrum for interrupt-driven teams, running the events, flow metrics, impediments, and templates | The [product owner](product-owner/README.md) and [manager](manager/README.md) guides, to agree who does what |
 | **A product owner** of a platform or internal tool | [Your first 90 days](product-owner/00-first-90-days.md), then the rest of [product-owner/](product-owner/README.md): the platform as a product, backlog, prioritization, roadmaps, and measuring outcomes | [Structuring platform teams](manager/07-structuring-platform-teams.md) and the [DORA metrics](manager/03-planning-and-metrics.md#measuring-delivery-the-dora-metrics) |
@@ -74,6 +75,22 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | [Cost architecture](architect/07-cost-architecture.md) | Unit cost, the big cost levers, commitments, spot capacity, sustainability |
 | [Portability and multi-cloud](architect/08-portability-and-multi-cloud.md) | Lock-in as a trade-off, levels of portability, hybrid, multi-cloud done well, exit plans |
 | [templates/](architect/templates/) | Architecture review checklist, decision matrix, quality attribute requirements |
+
+### [platform-engineering/](platform-engineering/README.md)
+
+| Path | What it is |
+|---|---|
+| [Your first 90 days](platform-engineering/00-first-90-days.md) | A W1/30/60/90 checklist for joining or starting a platform team |
+| [What platform engineering is](platform-engineering/01-what-platform-engineering-is.md) | Cognitive load, DevOps and SRE, Team Topologies' platform team, the platform as a product, what the research says |
+| [Concepts and terms](platform-engineering/02-concepts-and-terms.md) | The vocabulary: golden path, paved road, golden cage, escape hatch, guardrails and gates, TVP, IDP and portal, shift down, day 2, template drift, and more |
+| [Golden paths](platform-engineering/03-golden-paths.md) | What makes one, designing and building it, keeping services current, escape hatches |
+| [Self-service and abstractions](platform-engineering/04-self-service-and-abstractions.md) | Interfaces, levels of abstraction, guardrails instead of gates, ending ticket-ops |
+| [Developer portals and catalogs](platform-engineering/05-developer-portals-and-catalogs.md) | Catalogs and ownership, Backstage's model, templates and docs in a portal, scorecards, when a portal is worth it |
+| [Building and running the platform](platform-engineering/06-building-and-running-the-platform.md) | Capability maps, starting thin, build or buy, interfaces as APIs, deprecation, the platform's own reliability |
+| [Adoption and measurement](platform-engineering/07-adoption-and-measurement.md) | Earning adoption, what to measure, the CNCF maturity model |
+| [Anti-patterns](platform-engineering/08-anti-patterns.md) | Portal first, the golden cage, ticket-ops in disguise, scaffold and abandon, and more |
+| [templates/](platform-engineering/templates/README.md) | Golden path definition, capability map, platform service definition, maturity assessment, developer experience survey |
+| [examples/](platform-engineering/examples/README.md) | A Copier golden path for a Python service, tested end to end: generate, its own checks, template update, image, platform chart, and deploy to a hardened cluster |
 
 ### [solutions-architect/](solutions-architect/README.md)
 
@@ -157,6 +174,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | Area | Tests |
 |---|---|
 | Terraform | `terraform validate`, `terraform test` with mocked providers, checkov |
+| Platform engineering | The golden path generates a service that passes its own checks, updates to a new template version, builds, renders with the platform chart, and deploys to a hardened kind cluster |
 | Helm | `helm lint --strict`, kubeconform, checkov, helm-unittest, and chart-testing on every chart and environment; then install, `helm test`, upgrade, automatic rollback, and OCI publishing on a kind cluster |
 | GitLab CI/CD | Every example pipeline run end to end in a local GitLab CE with real runners and a fake AWS, and every complete pipeline in the guides through GitLab's CI Lint API |
 | Kubernetes | Kustomize render, kubeconform, checkov |

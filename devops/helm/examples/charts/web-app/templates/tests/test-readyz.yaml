@@ -30,7 +30,7 @@ spec:
               {{- include "platform-lib.selectorLabels" . | nindent 14 }}
       ports:
         - protocol: TCP
-          port: 9898
+          port: {{ .Values.container.port }}
 ---
 apiVersion: v1
 kind: Pod
@@ -56,7 +56,7 @@ spec:
     - name: readyz
       image: {{ printf "%s:%s@%s" .Values.tests.image.repository .Values.tests.image.tag .Values.tests.image.digest }}
       imagePullPolicy: IfNotPresent
-      command: ["wget", "-q", "-O-", "-T", "5", "http://{{ include "platform-lib.fullname" . }}:{{ .Values.service.port }}/readyz"]
+      command: ["wget", "-q", "-O-", "-T", "5", "http://{{ include "platform-lib.fullname" . }}:{{ .Values.service.port }}{{ .Values.probes.readinessPath }}"]
       resources:
         requests:
           cpu: 10m

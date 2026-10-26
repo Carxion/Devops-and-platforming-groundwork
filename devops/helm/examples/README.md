@@ -7,7 +7,7 @@ Three charts and the values to deploy them, checked in the [lab](../lab/README.m
 | Path | What it is |
 |---|---|
 | [charts/platform-lib](charts/platform-lib/) | A library chart: names and recommended labels, the digest-pinned image reference, the hardened pod and container security contexts, a token-less service account, a PDB, and the DNS egress rule ([Library charts](../04-libraries-and-dependencies.md)) |
-| [charts/web-app](charts/web-app/) | An HTTP service: probes, graceful shutdown, zone and node spreading, an HPA (or fixed replicas), a PDB, a ConfigMap that rolls pods when it changes, a NetworkPolicy that opens only what ingress needs, an Ingress for any controller, a values schema, a `helm test` hook, and 24 unit tests |
+| [charts/web-app](charts/web-app/) | An HTTP service: probes, graceful shutdown, zone and node spreading, an HPA (or fixed replicas), a PDB, a ConfigMap that rolls pods when it changes, a NetworkPolicy that opens only what ingress needs, an Ingress for any controller, a values schema, a `helm test` hook, and 27 unit tests. podinfo by default; any HTTP service through `container` and `probes` |
 | [charts/worker](charts/worker/) | A background worker: a heartbeat liveness probe, a 60-second shutdown window, no inbound traffic, and egress only where it's configured, with 5 unit tests |
 | [environments/](environments/) | Values for `dev` (one replica, no ingress), `prod-eks` (ALB ingress), and `prod-aks` (app routing ingress with a Key Vault certificate, workload identity) |
 | [publish-charts.sh](publish-charts.sh) | Publishes every chart in a directory to an OCI registry, skipping versions already published |
@@ -37,6 +37,9 @@ helm unittest /tmp/charts/web-app
 | Value | Default | Meaning |
 |---|---|---|
 | `image.repository`, `image.tag`, `image.digest` | podinfo 6.15.0, by digest | The image. The digest is required and must be `sha256:` and 64 hex characters; the tag is for readers |
+| `container.command`, `.args`, `.port`, `.metricsPort` | podinfo's | How to run the container. A service that sets its own entrypoint sets `command` and `args` to `null`. The port must be 1024 or above |
+| `probes.livenessPath`, `.readinessPath` | `/healthz`, `/readyz` | Paths the probes and the `helm test` pod call |
+| `nameOverride`, `fullnameOverride` | Empty | Name resources after the service rather than `<release>-web-app`, when the chart is a shared platform chart |
 | `config` | Two settings | Environment variables, as strings; a change rolls the pods |
 | `autoscaling.enabled`, `.minReplicas`, `.maxReplicas`, `.targetCPUUtilizationPercentage` | `true`, 3, 10, 70 | The HPA. When off, `replicaCount` (3) sets replicas |
 | `resources` | 100m CPU, 64Mi requested; 128Mi memory limit | Requests and a memory limit are required; a CPU limit is optional |

@@ -10,5 +10,5 @@
     "MD036": false, // the bold tagline under the title
     "MD060": false
   },
-  "ignores": ["LICENSE", "node_modules/**"]
+  "ignores": ["LICENSE", "node_modules/**", "platform-engineering/examples/out/**"]
 }

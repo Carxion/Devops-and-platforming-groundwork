@@ -1,0 +1,63 @@
+"""HTTP entry point for {{ service_name }}.
+
+The platform's conventions, already in place: /healthz for liveness, /readyz
+for readiness (the platform chart's probes call these), JSON logs on stdout,
+and settings from environment variables (the chart's `config` values).
+
+Run:  uvicorn {{ module_name }}.main:app --host 0.0.0.0 --port 8080
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import sys
+
+from fastapi import FastAPI
+
+SERVICE = "{{ service_name }}"
+
+
+class JsonFormatter(logging.Formatter):
+    """One JSON object per line, which the platform's log pipeline parses."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return json.dumps(
+            {"level": record.levelname.lower(), "logger": record.name, "msg": record.getMessage()}
+        )
+
+
+def configure_logging() -> None:
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(JsonFormatter())
+    level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    logging.basicConfig(level=level, handlers=[handler], force=True)
+
+
+def create_app() -> FastAPI:
+    configure_logging()
+    app = FastAPI(title=SERVICE)
+    state = {"ready": True}
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, str]:
+        """Liveness: the process is running. Never check dependencies here."""
+        return {"status": "ok"}
+
+    @app.get("/readyz")
+    def readyz() -> dict[str, str]:
+        """Readiness: able to serve. Add checks for what the service can't serve without."""
+        return {"status": "ready" if state["ready"] else "not ready"}
+
+    @app.get("/")
+    def index() -> dict[str, str]:
+        return {
+            "service": SERVICE,
+            "message": os.environ.get("GREETING", "Hello from the golden path"),
+        }
+
+    return app
+
+
+app = create_app()

@@ -56,18 +56,21 @@ spec:
         - name: web-app
           image: {{ include "platform-lib.image" . }}
           imagePullPolicy: IfNotPresent
-          command: ["./podinfo"]
+          {{- with .Values.container.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.container.args }}
           args:
-            - --port=9898
-            - --port-metrics=9797
-            - --level=info
-            - --data-path=/data
-            - --server-shutdown-timeout=10s
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
-              containerPort: 9898
+              containerPort: {{ .Values.container.port }}
+            {{- with .Values.container.metricsPort }}
             - name: metrics
-              containerPort: 9797
+              containerPort: {{ . }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "platform-lib.fullname" . }}
@@ -75,19 +78,19 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           startupProbe:
             httpGet:
-              path: /healthz
+              path: {{ .Values.probes.livenessPath }}
               port: http
             periodSeconds: 2
             failureThreshold: 30
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: {{ .Values.probes.livenessPath }}
               port: http
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /readyz
+              path: {{ .Values.probes.readinessPath }}
               port: http
             periodSeconds: 5
             failureThreshold: 2

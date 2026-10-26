@@ -83,3 +83,6 @@ trivy-report.*
 devops/helm/examples/charts/*/charts/
 devops/helm/lab/out/
 devops/helm/lab/.kubeconfig
+
+# Golden path check output
+platform-engineering/examples/out/

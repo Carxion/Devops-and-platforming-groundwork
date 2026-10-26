@@ -4,6 +4,8 @@
 
 How teams are drawn shapes what gets built: who owns what, how work flows between teams, and how much each team has to keep in its head. This guide covers sizing and ownership, treating the platform as a product, and the team types and interaction modes from Team Topologies, the most widely used model for this.
 
+[platform-engineering/](../platform-engineering/README.md) covers what a platform team builds and how; this guide covers how to structure the team.
+
 ## Size and ownership
 
 - **Small teams:** roughly five to nine people. Smaller, and on-call and absences overwhelm the team; larger, and communication overhead grows until the team splits informally anyway.

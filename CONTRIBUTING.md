@@ -94,6 +94,7 @@ CI ([lint.yml](.github/workflows/lint.yml)) runs only fast static checks: format
 | Unit testing examples | In `software/testing/python/example`: `uv sync && uv run pytest --cov`; in `software/testing/go/example`: `go test -race -cover ./...` | [Unit testing](software/testing/README.md) |
 | API implementations | Build each items-api image, run it on port 8080, then Schemathesis (`--checks all`) and Newman against it | [Python](software/python/boilerplate/items-api/README.md), [Go](software/go/boilerplate/items-api/README.md) |
 | Ansible | In `devops/ansible`: `molecule test` (needs Docker; 10 to 15 minutes) | [Running the checks](devops/ansible/README.md#running-the-checks) |
+| Platform engineering | `platform-engineering/examples/check.sh` (needs Docker; with the Helm lab up, it also deploys the generated service) | [Examples](platform-engineering/examples/README.md) |
 | Helm | `devops/helm/lab/lab.sh up`, then `devops/helm/lab/lab.sh check` (needs Docker with about 2 GB free; about 4 minutes; static checks alone run without `up`) | [The lab](devops/helm/lab/README.md) |
 | GitLab CI/CD | `devops/gitlab/lab/lab.sh up`, then `python scripts/check_gitlab_examples.py` (needs Docker with about 6 GB free; 15 to 20 minutes) | [The lab](devops/gitlab/lab/README.md) |
 | Git | `bash software/git/tests/recipes.sh`, ideally on Ubuntu 22.04 for the oldest supported Git | [Running the tests](software/git/README.md#running-the-tests) |

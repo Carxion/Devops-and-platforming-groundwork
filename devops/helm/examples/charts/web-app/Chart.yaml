@@ -6,7 +6,7 @@ description: >-
   NetworkPolicy. The Helm version of devops/kubernetes/apps/web-app.
 type: application
 # The chart's own version: bump it for every change to the chart.
-version: 0.1.0
+version: 0.2.0
 # The version of the application it deploys by default (podinfo here).
 appVersion: "6.15.0"
 kubeVersion: ">=1.30.0-0"

@@ -1,0 +1,18 @@
+# The service's entry in the developer portal's software catalog (Backstage
+# format): who owns it, what it is, and where its code, pipelines, and docs live.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ service_name }}
+  description: {{ description }}
+  annotations:
+    gitlab.com/project-slug: {{ gitlab_group }}/{{ service_name }}
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - python
+    - golden-path
+spec:
+  type: service
+  lifecycle: {{ lifecycle }}
+  owner: group:{{ owner }}
+  system: {{ system }}

@@ -20,7 +20,7 @@ Helm 101 through writing, testing, publishing, and running your own charts. Helm
 | Path | What it is |
 |---|---|
 | [examples/charts/platform-lib](examples/charts/platform-lib/) | A library chart: the labels, hardened security contexts, service account, PDB, and DNS egress rule every workload shares |
-| [examples/charts/web-app](examples/charts/web-app/) | The [web app](../kubernetes/apps/web-app/) as a chart: probes, graceful shutdown, zone spreading, HPA, PDB, NetworkPolicy, ingress for ALB or AKS app routing, a values schema, a `helm test` hook, and 24 unit tests |
+| [examples/charts/web-app](examples/charts/web-app/) | The [web app](../kubernetes/apps/web-app/) as a chart: probes, graceful shutdown, zone spreading, HPA, PDB, NetworkPolicy, ingress for ALB or AKS app routing, a values schema, a `helm test` hook, and 27 unit tests. Generic: the golden path in [platform-engineering](../../platform-engineering/README.md) deploys other services with it |
 | [examples/charts/worker](examples/charts/worker/) | The [worker](../kubernetes/apps/worker/) as a chart, on the same library |
 | [examples/environments](examples/environments/) | Values files for dev, production on EKS, and production on AKS |
 | [lab/](lab/README.md) | A kind cluster, an OCI registry, and a tools image with every tool pinned, plus [check.sh](lab/check.sh), which runs every check |
@@ -52,7 +52,7 @@ Most platforms use both: Helm for third-party software and shared charts, Kustom
 |---|---|
 | `helm lint --strict` with every environment's values; chart-testing lint (Chart.yaml schema, yamllint) | [lab.sh check](lab/README.md), no cluster needed |
 | Every rendering through kubeconform (strict, Kubernetes 1.34) and checkov | The same |
-| helm-unittest: 29 tests, including expected failures | The same |
+| helm-unittest: 32 tests, including expected failures | The same |
 | Install with `--wait`, `helm test` through default-deny NetworkPolicy, upgrade, automatic rollback of a failing upgrade, manual rollback, `helm diff`, package, push to an OCI registry, install by digest | `lab.sh check`, after `lab.sh up` |
 | Markdown lint, spelling, links; ShellCheck and shfmt on the lab scripts; Hadolint on the tools image | CI ([lint.yml](../../.github/workflows/lint.yml)) |
 

@@ -191,7 +191,7 @@ else
   printf '%s\n' "$again" | sed 's/^/      | /'
 fi
 check "web-app: helm show chart from the registry" \
-  helm show chart "$repo/web-app" --version 0.1.0 --plain-http
+  helm show chart "$repo/web-app" --version "$(sed -n "s/^version: //p" "$WORK/charts/web-app/Chart.yaml")" --plain-http
 check "web-app: install from the registry, by digest ($digest)" \
   helm install web-app-oci "$repo/web-app@$digest" -n "$NAMESPACE" \
   -f "$(dev web-app)" --plain-http --wait --timeout 3m

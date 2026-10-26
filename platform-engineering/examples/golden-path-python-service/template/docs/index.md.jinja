@@ -1,0 +1,21 @@
+# {{ service_name }}
+
+{{ description }}
+
+Owned by **{{ owner }}**, part of **{{ system }}**.
+
+## What it does
+
+Replace this with what the service is for, who calls it, and what it depends on.
+
+## Run it locally
+
+```sh
+uv sync
+uv run uvicorn {{ module_name }}.main:app --reload --port 8080
+curl -s http://127.0.0.1:8080/healthz
+```
+
+## Change it
+
+Open a merge request. The pipeline runs lint, type checks, and tests on it; after merge it builds, scans, and pushes the image, deploys to dev, and waits for someone to deploy to production.

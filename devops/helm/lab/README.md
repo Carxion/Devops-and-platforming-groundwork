@@ -8,7 +8,7 @@ A disposable Kubernetes cluster to develop and test charts against, set up like 
 |---|---|
 | [Dockerfile](Dockerfile) | The tools image: Helm 4.3.1, kubectl 1.34, kubeconform 0.8.0, chart-testing 3.15.0, kind 0.33.0, yamllint, yamale, and the helm-unittest and helm-diff plugins. Every download is checked against a pinned checksum |
 | [kind-config.yaml](kind-config.yaml) | A one-node kind cluster running Kubernetes 1.34.11. kind's network plugin enforces NetworkPolicy, so default-deny is real |
-| A `registry:3` container | A local OCI registry at `helm-lab-registry:5000`, for publishing and installing charts |
+| A `registry:3` container | A local OCI registry at `helm-lab-registry:5000` on the lab network, and `127.0.0.1:5001` on your machine. The cluster pulls `localhost:5001/...` images from it, so images you build can be deployed by digest |
 | metrics-server | Installed by `lab.sh up` from its Helm chart, so HorizontalPodAutoscalers have CPU metrics |
 | [lab.sh](lab.sh) | `up`, `check`, `shell`, `down` |
 | [check.sh](check.sh) | Every check on the example charts |
@@ -38,7 +38,7 @@ kubectl -n sample-apps get hpa web-app
 
 | Part | Checks |
 |---|---|
-| Static | `helm lint --strict` for every chart with every environment's values; every rendering through kubeconform (strict, Kubernetes 1.34) and, after `check.sh`, checkov; helm-unittest (29 tests); `ct lint`; and three inputs that must be rejected |
+| Static | `helm lint --strict` for every chart with every environment's values; every rendering through kubeconform (strict, Kubernetes 1.34) and, after `check.sh`, checkov; helm-unittest (32 tests); `ct lint`; and three inputs that must be rejected |
 | Cluster | The namespace baseline from [devops/kubernetes](../../kubernetes/platform/namespace/) (Pod Security restricted, default-deny, quota); install with `--wait`; `helm test` through the NetworkPolicy; an upgrade whose config change rolls the pods; an upgrade to a missing image that rolls itself back; `helm rollback`; `helm diff`; the worker |
 | OCI | [publish-charts.sh](../examples/publish-charts.sh) publishes all three charts, a second run publishes nothing, and web-app installs from the registry by digest |
 

@@ -59,12 +59,14 @@ jobs:
           docker run --rm -v "$PWD:/mnt" -w /mnt "$SHELLCHECK_IMAGE" -x -P SCRIPTDIR \
             devops/bash/scripts/*.sh devops/bash/scripts/lib/*.sh devops/bash/tests/integration.sh \
             software/containers/docker/scripts/*.sh software/git/scripts/*.sh software/git/tests/recipes.sh \
-            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh
+            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh \
+            platform-engineering/examples/check.sh platform-engineering/examples/golden-path-python-service/test/generate-and-update.sh
       - name: shfmt
         run: |
           docker run --rm -v "$PWD:/mnt" -w /mnt "$SHFMT_IMAGE" -d -i 2 -ci \
             devops/bash/scripts devops/bash/tests/integration.sh software/containers/docker/scripts software/git/scripts software/git/tests \
-            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh
+            devops/gitlab/lab/lab.sh devops/helm/lab/lab.sh devops/helm/lab/check.sh devops/helm/examples/publish-charts.sh \
+            platform-engineering/examples/check.sh platform-engineering/examples/golden-path-python-service/test/generate-and-update.sh
 
   ansible:
     runs-on: ubuntu-latest

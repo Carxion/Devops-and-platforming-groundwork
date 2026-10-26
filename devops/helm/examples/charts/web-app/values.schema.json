@@ -32,6 +32,26 @@
       "additionalProperties": { "type": "string" },
       "description": "Environment variables. Values must be strings: quote numbers and booleans."
     },
+    "container": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["port"],
+      "properties": {
+        "command": { "type": ["array", "null"], "items": { "type": "string" } },
+        "args": { "type": ["array", "null"], "items": { "type": "string" } },
+        "port": { "type": "integer", "minimum": 1024, "maximum": 65535, "description": "Non-root containers can't bind below 1024." },
+        "metricsPort": { "type": ["integer", "null"], "minimum": 1024, "maximum": 65535 }
+      }
+    },
+    "probes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["livenessPath", "readinessPath"],
+      "properties": {
+        "livenessPath": { "type": "string", "pattern": "^/" },
+        "readinessPath": { "type": "string", "pattern": "^/" }
+      }
+    },
     "replicaCount": { "type": "integer", "minimum": 1 },
     "autoscaling": {
       "type": "object",

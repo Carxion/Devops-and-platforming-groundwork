@@ -15,6 +15,8 @@ A platform's customers are other engineers. They can often route around it, buil
 | [Roadmaps and stakeholders](04-roadmaps-and-stakeholders.md) | Now/next/later roadmaps, outcomes over outputs, OKRs, working with stakeholders, and running deprecations and migrations |
 | [Measuring outcomes](05-measuring-outcomes.md) | Adoption, developer experience, the DORA metrics, surveys, SLOs as product quality, and running experiments |
 
+Building the platform itself (golden paths, self-service, portals, platform vocabulary) is covered in [platform-engineering/](../platform-engineering/README.md).
+
 ## Templates
 
 [templates/](templates/README.md): product goal canvas, user story, prioritization worksheet, now/next/later roadmap, user interview guide, and release notes.
