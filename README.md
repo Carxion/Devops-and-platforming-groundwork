@@ -47,7 +47,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | [ansible/](devops/ansible/README.md) | Ansible from ad hoc commands to tested roles: the server baseline for RHEL and Ubuntu, Vault and secrets managers, Molecule, CI in GitHub, GitLab, and Jenkins |
 | [terraform/](devops/terraform/README.md) | Reference AWS and Azure stacks with tests, setup, operations, and troubleshooting |
 | [helm/](devops/helm/README.md) | Helm 101 through writing, testing, publishing, and operating charts: a library chart and the web app and worker as charts, tested on a kind cluster with Pod Security restricted and default-deny networking |
-| [kubernetes/](devops/kubernetes/README.md) | Hardened sample apps and a namespace baseline, with administration and troubleshooting commands |
+| [kubernetes/](devops/kubernetes/README.md) | How Kubernetes works and its components, hardened sample apps and a namespace baseline, creating resources and every common resource type with tested manifests, and administration and troubleshooting commands |
 | [aws/](devops/aws/README.md), [azure/](devops/azure/README.md) | CLI operations guides, CloudFormation and Bicep templates |
 | [observability/](devops/observability/README.md) | Prometheus guide, Grafana 101, SLO alerting, a Compose lab, CloudWatch and Azure Monitor |
 
@@ -177,7 +177,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | Platform engineering | The golden path generates a service that passes its own checks, updates to a new template version, builds, renders with the platform chart, and deploys to a hardened kind cluster |
 | Helm | `helm lint --strict`, kubeconform, checkov, helm-unittest, and chart-testing on every chart and environment; then install, `helm test`, upgrade, automatic rollback, and OCI publishing on a kind cluster |
 | GitLab CI/CD | Every example pipeline run end to end in a local GitLab CE with real runners and a fake AWS, and every complete pipeline in the guides through GitLab's CI Lint API |
-| Kubernetes | Kustomize render, kubeconform, checkov |
+| Kubernetes | Kustomize render, kubeconform, checkov; every manifest in the resources guide applied to a kind cluster with Pod Security restricted; the concepts guide's component and networking claims checked on the same cluster |
 | AWS and Azure | Every `aws` and `az` command checked against the real CLIs; cfn-lint, Bicep build and lint, checkov |
 | API testing | Spectral, Newman, Schemathesis, k6, and Locust against the reference server |
 | Python and Go | mypy, pytest, `go vet`, race-detector tests, govulncheck, and the API contract tests and Trivy against the built images |

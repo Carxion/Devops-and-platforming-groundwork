@@ -81,7 +81,7 @@ CI ([lint.yml](.github/workflows/lint.yml)) runs only fast static checks: format
 | Area | Run | Details |
 |---|---|---|
 | Terraform | `terraform init -backend=false && terraform validate && terraform test` in each stack; `checkov -d devops/terraform --framework terraform` | [Checks and tested versions](devops/terraform/README.md#checks-and-tested-versions) |
-| Kubernetes | Render every overlay, then `kubeconform -strict` and `checkov --framework kubernetes` | [Checks and tested versions](devops/kubernetes/README.md#checks-and-tested-versions) |
+| Kubernetes | Render every overlay, then `kubeconform -strict` and `checkov --framework kubernetes`; with the Helm lab up, `devops/kubernetes/tests/resources-guide.sh` and `devops/kubernetes/tests/concepts-guide.sh` | [Checks and tested versions](devops/kubernetes/README.md#checks-and-tested-versions), [RESOURCES.md](devops/kubernetes/RESOURCES.md#checking-these-examples), [CONCEPTS.md](devops/kubernetes/CONCEPTS.md#checking-this-page) |
 | AWS and Azure commands | `python scripts/check_cli_commands.py` (needs `awscli` and `azure-cli` installed) | [Above](#cli-commands-and-cloud-templates) |
 | CloudFormation | `cfn-lint "devops/aws/cloudformation/**/*.yaml" "devops/observability/aws/cloudformation/**/*.yaml"`, then `checkov -d <folder> --framework cloudformation` | [CloudFormation](devops/aws/cloudformation/README.md) |
 | Bicep | `bicep lint <file>` and `bicep build <file> --stdout > /dev/null` for each template, then `checkov -d <folder> --framework bicep` | [Bicep](devops/azure/bicep/README.md) |

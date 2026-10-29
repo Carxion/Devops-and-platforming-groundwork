@@ -16,7 +16,7 @@ They're plain YAML managed with [Kustomize](https://kustomize.io), which is buil
 - [Best practices](#best-practices)
 - [Checks and tested versions](#checks-and-tested-versions)
 
-For day-to-day administration and troubleshooting commands, see [OPERATIONS.md](OPERATIONS.md).
+New to Kubernetes? Start with [CONCEPTS.md](CONCEPTS.md): the core ideas, every control plane and node component and what it does, and what happens inside the cluster when you deploy, each shown on a real cluster. [RESOURCES.md](RESOURCES.md) then covers creating them (`kubectl create`, `apply`, server-side apply, dry runs, `diff`) and every common resource type, each with a working manifest. For day-to-day administration and troubleshooting commands, see [OPERATIONS.md](OPERATIONS.md).
 
 ---
 
