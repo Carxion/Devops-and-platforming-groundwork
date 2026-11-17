@@ -1,0 +1,67 @@
+# LiteLLM proxy configuration: one OpenAI-compatible endpoint in front of
+# every model provider. Applications ask for a model *alias* ("chat",
+# "chat-small"); this file decides what serves it. Changing provider is a
+# change here, reviewed and deployed like any other config, not a code change
+# in every application.
+#
+# Secrets never go in this file: os.environ/NAME reads them from the
+# environment at start-up.
+
+model_list:
+  # The alias applications use. Swapping what serves it is a one-line change
+  # here, and the evaluation gate decides whether that change may ship.
+  - model_name: chat
+    litellm_params:
+      model: ollama_chat/qwen2.5:1.5b-instruct
+      api_base: http://ollama:11434
+    model_info:
+      # Self-hosted, so no per-token price; LiteLLM still counts tokens.
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+
+  # A smaller, cheaper model. The lab's check shows the evaluation gate
+  # rejecting it for the ticket-triage app.
+  - model_name: chat-small
+    litellm_params:
+      model: ollama_chat/qwen2.5:0.5b-instruct
+      api_base: http://ollama:11434
+    model_info:
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+
+  # A deployment that is always down, to show fallbacks working: requests to
+  # "chat-primary" fail here, then fall back to "chat" (router_settings below).
+  # In production this is where a hosted provider would sit, for example:
+  #   model: anthropic/claude-sonnet-5-5
+  #   api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: chat-primary
+    litellm_params:
+      model: openai/unreachable
+      api_base: http://127.0.0.1:9/v1
+      api_key: not-a-real-key
+      timeout: 2
+
+  # A priced alias, so budgets have something to count. The price is made up.
+  - model_name: chat-metered
+    litellm_params:
+      model: ollama_chat/qwen2.5:0.5b-instruct
+      api_base: http://ollama:11434
+    model_info:
+      input_cost_per_token: 0.001
+      output_cost_per_token: 0.002
+
+router_settings:
+  fallbacks:
+    - chat-primary: ["chat"]
+  num_retries: 1
+  timeout: 60
+
+litellm_settings:
+  # Send every request and response to Langfuse as an OpenTelemetry trace.
+  callbacks: ["langfuse_otel"]
+  # Don't log the API keys callers send.
+  redact_user_api_key_info: true
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

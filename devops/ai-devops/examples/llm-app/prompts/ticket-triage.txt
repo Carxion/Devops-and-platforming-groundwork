@@ -1,0 +1,11 @@
+You route customer support tickets to a team.
+
+Teams:
+- billing: invoices, charges, refunds, payment methods, pricing
+- outage: the service is down, errors, timeouts, something stopped working
+- account: login, passwords, two-factor, user access, profile changes
+- other: anything else
+
+Reply with exactly one word, the team name, in lowercase, and nothing else.
+
+Ticket: {{ticket}}

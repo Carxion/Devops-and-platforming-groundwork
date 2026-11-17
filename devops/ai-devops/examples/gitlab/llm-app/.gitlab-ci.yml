@@ -1,0 +1,123 @@
+# .gitlab-ci.yml
+# Pipeline for an LLM application: devops/ai-devops/examples/llm-app and
+# examples/promptfoo, as llm-app/ and promptfoo/ in one project. Test the
+# code offline; publish the prompt to Langfuse under a label for this
+# pipeline; evaluate that exact version through the gateway (a Langfuse
+# experiment and promptfoo); then a person moves "production" to it.
+#
+# CI/CD variables (Settings > CI/CD > Variables), all masked:
+#   LLM_BASE_URL          the gateway, for example https://llm.example.com
+#   LLM_API_KEY           a gateway virtual key for CI, with its own budget
+#   LANGFUSE_BASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        PROMPT_LABEL: mr-$CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      variables:
+        PROMPT_LABEL: staging
+    - if: $CI_COMMIT_BRANCH
+      variables:
+        PROMPT_LABEL: branch-$CI_COMMIT_REF_SLUG
+
+stages: [test, publish, evaluate, promote]
+
+default:
+  image: ghcr.io/astral-sh/uv:0.13.5-python3.14-trixie-slim@sha256:d8e732839dfc4225a1ff698803b478b2223c05636c055d3add41ab9dbec0f315
+  interruptible: true
+
+variables:
+  UV_FROZEN: "1"
+  UV_CACHE_DIR: $CI_PROJECT_DIR/.uv-cache
+  UV_LINK_MODE: copy
+  UV_PROJECT: $CI_PROJECT_DIR/llm-app   # absolute, so jobs can also cd into llm-app
+  LLM_MODEL: chat                    # the gateway alias the application uses
+  MIN_ACCURACY: "0.8"
+
+.uv:
+  cache:
+    key:
+      files: [llm-app/uv.lock]
+    paths: [.uv-cache/]
+  before_script:
+    - uv sync
+  after_script:
+    - uv cache prune --ci
+
+test:
+  extends: .uv
+  stage: test
+  script:
+    - cd llm-app
+    - uv run ruff format --check .
+    - uv run ruff check .
+    - uv run mypy
+    - uv run pytest --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: llm-app/report.xml
+
+# The prompt file in Git is the source of truth; this makes it a new version
+# in Langfuse, labelled for this pipeline, without touching "production".
+prompt-publish:
+  extends: .uv
+  stage: publish
+  needs: [test]
+  script:
+    - uv run python -m ticket_triage.prompts publish --label "$PROMPT_LABEL" --dotenv prompt.env
+  artifacts:
+    reports:
+      dotenv: prompt.env               # PROMPT_VERSION, for the promote job
+
+# Run the labelled prompt over the dataset; fail below MIN_ACCURACY. The
+# result is a Langfuse experiment, comparable with earlier runs.
+evaluate:
+  extends: .uv
+  stage: evaluate
+  needs: [prompt-publish]
+  script:
+    - uv run python -m ticket_triage.experiment --label "$PROMPT_LABEL" --min-accuracy "$MIN_ACCURACY"
+
+# Assertion tests on the same prompt file, through the same gateway alias.
+# promptfoo exits 100 when a test fails.
+promptfoo:
+  stage: evaluate
+  needs: [test]
+  image:
+    name: ghcr.io/promptfoo/promptfoo:0.125.1@sha256:3ddd7be2b8b043a5c48f0df048b074396de8e60282b0a3b392c299c430b74134
+    entrypoint: [""]
+  variables:
+    PROMPTFOO_DISABLE_TELEMETRY: "1"
+    PROMPTFOO_DISABLE_UPDATE: "1"
+  script:
+    - cd promptfoo
+    - OPENAI_BASE_URL="$LLM_BASE_URL" OPENAI_API_KEY="$LLM_API_KEY"
+      promptfoo eval -c promptfooconfig.yaml --no-cache --no-table --no-write -o results.html -o results.json
+  artifacts:
+    when: always
+    paths: [promptfoo/results.html, promptfoo/results.json]
+    expire_in: 30 days
+
+# A person moves "production" to the exact version this pipeline published and
+# evaluated (not whatever the label points to by then). The
+# application fetches "production", so this is the release, and moving the
+# label back is the rollback.
+promote:
+  extends: .uv
+  stage: promote
+  needs: [prompt-publish, evaluate, promptfoo]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  interruptible: false
+  resource_group: prompt-production
+  environment:
+    name: production
+    deployment_tier: production
+  script:
+    - uv run python -m ticket_triage.prompts promote --version "$PROMPT_VERSION" --to production

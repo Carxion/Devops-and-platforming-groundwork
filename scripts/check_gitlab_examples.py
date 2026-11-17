@@ -16,9 +16,17 @@ Scenarios, in the order they run:
   go          the Items API (Go) with examples/go-service: every job passes on main
   terraform   devops/terraform/aws/network-vpc with examples/terraform against moto:
               a merge request plans; main plans, then the manual apply is played and passes
-  lint        every .gitlab-ci.yml under devops/gitlab/examples, and every yaml block in
-              devops/gitlab/*.md and devops/helm/*.md whose first line is "# .gitlab-ci.yml", through GitLab's
+  lint        every .gitlab-ci.yml under devops/gitlab/examples and devops/ai-devops/examples,
+              and every yaml block in devops/gitlab/*.md, devops/helm/*.md, and
+              devops/ai-devops/*.md whose first line is "# .gitlab-ci.yml", through GitLab's
               CI Lint API with a simulated pipeline (dry run)
+
+Not in the default run, because it also needs the AI DevOps lab up
+(devops/ai-devops/lab/lab.sh up):
+  ai          devops/ai-devops/examples/gitlab: the training pipeline trains, gates,
+              registers in the lab's MLflow, and promotes when played; the LLM app
+              pipeline publishes the prompt to Langfuse, evaluates it through LiteLLM
+              (experiment and promptfoo), and promotes that exact version when played
 
 lint runs last because the snippets include the component release made by
 components. Standard library only, plus git and docker on the PATH.
@@ -27,6 +35,7 @@ components. Standard library only, plus git and docker on the PATH.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -43,10 +52,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 GITLAB = ROOT / "devops" / "gitlab"
 EXAMPLES = GITLAB / "examples"
+AI = ROOT / "devops" / "ai-devops"
 ENV_FILE = GITLAB / "lab" / ".env.lab"
 URL = os.environ.get("GITLAB_URL", "http://127.0.0.1:8929")
 IGNORE = shutil.ignore_patterns(
-    ".terraform", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", ".venv", "*.tfstate*"
+    ".terraform", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", ".venv", "*.tfstate*",
+    "mlflow.db", "data", "models",
 )
 FINISHED = {"success", "failed", "canceled", "skipped", "manual"}
 failures: list[str] = []
@@ -472,10 +483,10 @@ single_nat_gateway = true
 
 def gitlab_ci_blocks() -> list[tuple[str, str]]:
     """Every example pipeline, and every complete pipeline in the guides."""
-    found = [
-        (str(p.relative_to(ROOT)), p.read_text(encoding="utf-8")) for p in sorted(EXAMPLES.rglob(".gitlab-ci.yml"))
-    ]
-    for md in sorted(GITLAB.glob("*.md")) + sorted((ROOT / "devops" / "helm").glob("*.md")):
+    pipelines = sorted(EXAMPLES.rglob(".gitlab-ci.yml")) + sorted((AI / "examples").rglob(".gitlab-ci.yml"))
+    found = [(str(p.relative_to(ROOT)), p.read_text(encoding="utf-8")) for p in pipelines]
+    guides = sorted(GITLAB.glob("*.md")) + sorted((ROOT / "devops" / "helm").glob("*.md")) + sorted(AI.glob("*.md"))
+    for md in guides:
         for n, block in enumerate(
             re.findall(r"^```yaml\n(.*?)^```", md.read_text(encoding="utf-8"), re.DOTALL | re.MULTILINE), 1
         ):
@@ -508,13 +519,118 @@ def scenario_lint() -> None:
             fail(f"lint: {name}: {errors or result['errors']}")
 
 
+def connect_ai_lab() -> None:
+    """Put the AI lab's services on the GitLab lab network, so jobs reach them by name."""
+    for service in ("mlflow", "litellm", "langfuse-web"):
+        container = f"ai-devops-lab-{service}-1"
+        result = subprocess.run(
+            ["docker", "network", "connect", "--alias", service, "gitlab-lab", container],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0 and "already exists" not in result.stderr:
+            raise SystemExit(f"couldn't connect {container}; is the AI lab up? {result.stderr.strip()}")
+
+
+def lab_json(method: str, url: str, data: dict | None = None, auth: str | None = None) -> dict:
+    body = json.dumps(data).encode() if data is not None else None
+    req = urllib.request.Request(url, data=body, method=method)
+    req.add_header("Content-Type", "application/json")
+    if auth:
+        req.add_header("Authorization", auth)
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.loads(r.read())
+
+
+def play_and_wait(path: str, found: dict[str, dict], name: str, label: str) -> None:
+    if name not in found or found[name]["status"] != "manual":
+        return
+    play(path, found[name])
+    job = wait_job(path, found[name]["id"])
+    if job["status"] == "success":
+        ok(f"{label}: {name} played and succeeded")
+    else:
+        fail(f"{label}: {name} is {job['status']}")
+        print(trace_tail(path, job["id"]), flush=True)
+
+
+def scenario_ai() -> None:
+    connect_ai_lab()
+
+    path = "ml/wine-model"
+    ensure_project(path)
+    set_variable(path, "MLFLOW_TRACKING_URI", "http://mlflow:5000")
+    set_variable(path, "MODEL_NAME", "wine-classifier-gitlab")
+    pipeline_file = AI / "examples" / "gitlab" / "training" / ".gitlab-ci.yml"
+    sha = push_tree(path, [(AI / "examples" / "training", "."), (pipeline_file, ".gitlab-ci.yml")])
+    pipeline = wait_pipeline(path, sha, source="push")
+    expected = {"test": "success", "train": "success", "register": "success", "promote": "manual"}
+    found = expect_jobs(path, pipeline, expected, "training main")
+    play_and_wait(path, found, "promote", "training main")
+    mlflow = "http://127.0.0.1:5500/api/2.0/mlflow"
+    alias = lab_json("GET", f"{mlflow}/registered-models/alias?name=wine-classifier-gitlab&alias=champion")
+    version = alias["model_version"]
+    run = lab_json("GET", f"{mlflow}/runs/get?run_id={version['run_id']}")["run"]
+    tags = {t["key"]: t["value"] for t in run["data"]["tags"]}
+    if tags.get("git_commit") == sha:
+        ok(f"training main: @champion is version {version['version']}, trained from {sha[:8]}")
+    else:
+        fail(f"training main: @champion run has git_commit {tags.get('git_commit')}, expected {sha[:8]}")
+    check_merge_request_flow(path, {"test": "success", "train": "success"}, "training")
+
+    path = "ml/ticket-triage"
+    ensure_project(path)
+    key = lab_json(
+        "POST",
+        "http://127.0.0.1:4000/key/generate",
+        {"models": ["chat"], "key_alias": f"gitlab-ci-{int(time.time())}", "max_budget": 5},
+        "Bearer sk-lab-master-key",
+    )["key"]
+    for name, value in {
+        "LLM_BASE_URL": "http://litellm:4000",
+        "LLM_API_KEY": key,
+        "LANGFUSE_BASE_URL": "http://langfuse-web:3000",
+        "LANGFUSE_PUBLIC_KEY": "pk-lf-lab",
+        "LANGFUSE_SECRET_KEY": "sk-lf-lab",
+    }.items():
+        set_variable(path, name, value)
+    auth = "Basic " + base64.b64encode(b"pk-lf-lab:sk-lf-lab").decode()
+    prompts = "http://127.0.0.1:3300/api/public/v2/prompts/ticket-triage"
+    try:
+        before = lab_json("GET", f"{prompts}?label=staging", auth=auth)["version"]
+    except urllib.error.HTTPError:
+        before = 0  # no staging version yet
+    sha = push_tree(
+        path,
+        [
+            (AI / "examples" / "llm-app", "llm-app"),
+            (AI / "examples" / "promptfoo", "promptfoo"),
+            (AI / "examples" / "gitlab" / "llm-app" / ".gitlab-ci.yml", ".gitlab-ci.yml"),
+        ],
+    )
+    pipeline = wait_pipeline(path, sha, source="push")
+    expected = {"test": "success", "prompt-publish": "success", "evaluate": "success", "promptfoo": "success"}
+    found = expect_jobs(path, pipeline, {**expected, "promote": "manual"}, "llm-app main")
+    play_and_wait(path, found, "promote", "llm-app main")
+    staging = lab_json("GET", f"{prompts}?label=staging", auth=auth)["version"]
+    production = lab_json("GET", f"{prompts}?label=production", auth=auth)["version"]
+    if staging > before and production == staging:
+        ok(f"llm-app main: production is the version the pipeline published ({production})")
+    else:
+        fail(f"llm-app main: staging went {before} -> {staging}, production is {production}")
+    check_merge_request_flow(path, expected, "llm-app")
+
+
 SCENARIOS = {
     "components": scenario_components,
     "python": scenario_python,
     "go": scenario_go,
     "terraform": scenario_terraform,
     "lint": scenario_lint,
+    "ai": scenario_ai,
 }
+DEFAULT = ["components", "python", "go", "terraform", "lint"]
 
 
 def main() -> int:
@@ -522,7 +638,7 @@ def main() -> int:
     # Job logs contain any characters; don't let a Windows console code page crash the report.
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    parser.add_argument("scenarios", nargs="*", help=f"any of: {', '.join(SCENARIOS)} (default: all, in order)")
+    parser.add_argument("scenarios", nargs="*", help=f"any of: {', '.join(SCENARIOS)} (default: {', '.join(DEFAULT)})")
     args = parser.parse_args()
     unknown = sorted(set(args.scenarios) - set(SCENARIOS))
     if unknown:
@@ -530,7 +646,7 @@ def main() -> int:
     TOKEN = token()
     version = api("GET", "/version")
     print(f"GitLab {version['version']} at {URL}", flush=True)
-    for name in args.scenarios or list(SCENARIOS):
+    for name in args.scenarios or DEFAULT:
         print(f"--- {name}", flush=True)
         SCENARIOS[name]()
     if failures:

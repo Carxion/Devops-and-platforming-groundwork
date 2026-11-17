@@ -97,6 +97,7 @@ CI ([lint.yml](.github/workflows/lint.yml)) runs only fast static checks: format
 | Platform engineering | `platform-engineering/examples/check.sh` (needs Docker; with the Helm lab up, it also deploys the generated service) | [Examples](platform-engineering/examples/README.md) |
 | Helm | `devops/helm/lab/lab.sh up`, then `devops/helm/lab/lab.sh check` (needs Docker with about 2 GB free; about 4 minutes; static checks alone run without `up`) | [The lab](devops/helm/lab/README.md) |
 | GitLab CI/CD | `devops/gitlab/lab/lab.sh up`, then `python scripts/check_gitlab_examples.py` (needs Docker with about 6 GB free; 15 to 20 minutes) | [The lab](devops/gitlab/lab/README.md) |
+| AI DevOps | `devops/ai-devops/lab/lab.sh up`, then `devops/ai-devops/lab/lab.sh check` (needs Docker with about 8 GB free; about 10 minutes); with the GitLab lab also up, `python scripts/check_gitlab_examples.py ai` runs the two pipelines | [The lab](devops/ai-devops/lab/README.md) |
 | Git | `bash software/git/tests/recipes.sh`, ideally on Ubuntu 22.04 for the oldest supported Git | [Running the tests](software/git/README.md#running-the-tests) |
 
 ## License

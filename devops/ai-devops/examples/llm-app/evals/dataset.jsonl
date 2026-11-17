@@ -1,0 +1,12 @@
+{"input": "I was charged twice for my subscription this month.", "expected": "billing"}
+{"input": "Please send me a copy of last month's invoice.", "expected": "billing"}
+{"input": "How do I change the credit card on file?", "expected": "billing"}
+{"input": "I want a refund for the annual plan I bought yesterday.", "expected": "billing"}
+{"input": "The dashboard returns a 500 error for everyone on our team.", "expected": "outage"}
+{"input": "Your API has been timing out for the last hour.", "expected": "outage"}
+{"input": "The website is down, nothing loads.", "expected": "outage"}
+{"input": "Uploads stopped working this morning, every upload fails.", "expected": "outage"}
+{"input": "I forgot my password and the reset email never arrives.", "expected": "account"}
+{"input": "I lost my phone and can't pass two-factor authentication.", "expected": "account"}
+{"input": "Please give my colleague access to our workspace.", "expected": "account"}
+{"input": "I can't log in, it says my account is locked.", "expected": "account"}

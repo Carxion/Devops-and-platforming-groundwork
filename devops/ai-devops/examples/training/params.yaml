@@ -1,0 +1,20 @@
+# Every value that changes the model lives here, so DVC can tell when a
+# stage is out of date and MLflow records exactly what produced a run.
+prepare:
+  test_size: 0.25
+  seed: 42
+
+train:
+  # logistic_regression or random_forest
+  model: logistic_regression
+  C: 1.0
+  n_estimators: 200
+  seed: 42
+
+gate:
+  # Absolute floors: a model below these never ships.
+  min_accuracy: 0.90
+  min_f1_macro: 0.90
+  # Relative check against the registered champion: the candidate may be at
+  # most this much worse on f1_macro (0 means "at least as good").
+  max_regression: 0.01
