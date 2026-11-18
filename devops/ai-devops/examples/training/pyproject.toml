@@ -1,0 +1,55 @@
+[project]
+name = "wine-model"
+version = "0.1.0"
+description = "A small, reproducible training pipeline: DVC stages, data validation, MLflow tracking and registry, and an evaluation gate."
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = "CC-BY-4.0"
+dependencies = [
+    "mlflow>=3.18,<4",
+    "pandas>=2.3",
+    "pandera>=0.36",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.9,<1.10",
+    "skops>=0.16",
+]
+
+[project.scripts]
+wine-model = "wine_model.__main__:main"
+
+[dependency-groups]
+dev = [
+    "dvc>=3.67",
+    "mypy>=2.4",
+    "pandas-stubs>=2.3",
+    "pytest>=9.1",
+    "ruff>=0.17",
+    "types-pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+# No type information published for these.
+module = ["sklearn.*", "skops.*", "mlflow.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

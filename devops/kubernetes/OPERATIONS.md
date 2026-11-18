@@ -2,6 +2,8 @@
 
 Everyday commands for running the [sample apps](README.md) on the EKS and AKS clusters from the [Terraform stacks](../terraform/), and a symptom-by-symptom guide for when something breaks.
 
+Creating resources and the resource types themselves are in [RESOURCES.md](RESOURCES.md).
+
 Examples use the `sample-apps` namespace and the `web-app`, `worker`, and `scheduled-job` apps. Substitute your own names.
 
 > **Production is read-mostly.** If a GitOps controller manages the cluster, use these commands to *look*. Make changes through Git, or the controller will revert them (or fight you). The exceptions are emergencies, and those get a follow-up pull request.

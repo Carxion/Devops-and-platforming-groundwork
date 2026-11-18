@@ -12,10 +12,11 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 | [ansible/](ansible/README.md) | Ansible: inventory and ad hoc commands, playbooks and roles, Vault and secrets managers, Molecule testing, CI in GitHub, GitLab, and Jenkins, and fleet operations, with the server baseline as five tested roles for RHEL and Ubuntu | [Basics](ansible/01-basics.md) |
 | [terraform/](terraform/README.md) | Reference AWS and Azure stacks: state, CI identity, networking, container apps, Kubernetes, serverless. Plus setup, operations, and troubleshooting. | [README](terraform/README.md), then [OPERATIONS](terraform/OPERATIONS.md) |
 | [helm/](helm/README.md) | Helm 101, using and writing charts, library charts, testing, packaging to OCI registries, and operating releases, with the sample apps as charts and a kind lab that installs, upgrades, and rolls them back | [Helm 101](helm/01-basics.md) |
-| [kubernetes/](kubernetes/README.md) | Hardened sample apps (web app, worker, scheduled job), a namespace baseline, and administration and troubleshooting commands | [README](kubernetes/README.md), then [OPERATIONS](kubernetes/OPERATIONS.md) |
+| [kubernetes/](kubernetes/README.md) | How Kubernetes works and its components, hardened sample apps (web app, worker, scheduled job), a namespace baseline, creating resources and the resource types, and administration and troubleshooting commands | [CONCEPTS](kubernetes/CONCEPTS.md) and [RESOURCES](kubernetes/RESOURCES.md), then [README](kubernetes/README.md) and [OPERATIONS](kubernetes/OPERATIONS.md) |
 | [aws/](aws/README.md) | AWS CLI guides for identity, networking, compute, data, logging, security and incident response, and cost; CloudFormation templates for IAM and baseline security | [Setup](aws/README.md#setup) |
 | [azure/](azure/README.md) | The same for Azure, with Bicep templates | [Setup](azure/README.md#setup) |
 | [observability/](observability/README.md) | What to measure and alert on, a Prometheus guide, a Grafana 101, SLO rules with tests, a Docker Compose lab, and CloudWatch and Azure Monitor alerting | [The local lab](observability/local-stack/README.md) |
+| [ai-devops/](ai-devops/README.md) | DevOps for systems with a model inside: the components of AI training and how to put each into CI/CD, an LLM gateway (LiteLLM), tracing, prompts, and experiments (Langfuse), MLflow and DVC, evaluation with promptfoo, model supply chain, serving, and governance, with a Compose lab and two pipelines run end to end in the GitLab lab | [What AI DevOps is](ai-devops/01-what-ai-devops-is.md), then [the lab](ai-devops/lab/README.md) |
 
 ## A suggested path
 
@@ -26,5 +27,6 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 5. **Infrastructure as code:** [terraform](terraform/README.md), deploying one stack to a sandbox.
 6. **Running workloads:** [kubernetes](kubernetes/README.md) on the cluster that stack built, then [helm](helm/README.md) for the same apps as charts.
 7. **Seeing what's happening:** [observability](observability/README.md), starting with the lab.
+8. **Systems with a model inside:** [AI DevOps](ai-devops/README.md), once pipelines and observability are familiar.
 
 The [tech lead checklist](../tech-lead/README.md) sections 3 to 8 point into these folders for each "find out" item, and [software/api-testing](../software/api-testing/README.md) tests the serverless APIs the Terraform stacks deploy.

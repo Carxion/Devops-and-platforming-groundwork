@@ -1,0 +1,101 @@
+# .gitlab-ci.yml
+# Continuous training for devops/ai-devops/examples/training, at the root of
+# its own project: test the code, run the DVC pipeline (validate data, train,
+# evaluate), gate the candidate against the floors and the current champion,
+# register it as the challenger, and promote it to champion by hand.
+#
+# CI/CD variables (Settings > CI/CD > Variables):
+#   MLFLOW_TRACKING_URI   the MLflow server, for example https://mlflow.example.com
+#   MLFLOW_TRACKING_TOKEN  if the server needs one: masked and protected
+#
+# Runs on merge requests (train and gate, but don't register), on the default
+# branch (register), and on a schedule (retrain on fresh data).
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages: [test, train, register, promote]
+
+default:
+  image: ghcr.io/astral-sh/uv:0.13.5-python3.14-trixie-slim@sha256:d8e732839dfc4225a1ff698803b478b2223c05636c055d3add41ab9dbec0f315
+  interruptible: true
+
+variables:
+  UV_FROZEN: "1"
+  UV_CACHE_DIR: $CI_PROJECT_DIR/.uv-cache
+  UV_LINK_MODE: copy
+  GIT_PYTHON_REFRESH: quiet          # MLflow reads Git metadata; the image has no git binary
+  MODEL_NAME: wine-classifier
+  MLFLOW_EXPERIMENT_NAME: wine-classifier
+
+.uv:
+  cache:
+    key:
+      files: [uv.lock]
+    paths: [.uv-cache/]
+  before_script:
+    - uv sync
+  after_script:
+    - uv cache prune --ci
+
+test:
+  extends: .uv
+  stage: test
+  script:
+    - uv run ruff format --check .
+    - uv run ruff check .
+    - uv run mypy
+    - uv run pytest --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+
+# dvc repro runs only the stages whose inputs changed, and fails on invalid
+# data before anything trains. The gate compares against the registered
+# champion, so it needs the tracking server even on merge requests.
+train:
+  extends: .uv
+  stage: train
+  needs: [test]
+  # On a real platform, train on a runner with the hardware the model needs:
+  # tags: [gpu]
+  script:
+    - uv run dvc repro
+    - uv run dvc metrics show
+    - uv run wine-model gate
+  artifacts:
+    paths: [metrics.json, models/, dvc.lock]
+    expire_in: 30 days
+
+# Register only from the default branch: a merge request proves the candidate
+# would pass, but only merged code produces models others may deploy.
+register:
+  extends: .uv
+  stage: register
+  needs: [train]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - uv run wine-model register --alias challenger
+
+# A person promotes: serving loads models:/wine-classifier@champion, so moving
+# the alias is the deployment, and moving it back is the rollback.
+promote:
+  extends: .uv
+  stage: promote
+  needs: [register]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  interruptible: false
+  resource_group: model-production
+  environment:
+    name: production
+    deployment_tier: production
+  script:
+    - uv run wine-model promote --from challenger --to champion

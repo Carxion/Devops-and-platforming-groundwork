@@ -1,0 +1,37 @@
+# The training pipeline as DVC stages. `dvc repro` runs only the stages whose
+# deps, params, or code changed, and dvc.lock records the hash of every input
+# and output, so a commit pins the exact data and model it produced.
+stages:
+  prepare:
+    cmd: python -m wine_model prepare
+    deps:
+      - src/wine_model/data.py
+    params:
+      - prepare
+    outs:
+      - data/train.csv
+      - data/test.csv
+  validate:
+    cmd: python -m wine_model validate data/train.csv data/test.csv
+    deps:
+      - src/wine_model/data.py
+      - data/train.csv
+      - data/test.csv
+  train:
+    cmd: python -m wine_model train
+    deps:
+      - src/wine_model/train.py
+      - data/train.csv
+    params:
+      - train
+    outs:
+      - models/model.skops
+  evaluate:
+    cmd: python -m wine_model evaluate
+    deps:
+      - src/wine_model/evaluate.py
+      - models/model.skops
+      - data/test.csv
+    metrics:
+      - metrics.json:
+          cache: false

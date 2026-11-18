@@ -1,0 +1,192 @@
+# AI DevOps lab: a local model (Ollama) behind an LLM gateway (LiteLLM), LLM
+# tracing and prompt management (Langfuse), and experiment tracking with a
+# model registry (MLflow).
+#
+#   ./lab.sh up      # start it, pull the model, create the keys
+#   ./lab.sh check   # run every check (scripts/check_ai_devops_lab.py)
+#   ./lab.sh down    # stop it and delete the data
+#
+# LiteLLM: http://localhost:4000/ui    Langfuse: http://localhost:3300
+# MLflow:  http://localhost:5500       Ollama:   http://localhost:11435
+#
+# For a laptop only: the keys and passwords below are fixed lab values, and
+# every port is bound to 127.0.0.1 so nothing is reachable from the network.
+# Never run this configuration anywhere shared; see the guides for what
+# production needs instead.
+
+name: ai-devops-lab
+
+x-langfuse-env: &langfuse-env
+  NEXTAUTH_URL: http://localhost:3300
+  DATABASE_URL: postgresql://postgres:lab-postgres@postgres:5432/langfuse
+  SALT: lab-salt
+  ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+  TELEMETRY_ENABLED: "false"
+  CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+  CLICKHOUSE_URL: http://clickhouse:8123
+  CLICKHOUSE_USER: clickhouse
+  CLICKHOUSE_PASSWORD: lab-clickhouse
+  CLICKHOUSE_CLUSTER_ENABLED: "false"
+  LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: minio
+  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: lab-miniosecret
+  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_EVENT_UPLOAD_PREFIX: events/
+  LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_MEDIA_UPLOAD_REGION: auto
+  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: minio
+  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: lab-miniosecret
+  LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://minio:9000
+  LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: media/
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_AUTH: lab-redis
+
+services:
+  ollama:
+    image: ollama/ollama:0.40.16
+    ports:
+      - "127.0.0.1:11435:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      retries: 20
+
+  litellm:
+    image: litellm/litellm:v1.108.9-lts
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      LITELLM_MASTER_KEY: sk-lab-master-key
+      DATABASE_URL: postgresql://postgres:lab-postgres@postgres:5432/litellm
+      # Where LiteLLM sends traces (the langfuse_otel callback in config.yaml).
+      LANGFUSE_PUBLIC_KEY: pk-lf-lab
+      LANGFUSE_SECRET_KEY: sk-lf-lab
+      LANGFUSE_OTEL_HOST: http://langfuse-web:3000
+      STORE_MODEL_IN_DB: "False"
+    volumes:
+      - ../examples/litellm/config.yaml:/app/config.yaml:ro
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.18.0
+    command:
+      - mlflow
+      - server
+      - --host=0.0.0.0
+      - --port=5000
+      - --backend-store-uri=sqlite:////mlflow/mlflow.db
+      - --artifacts-destination=/mlflow/artifacts
+      # MLflow 3 rejects requests whose Host header it doesn't expect.
+      - --allowed-hosts=localhost:5500,127.0.0.1:5500,mlflow:5000
+    volumes:
+      - mlflow:/mlflow
+    ports:
+      - "127.0.0.1:5500:5000"
+
+  langfuse-web:
+    image: langfuse/langfuse:4.80.0
+    environment:
+      <<: *langfuse-env
+      # Next.js listens on the address $HOSTNAME resolves to: Docker sets it to
+      # the container ID, which resolves on the first network only. Listen on
+      # all of them, so jobs on another network (the GitLab lab's) can connect.
+      HOSTNAME: 0.0.0.0
+      NEXTAUTH_SECRET: lab-nextauth-secret
+      LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://localhost:9190
+      LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT: http://minio:9000
+      # Headless setup: an organization, a project with fixed API keys, and a
+      # user, created at start so no one has to click through the UI.
+      LANGFUSE_INIT_ORG_ID: lab-org
+      LANGFUSE_INIT_ORG_NAME: Lab
+      LANGFUSE_INIT_PROJECT_ID: lab-project
+      LANGFUSE_INIT_PROJECT_NAME: ai-devops-lab
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: pk-lf-lab
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: sk-lf-lab
+      LANGFUSE_INIT_USER_EMAIL: admin@example.com
+      LANGFUSE_INIT_USER_NAME: Lab admin
+      LANGFUSE_INIT_USER_PASSWORD: lab-password
+    ports:
+      - "127.0.0.1:3300:3000"
+    depends_on: &langfuse-deps
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:4.80.0
+    environment: *langfuse-env
+    depends_on: *langfuse-deps
+
+  postgres:
+    image: postgres:17.12-alpine
+    environment:
+      POSTGRES_PASSWORD: lab-postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 20
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.3.62.3
+    user: "101:101"
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: lab-clickhouse
+    volumes:
+      - clickhouse:/var/lib/clickhouse
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      retries: 20
+
+  minio:
+    # Chainguard publishes only :latest for free, so pin the digest instead.
+    image: cgr.dev/chainguard/minio@sha256:9158c67aa441627c366442e84656f689e16bec4809851ec64318561a365b69e4
+    entrypoint: sh
+    command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: lab-miniosecret
+    ports:
+      - "127.0.0.1:9190:9000"
+    volumes:
+      - minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      retries: 20
+
+  redis:
+    image: redis:7.4.12-alpine
+    command: ["--requirepass", "lab-redis", "--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "lab-redis", "ping"]
+      interval: 3s
+      retries: 20
+
+volumes:
+  ollama:
+  mlflow:
+  postgres:
+  clickhouse:
+  minio:

@@ -1,0 +1,81 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m wine_model prepare
+    deps:
+    - path: src/wine_model/data.py
+      hash: md5
+      md5: aa21f52c57ab651d2addfbbb4089afb2
+      size: 2384
+    params:
+      params.yaml:
+        prepare:
+          test_size: 0.25
+          seed: 42
+    outs:
+    - path: data/test.csv
+      hash: md5
+      md5: acb561096877f55edc3bbc86f4b3e7df
+      size: 3224
+    - path: data/train.csv
+      hash: md5
+      md5: 10dce799ab5ba1b4b91f2347d96d2743
+      size: 9214
+  validate:
+    cmd: python -m wine_model validate data/train.csv data/test.csv
+    deps:
+    - path: data/test.csv
+      hash: md5
+      md5: acb561096877f55edc3bbc86f4b3e7df
+      size: 3224
+    - path: data/train.csv
+      hash: md5
+      md5: 10dce799ab5ba1b4b91f2347d96d2743
+      size: 9214
+    - path: src/wine_model/data.py
+      hash: md5
+      md5: aa21f52c57ab651d2addfbbb4089afb2
+      size: 2384
+  train:
+    cmd: python -m wine_model train
+    deps:
+    - path: data/train.csv
+      hash: md5
+      md5: 10dce799ab5ba1b4b91f2347d96d2743
+      size: 9214
+    - path: src/wine_model/train.py
+      hash: md5
+      md5: 4132a906010b531842660637945e98f2
+      size: 3031
+    params:
+      params.yaml:
+        train:
+          model: logistic_regression
+          C: 1.0
+          n_estimators: 200
+          seed: 42
+    outs:
+    - path: models/model.skops
+      hash: md5
+      md5: eee9ee1582484d9b11c69b4cb9ba042b
+      size: 29754
+  evaluate:
+    cmd: python -m wine_model evaluate
+    deps:
+    - path: data/test.csv
+      hash: md5
+      md5: acb561096877f55edc3bbc86f4b3e7df
+      size: 3224
+    - path: models/model.skops
+      hash: md5
+      md5: eee9ee1582484d9b11c69b4cb9ba042b
+      size: 29754
+    - path: src/wine_model/evaluate.py
+      hash: md5
+      md5: df1b7dd1a8f1cefc951e8a2d1e9bf79a
+      size: 3222
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 31646f17a38f961a224bd8f708912168
+      size: 41

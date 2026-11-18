@@ -13,7 +13,7 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | You are | Start with | Then |
 |---|---|---|
 | **A tech lead** stepping into an existing program | The [onboarding checklist](tech-lead/README.md): what to learn, who to talk to, how to evaluate what you inherit, and what to deliver in 90 days | Its phase view and templates, and the DevOps material each section points to |
-| **A DevOps or platform engineer** | [devops/](devops/README.md): Bash 101 and [containers](software/containers/README.md), then GitLab CI/CD, Ansible, Terraform, Kubernetes and Helm, your cloud, and observability | The [complex commands](devops/bash/07-complex-commands.md) and the [observability lab](devops/observability/local-stack/README.md) |
+| **A DevOps or platform engineer** | [devops/](devops/README.md): Bash 101 and [containers](software/containers/README.md), then GitLab CI/CD, Ansible, Terraform, Kubernetes and Helm, your cloud, observability, and [AI DevOps](devops/ai-devops/README.md) | The [complex commands](devops/bash/07-complex-commands.md) and the [observability lab](devops/observability/local-stack/README.md) |
 | **A software engineer** | [software/](software/README.md): Git 101, Python and Go 101 with boilerplate and operational tools, unit testing and linting, API contracts, and testing at every layer | Building and hardening images in [containers](software/containers/README.md), and instrumenting services in [observability](devops/observability/README.md) |
 | **An architect** designing cloud and platform foundations | [architect/](architect/README.md): the ten questions for any design, then quality attributes and trade-offs, foundations, reliability, security, delivery, observability, cost, and portability | The [architecture review checklist](architect/templates/architecture-review-checklist.md) and the tested implementations in [devops/](devops/README.md) |
 | **A solutions architect** turning a business problem into an agreed solution | [solutions-architect/](solutions-architect/README.md): the role, discovery and requirements, designing the solution, working with stakeholders, preparing a proposal, and presenting | Its [templates](solutions-architect/templates/README.md), and the [architect](architect/README.md) guides for what makes a design sound |
@@ -47,9 +47,10 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | [ansible/](devops/ansible/README.md) | Ansible from ad hoc commands to tested roles: the server baseline for RHEL and Ubuntu, Vault and secrets managers, Molecule, CI in GitHub, GitLab, and Jenkins |
 | [terraform/](devops/terraform/README.md) | Reference AWS and Azure stacks with tests, setup, operations, and troubleshooting |
 | [helm/](devops/helm/README.md) | Helm 101 through writing, testing, publishing, and operating charts: a library chart and the web app and worker as charts, tested on a kind cluster with Pod Security restricted and default-deny networking |
-| [kubernetes/](devops/kubernetes/README.md) | Hardened sample apps and a namespace baseline, with administration and troubleshooting commands |
+| [kubernetes/](devops/kubernetes/README.md) | How Kubernetes works and its components, hardened sample apps and a namespace baseline, creating resources and every common resource type with tested manifests, and administration and troubleshooting commands |
 | [aws/](devops/aws/README.md), [azure/](devops/azure/README.md) | CLI operations guides, CloudFormation and Bicep templates |
 | [observability/](devops/observability/README.md) | Prometheus guide, Grafana 101, SLO alerting, a Compose lab, CloudWatch and Azure Monitor |
+| [ai-devops/](devops/ai-devops/README.md) | AI DevOps: the components of AI training and how to put them into CI/CD, an LLM gateway (LiteLLM), tracing and prompt management (Langfuse), MLflow, DVC, evaluation with promptfoo, model supply chain, serving, and governance, with a lab and two pipelines run end to end |
 
 ### [software/](software/README.md)
 
@@ -177,7 +178,8 @@ License: [CC BY 4.0](LICENSE) · Maintainer: Dominick Bolanos
 | Platform engineering | The golden path generates a service that passes its own checks, updates to a new template version, builds, renders with the platform chart, and deploys to a hardened kind cluster |
 | Helm | `helm lint --strict`, kubeconform, checkov, helm-unittest, and chart-testing on every chart and environment; then install, `helm test`, upgrade, automatic rollback, and OCI publishing on a kind cluster |
 | GitLab CI/CD | Every example pipeline run end to end in a local GitLab CE with real runners and a fake AWS, and every complete pipeline in the guides through GitLab's CI Lint API |
-| Kubernetes | Kustomize render, kubeconform, checkov |
+| AI DevOps | Both example projects' tests; the gateway's fallbacks, key scoping, and budgets; traces arriving in Langfuse; the evaluation gate passing on one model and failing on a smaller one; DVC and MLflow training, gating, registering, and serving; model scanning; and both pipelines end to end in the GitLab lab |
+| Kubernetes | Kustomize render, kubeconform, checkov; every manifest in the resources guide applied to a kind cluster with Pod Security restricted; the concepts guide's component and networking claims checked on the same cluster |
 | AWS and Azure | Every `aws` and `az` command checked against the real CLIs; cfn-lint, Bicep build and lint, checkov |
 | API testing | Spectral, Newman, Schemathesis, k6, and Locust against the reference server |
 | Python and Go | mypy, pytest, `go vet`, race-detector tests, govulncheck, and the API contract tests and Trivy against the built images |
