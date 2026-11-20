@@ -12,6 +12,7 @@ Proposals and priorities are discussed in issues; open one with the [new item te
 | Copy-ready templates | [tech-lead/templates/](tech-lead/templates/) | Lint |
 | Glossary | [GLOSSARY.md](GLOSSARY.md) | Lint, spelling |
 | Terraform reference stacks (AWS, Azure) | [devops/terraform/](devops/terraform/) | fmt, validate, `terraform test`, tflint, checkov |
+| Terraform guides, basics to best practices (AWS), with an `s3-bucket` module and an `uploads` stack | [devops/terraform/](devops/terraform/README.md#guides) | Every complete configuration applied and every command block run against moto by `devops/terraform/tests/check.py`; the examples' offline and apply tests, an end-to-end upload, tflint, and checkov |
 | Kubernetes sample apps and operations | [devops/kubernetes/](devops/kubernetes/) | Kustomize render, kubeconform, checkov |
 | AWS and Azure CLI guides, CloudFormation and Bicep | [devops/aws/](devops/aws/), [devops/azure/](devops/azure/) | Every `aws`/`az` command checked against the real CLIs; cfn-lint, Bicep, checkov |
 | Python and Go 101, with CLI and API boilerplate and five operational tools in each language (certificate expiry, log statistics, a Prometheus exporter, an alert relay, a tag audit) | [software/python/](software/python/README.md), [software/go/](software/go/README.md) | Lint, types, tests, govulncheck, contract tests and Trivy on both API images; tool tests run offline against local servers and fake clouds |

@@ -1,0 +1,10 @@
+project     = "example"
+environment = "dev"
+region      = "us-east-1"
+owner       = "platform-team"
+
+upload_prefixes = ["incoming/", "imports/"]
+
+# Throwaway environments only: lets terraform destroy remove a bucket that
+# still holds uploads.
+force_destroy = true
