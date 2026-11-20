@@ -1,4 +1,46 @@
-# Terraform reference stacks
+# Terraform
+
+Guides that teach Terraform on AWS from the first `init` to production habits, the examples they build, and reference stacks for common AWS and Azure architectures.
+
+- **New to Terraform?** Read the [basics](#basics) in order. Each guide builds on the last, and every command in them was run.
+- **Know the basics?** The [advanced](#advanced) guides cover the language features, testing, and practices that matter once stacks are in production.
+- **Need a starting point for a real stack?** Go to the [reference stacks](#reference-stacks).
+- **Something broke?** [OPERATIONS.md](OPERATIONS.md) is organized by symptom.
+
+## Guides
+
+> **Tested.** Every complete configuration in the guides is applied, and every command block run, against [moto](https://github.com/getmoto/moto) (a local fake of the AWS APIs) by [`tests/check.py`](tests/check.py), with Terraform 1.16.5 and `hashicorp/aws` 6.73 in November 2026. [09-testing-with-moto.md](09-testing-with-moto.md#run-the-guides-against-moto) shows how to run it, and the few places where moto behaves differently from AWS.
+
+### Basics
+
+| Guide | You'll learn |
+|---|---|
+| [1. How Terraform works](01-how-terraform-works.md) | Configuration, providers, resources, state, and plans; `init`, `plan`, `apply`, and `destroy` on one SQS queue; updates versus replacements |
+| [2. The language](02-the-language.md) | Blocks, types, variables, locals, outputs, expressions, the console, validation, `count` versus `for_each`, data sources |
+| [3. The AWS provider](03-the-aws-provider.md) | Credentials, guarding the account with `allowed_account_ids`, default tags, data sources for account and region, aliases and per-resource regions, IAM policy documents |
+| [4. State](04-state.md) | An S3 state bucket, migrating to it, native locking, inspecting state, `moved`, `import`, and `removed` blocks, state history, why not workspaces |
+| [5. Modules](05-modules.md) | When to write a module, its anatomy, calling it with `for_each`, sources and versions, providers in modules, public modules |
+| [6. Building a stack](06-building-a-stack.md) | The [uploads](examples/uploads/) example from an empty directory, one file at a time: decisions, inputs, resources in dependency order, tests, changes, and what to check before committing |
+
+### Advanced
+
+| Guide | You'll learn |
+|---|---|
+| [7. Advanced language](07-advanced-language.md) | Dynamic blocks, `lifecycle`, preconditions and postconditions, `check` blocks, ephemeral values and write-only arguments, provider functions, `-replace` |
+| [8. Testing and checks](08-testing-and-checks.md) | fmt, validate, tflint, checkov, and `terraform test` with mock providers: writing tests, testing failures, apply tests, JUnit reports |
+| [9. Testing with moto](09-testing-with-moto.md) | Running apply tests and whole stacks against moto, testing behavior with the AWS CLI, where moto differs from AWS, checking that a second plan is clean |
+| [10. Best practices](10-best-practices.md) | Layout, environments and accounts, splitting stacks, versions, secrets, the change workflow, pipeline identities, drift, upgrades, and a review checklist |
+
+### Examples
+
+The guides build and test these; [examples/README.md](examples/README.md) describes them.
+
+| Example | What it is |
+|---|---|
+| [modules/s3-bucket](examples/modules/s3-bucket/) | A child module: a private, versioned, encrypted, TLS-only bucket with lifecycle rules |
+| [uploads](examples/uploads/) | A root module: uploads to S3 send events to an SQS queue with a dead-letter queue, read by a consumer with its own IAM role |
+
+## Reference stacks
 
 Starting points for common AWS and Azure architectures, written to the standards the [onboarding checklist](../../tech-lead/README.md) asks you to look for. Use them to compare against what a program already has, or copy one into your own infrastructure repository as the first version of a new stack.
 
@@ -6,7 +48,7 @@ These are **root modules to copy and adapt**, not a module library to call. Ever
 
 > **Status.** Every stack passed `terraform validate`, `terraform test` (offline plans against mock providers), tflint with the AWS and Azure rulesets, and checkov when last checked. CI runs `terraform fmt` and tflint on every change; run the rest with the commands in [Checks and tested versions](#checks-and-tested-versions). None has been applied to a real account by this project. Apply to a sandbox first, and read [Decisions you still own](#decisions-you-still-own) before production.
 
-## Contents
+### Contents
 
 - [What's here](#whats-here)
 - [Setup](#setup)
@@ -395,6 +437,8 @@ Destroy in reverse dependency order: workloads, then network, then github-oidc, 
 
 ## Best practices
 
+The short version. [10-best-practices.md](10-best-practices.md) explains each, with layouts, examples, and a review checklist.
+
 ### Workflow
 
 - **Every change is a pull request with a plan attached.** Nobody applies from a laptop except during a recorded break-glass event.
@@ -466,3 +510,11 @@ checkov -d . --framework terraform
 ```
 
 Tested with Terraform 1.16.5, `hashicorp/aws` 6.68, `hashicorp/azurerm` 5.9, `hashicorp/azuread` 3.10, tflint 0.64 (AWS ruleset 0.49, azurerm ruleset 0.32), and checkov 3.3, in October 2026.
+
+The guides and examples have their own check, which needs Docker but no cloud credentials. It runs the examples' tests, applies them against moto, runs tflint and checkov on them, and then works through every guide:
+
+```sh
+python devops/terraform/tests/check.py
+```
+
+Last run with Terraform 1.16.5, `hashicorp/aws` 6.73, moto 5.2.5, tflint 0.64, and checkov 3.4.5, in November 2026.

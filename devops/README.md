@@ -10,7 +10,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 | [containers](../software/containers/README.md) (in software/) | How containers work, Docker, and Podman: architecture, commands, Dockerfiles, Compose, Quadlet, and hardening guides for both engines | [How containers work](../software/containers/01-how-containers-work.md) |
 | [gitlab/](gitlab/README.md) | GitLab 101 and GitLab CI/CD: rules and pipeline types, components, runners, OIDC to AWS and Azure, deployments, and pipeline security, with reference pipelines and a local GitLab lab that runs them | [GitLab 101](gitlab/01-basics.md) |
 | [ansible/](ansible/README.md) | Ansible: inventory and ad hoc commands, playbooks and roles, Vault and secrets managers, Molecule testing, CI in GitHub, GitLab, and Jenkins, and fleet operations, with the server baseline as five tested roles for RHEL and Ubuntu | [Basics](ansible/01-basics.md) |
-| [terraform/](terraform/README.md) | Reference AWS and Azure stacks: state, CI identity, networking, container apps, Kubernetes, serverless. Plus setup, operations, and troubleshooting. | [README](terraform/README.md), then [OPERATIONS](terraform/OPERATIONS.md) |
+| [terraform/](terraform/README.md) | Terraform on AWS in ten guides, basics to best practices, with examples applied against moto; reference AWS and Azure stacks: state, CI identity, networking, container apps, Kubernetes, serverless. Plus setup, operations, and troubleshooting. | [1. How Terraform works](terraform/01-how-terraform-works.md), then the [README](terraform/README.md) and [OPERATIONS](terraform/OPERATIONS.md) |
 | [helm/](helm/README.md) | Helm 101, using and writing charts, library charts, testing, packaging to OCI registries, and operating releases, with the sample apps as charts and a kind lab that installs, upgrades, and rolls them back | [Helm 101](helm/01-basics.md) |
 | [kubernetes/](kubernetes/README.md) | How Kubernetes works and its components, hardened sample apps (web app, worker, scheduled job), a namespace baseline, creating resources and the resource types, and administration and troubleshooting commands | [CONCEPTS](kubernetes/CONCEPTS.md) and [RESOURCES](kubernetes/RESOURCES.md), then [README](kubernetes/README.md) and [OPERATIONS](kubernetes/OPERATIONS.md) |
 | [aws/](aws/README.md) | AWS CLI guides for identity, networking, compute, data, logging, security and incident response, and cost; CloudFormation templates for IAM and baseline security | [Setup](aws/README.md#setup) |
@@ -24,7 +24,7 @@ Hands-on material for building and running cloud platforms: infrastructure as co
 2. **Pipelines:** [GitLab CI/CD](gitlab/README.md), so everything after this is built and deployed by a pipeline, not by hand.
 3. **Servers at scale:** [ansible](ansible/README.md), applying the baseline the Bash scripts build by hand.
 4. **Your cloud:** the [AWS](aws/README.md) or [Azure](azure/README.md) setup and identity guides.
-5. **Infrastructure as code:** [terraform](terraform/README.md), deploying one stack to a sandbox.
+5. **Infrastructure as code:** the [Terraform guides](terraform/README.md#guides) in order, then deploying one reference stack to a sandbox.
 6. **Running workloads:** [kubernetes](kubernetes/README.md) on the cluster that stack built, then [helm](helm/README.md) for the same apps as charts.
 7. **Seeing what's happening:** [observability](observability/README.md), starting with the lab.
 8. **Systems with a model inside:** [AI DevOps](ai-devops/README.md), once pipelines and observability are familiar.

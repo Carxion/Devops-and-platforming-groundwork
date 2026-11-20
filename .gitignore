@@ -86,3 +86,6 @@ devops/helm/lab/.kubeconfig
 
 # Golden path check output
 platform-engineering/examples/out/
+
+# Modules leave version choice to their callers; only root modules commit a lock file.
+devops/terraform/examples/modules/*/.terraform.lock.hcl
